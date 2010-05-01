@@ -1,0 +1,97 @@
+//=============================================================================
+// IFFDataBase.hp: Copyright (c) 1998-1999, World Foundry Group  
+// By Kevin T. Seghetti
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+//==============================================================================
+
+#ifndef _IFFDataBase_hp
+#define _IFFDataBase_hp
+
+//=============================================================================
+
+#include "global.hp"
+#include "chunklist.hp"
+#include "indent.hp"
+#include "smptr.hp"
+#include <iostream>
+#include <iff/iffread.hp>
+#include <vector>
+#include <streams/binstrm.hp>
+using namespace std;
+
+//=============================================================================
+
+class IFFDataBase;
+
+//=============================================================================
+
+class IFFDataBaseChunk
+{
+public:
+	IFFDataBaseChunk();
+	IFFDataBaseChunk(IFFChunkIter& topIter, const IFFDataBase& database);
+	IFFDataBaseChunk(const IFFDataBaseChunk& other);
+	~IFFDataBaseChunk();
+	IFFDataBaseChunk& operator= (const IFFDataBaseChunk& other);
+
+	// iterator needed, apply within
+
+//	const IFFDataBaseChunk* GetChildChunk(string path) const;
+	const IFFDataBaseChunk* GetChildChunk(ChunkID id) const;
+	const char* GetChunkData() const;
+	int GetChunkSize() const;
+	ChunkID GetName() const;
+	bool HasChildren() const;
+
+	void Validate() const;
+	friend ostream& operator<<(ostream&,IFFDataBaseChunk&);
+private:
+	void Print(ostream&, Indent id);
+
+	ChunkID _name;
+	bool _hasChildren;
+	int   _size;			            // including all sub-chunks
+// if leaf
+	char* _data;
+// if parent
+	vector<SmartPtr<IFFDataBaseChunk> > _children;
+};
+
+//=============================================================================
+
+class IFFDataBase
+{
+public:
+	IFFDataBase(binistream& input, const ChunkList& chunkList);			    // reads stream dry, creating an in-memory database of iff chunks
+	friend ostream& operator<<(ostream&,IFFDataBase&);
+
+	const IFFDataBaseChunk& GetTopChunk() const;
+
+	bool IsWrapperChunk(ChunkID id) const;
+private:
+	binistream& _input;
+	Indent _ind;
+	const ChunkList& _chunkList;
+	IFFDataBaseChunk _topChunk;
+};
+
+//=============================================================================
+#include "iffdb.hpi"
+//=============================================================================
+#endif
+//=============================================================================

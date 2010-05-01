@@ -1,0 +1,6 @@
+15 Mar 99
+* delete file3ds.cc, file3ds.hp
+* delete pigtool.h from this directory
+* switch to BUILDMODE=tool
+
+

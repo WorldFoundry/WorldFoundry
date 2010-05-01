@@ -1,0 +1,18 @@
+INLINE void OADescIffBinParser::Validate(void)
+{
+  #if DO_ASSERTIONS
+  #endif
+}
+
+INLINE ParseTreeNode* OADescIffBinParser::getParseTree(void)
+{
+  assert(_parseTree);
+  return _parseTree;
+}
+
+INLINE const ParseTreeNode* OADescIffBinParser::getParseTree(void) const
+{
+  assert(_parseTree);
+  return _parseTree;
+}
+

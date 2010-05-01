@@ -1,0 +1,2 @@
+
+bool fileInSourceCodeControlSystem( const char* );

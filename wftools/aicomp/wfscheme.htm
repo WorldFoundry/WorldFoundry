@@ -1,0 +1,619 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+
+<html>
+
+<head>
+<title>Velocity Scheme</title>
+<meta name="GENERATOR" content="Microsoft FrontPage 1.1">
+</head>
+
+<body>
+<h1>World Foundry Scheme</h1>
+<hr>
+<p><a href="#Language Description">Language Description</a></p>
+<p><a href="#Function summary">Function Summary</a>&#160;</p>
+<table border=1 width=80%>
+<tr><td width=30%><font color="#FF0000">Arithmetic Operations</font></td><td width=20%><a href="#+">+</a>	</td><td width=30%><font color="#FF0000">Conditionals</font></td><td width=20%><a href="#=">=</a></td></tr>
+<tr><td width=30%></td><td width=20%><a href="#-">-</a></td><td width=30%></td><td width=20%><a href="#!=">!=</a></td></tr>
+<tr><td width=30%></td><td width=20%><a href="#*">*</a></td><td width=30%></td><td width=20%><a href="#&gt;">&gt;</a></td></tr>
+<tr><td width=30%></td><td width=20%><a href="#/">/</a></td><td width=30%></td><td width=20%><a href="#&gt;=">&gt;=</a></td></tr>
+<tr><td width=30%></td><td width=20%><a href="#and">and</a></td><td width=30%></td><td width=20%><a href="#&lt;">&lt;</a></td></tr>
+<tr><td width=30%></td><td width=20%><a href="#or">or</a></td><td width=30%></td><td width=20%><a href="#&lt;=">&lt;=</a></td></tr>
+<tr><td width=30%></td><td width=20%><a href="#not">not</a></td><td width=30%></td><td width=20%><a href="#zero?">zero?</a></td></tr>
+<tr><td width=30%></td><td width=20%></td><td width=30%></td><td width=20%><a href="#positive?">positive?</a></td></tr>
+<tr><td width=30%><font color="#FF0000">Trigometric Operations</font></td><td width=20%><a href="#sin">sin</a></td><td width=30%></td><td width=20%><a href="#negative?">negative?</a></td></tr>
+<tr><td width=30%></td><td width=20%><a href="#cos">cos</a></td><td width=30%></td><td width=20%></td></tr>
+<tr><td width=30%></td><td width=20%><a href="#asin">asin</a></td><td width=30%><font color="#FF0000">Conversion Operators</font></td><td width=20%><a href="#int">int</a></td></tr>
+<tr><td width=30%></td><td width=20%><a href="#acos">acos</a></td><td width=30%></td><td width=20%><a href="#fixed">fixed</a></td></tr>
+<tr><td width=30%></td><td width=20%><a href="#atan2">atan2</a></td><td width=30%></td><td width=20%></td></tr>
+<tr><td width=30%></td><td width=20%><a href="#atan2quick">atan2quick</a></td><td width=30%><font color="#FF0000">Mathematical Functions</font></td><td width=20%><a href="#quotient">quotient</a></td></tr>
+<tr><td width=30%></td><td width=20%><a href="#euler-to-vector">euler-to-vector</a></td><td width=30%></td><td width=20%><a href="#remainder">remainder</a></td></tr>
+<tr><td width=30%></td><td width=20%><a href="#vector-to-euler">vector-to-euler</a></td><td width=30%></td><td width=20%><a href="#truncate">truncate</a></td></tr>
+<tr><td width=30%></td><td width=20%></td><td width=30%></td><td width=20%><a href="#floor">floor</a></td></tr>
+<tr><td width=30%><font color="#FF0000">Flow Control</font></td><td width=20%><a href="#if">if</a></td><td width=30%></td><td width=20%><a href="#ceiling">ceiling</a></td></tr>
+<tr><td width=30%></td><td width=20%><a href="#cond">cond</a></td><td width=30%></td><td width=20%><a href="#round">round</a></td></tr>
+<tr><td width=30%></td><td width=20%><a href="#exit">exit</a></td><td width=30%></td><td width=20%><a href="#abs">abs</a></td></tr>
+<tr><td width=30%></td><td width=20%><a href="#sleep">sleep</a></td><td width=30%></td><td width=20%><a href="#min">min</a></td></tr>
+<tr><td width=30%></td><td width=20%></td><td width=30%></td><td width=20%><a href="#max">max</a></td></tr>
+<tr><td width=30%><font color="#FF0000">Debugging</font></td><td width=20%><a href="#write">write</a></td><td width=30%></td><td width=20%><a href="#random">random</a></td></tr>
+<tr><td width=30%></td><td width=20%><a href="#newline">newline</a></td><td width=30%></td><td width=20%></td></tr>
+<tr><td width=30%></td><td width=20%><a href="#writeln">writeln</a></td><td width=30%><font color="#FF0000">Object</font></td><td width=20%><a href="#read-mailbox">read-mailbox</a></td></tr>
+<tr><td width=30%></td><td width=20%></td><td width=30%></td><td width=20%><a href="#write-to-mailbox">write-to-mailbox</a></td></tr>
+<tr><td width=30%><font color="#FF0000">Bitwise Operators</font></td><td width=20%><a href="#&lt;&lt;">&lt;&lt;</a></td><td width=30%></td><td width=20%><a href="#send-message">send-message</a></td></tr>
+<tr><td width=30%></td><td width=20%><a href="#&gt;&gt;">&gt;&gt;</a></td><td width=30%></td><td width=20%><a href="#create-object">create-object</a></td></tr>
+<tr><td width=30%></td><td width=20%><a href="#&amp;">&amp;</a></td><td width=30%></td><td width=20%><a href="#run-to">run-to</a></td></tr>
+<tr><td width=30%></td><td width=20%><a href="#|">|</a></td><td width=30%></td><td width=20%><a href="#self">self</a></td></tr>
+<tr><td width=30%></td><td width=20%><a href="#^">^</a></td><td width=30%></td><td width=20%><a href="#find-class">find-class</a></td></tr>
+<tr><td width=30%></td><td width=20%><a href="#~">~</a></td><td width=30%></td><td width=20%></td></tr>
+</table>
+<p><a href="#Boolean data forms">Boolean data forms</a></p>
+<p><a href="#Script Examples">Script Examples</a></p>
+<blockquote>
+<p><a href="#Rotating Object">Rotating Object</a></p>
+<p><a href="#&quot;Hunter / Seeker&quot;">&quot;Hunter / Seeker&quot;</a></p>
+<p><a href="#Bomber">Bomber</a></p>
+<p>Many more examples to be added...</p>
+</blockquote>
+<p><a href="#Known Bugs and Upcoming Features Updates">Known Bugs and Upcoming Features Updates</a></p>
+<p><a href="#Technical Specifications">Technical Specifications</a></p>
+<hr>
+<h2><a name="Language Description">Language Description</a></h2>
+<p>The runtime scripting language used in World Foundry is based on a small subset of Scheme (which is considered a dialect of LISP).</p>
+<p>Scheme is a fairly simple language to learn, since it is based on a handful of syntactic forms and semantic concepts and since the interactive nature of most
+implementations encourages experimentation.</p>
+<p>Scheme programs are made up of keywords, variables, structured forms, constant data (numbers, characters, strings, quoted vectors, quoted lists, quoted symbols,
+etc.), whitespace, and comments.</p>
+<p>Keywords, variables, and symbols are collectively called identifiers. Identifiers may be formed from the following set of characters:</p>
+<ul>
+<li>the lowercase letters a through z</li>
+<li>the uppercase letters A through Z,</li>
+<li>the digits 0 through 9, and</li>
+<li>the characters ? ! . + - * / &lt; = &gt; : $ % ^ &amp; _ ~.</li>
+</ul>
+<p>Identifiers normally cannot start with any character that may start a number, i.e., a digits, plus sign (+), minus sign (-), or decimal point (.). Exceptions are + and -
+which are valid identifiers. For example, hi, Hello, n, x3, and ?$&amp;*!!! are all identifiers. Identifiers must be delimited by whitespace, parentheses, a string (double)
+quote (&quot;), or the comment character (;). All implementations must recognize as identifiers any sequences of characters that adhere to these rules. Other sequences
+of characters, such as -1234a, that do not represent numbers or other syntactic entities may be recognized as identifiers in some implementations, although it is best
+to avoid such identifiers in code that may need to run in more than one Scheme system.<br>
+[ AI Compiler note: As of 18 Aug 96, only the following character are allowed in identifiers: A-Z, a-z, 0-9, -, and _ ]</p>
+<p>There is no inherent limit on the length of a Scheme identifier; programmers may use as many characters as necessary. Long identifiers are no substitute for
+comments, however, and frequent use of exceedingly long identifiers can make a program difficult to format and consequently difficult to read.</p>
+<p>Identifiers may be written in any mix of uppercase and lowercase letters. The case is not important, in that two identifiers differing only in case are identical. For
+example, abcde, Abcde, AbCdE, and ABCDE all refer to the same identifier. Scheme systems typically print an identifier in either all uppercase or all lowercase
+letters regardless of the way it is entered.</p>
+<p>Structured forms and list constants are enclosed within parentheses, e.g., (a b c) or (* (- x 2) y). The empty list is written ().</p>
+<p>The boolean values representing true and false are written as #t and #f. Scheme conditional expressions actually treat #f as false and all other objects as true.</p>
+<p>Scheme expressions may span several lines, and no explicit terminator is required. Since the number of whitespace characters (spaces and newlines) between
+expressions is not significant, Scheme programs are normally indented to show the structure of the code in a way that is pleasing to the author of the program.
+Comments may appear on any line of a Scheme program, between a semicolon (;) and the end of the line. Comments explaining a particular Scheme expression are
+normally placed at the same indentation level as the expression, on the line before the expression. Comments explaining a procedure or group of procedures are
+normally placed before the procedures, without indentation. Multiple comment characters are often used to set off the latter kind of comment, e.g., ;;; The following
+procedures... .</p>
+<hr>
+<h2><a name="Function summary">Function summary</a></h2>
+<h3><a name="Conditionals">Conditionals</a></h3>
+<h4><a name="if">( if <em>test consequent alternative</em> )</a></h4>
+<h4>( if <em>test consequent</em> )</h4>
+<p>Returns: #t if obj is false, #f otherwise</p>
+<h4><a name="not">( not <em>obj</em> )	Boolean not</a></h4>
+<p>Returns: <strong><tt>#t</tt></strong> if <em>obj</em> is false, <strong><tt>#f</tt></strong> otherwise</p>
+<p><tt>not</tt> is equivalent to <tt>(lambda (x) (if x #f #t))</tt>.</p>
+<table border=1 width=35%>
+<tr><td width=50%><tt>(not #f)</tt></td><td width=50%><tt>#t</tt></td></tr>
+<tr><td width=50%><tt>(not #t)</tt></td><td width=50%><tt>#f</tt></td></tr>
+</table>
+<h4><a name="and">( and <em>obj</em> ... )	Boolean and</a></h4>
+<p>Returns: see explanation</p>
+<p><strong><tt>and</tt></strong> evaluates its subexpressions in sequence from left to right and stops immediately (without evaluating the remaining expressions) if any expression evaluates to
+false. The value of the last expression evaluated is returned.</p>
+<table border=1 width=35%>
+<tr><td width=50%><tt>(and #t #t)</tt></td><td width=50%><tt>#t</tt></td></tr>
+<tr><td width=50%><tt>(and #t #f)</tt></td><td width=50%><tt>#f</tt></td></tr>
+<tr><td width=50%><tt>(and #f #t)</tt></td><td width=50%><tt>#f</tt></td></tr>
+<tr><td width=50%><tt>(and #f #f)</tt></td><td width=50%><tt>#f</tt></td></tr>
+</table>
+<h4><a name="or">( or a b )	Boolean or</a></h4>
+<p>Returns: see explanation</p>
+<p>or evaluates is subexpressions in sequence from left to right and stops immediately (without evaluating the remaining expressions) if any expression evaluates to a
+true value. The value of the last expression evaluated is returned.</p>
+<p>(or #t #t) =&gt; #t<br>
+(or #t #f) =&gt; #t<br>
+(or #f #t) =&gt; #t<br>
+(or #f #f) =&gt; #f</p>
+<h4><a name="cond">( cond <em>clause1 clause2</em> ... )</a></h4>
+<p>Returns: see explanation</p>
+<h3><a name="Function description">Function description</a></h3>
+<p><a name="=">( = a b )	Equal</a><br>
+<a name="!=">( != a b )	Not equal [ Extension ]<br>
+</a><a name="&gt;">( &gt; a b )	Greater than<br>
+</a><a name="&gt;=">( &gt;= a b )	Greater than or equal<br>
+</a><a name="&lt;">( &lt; a b )	Less than<br>
+</a><a name="&lt;=">( &lt;= a b )	Less than or equal</a></p>
+<p>Returns: #t if the relation holds, #f otherwise.</p>
+<p>The predicate = returns #t if its arguments are equal. The predicate &lt; returns #t if its arguments are monotonically increasing, i.e., each argument is greater than the
+preceding ones, while &gt; returns #t if its arguments are monotonically decreasing. The predicate &lt;= returns #t if its arguments are monotonically nondecreasing, i.e.,
+each argument is not less than the preceding ones, while &gt;= returns #t if its arguments are monotonically nonincreasing.</p>
+<table border=1 width=65%>
+<tr><td width=50%><tt>(= 7 7)</tt></td><td width=50%>#t</td></tr>
+<tr><td width=50%><tt>(= 7 9)</tt></td><td width=50%>#f</td></tr>
+<tr><td width=50%><tt>(&lt;= 1 2 3 3 4 5)</tt></td><td width=50%>#t</td></tr>
+<tr><td width=50%><tt>(&lt;= 1 2 3 4 5)</tt></td><td width=50%>#t</td></tr>
+<tr><td width=50%><tt>(&gt; 1 2 2 3 3 4)</tt></td><td width=50%>#f</td></tr>
+<tr><td width=50%><tt>(&gt;= 1 2 2 3 3 4)</tt></td><td width=50%>#f</td></tr>
+<tr><td width=50%><tt>(= (/ -1 2) -0.5)</tt></td><td width=50%>#t</td></tr>
+<tr><td width=50%><tt>(= (/ 2 3) 0.667)</tt></td><td width=50%>#f</td></tr>
+</table>
+<p><strong><tt>!=</tt></strong> is not in and can be defined as <tt>(lambda (x y) (not (= x y)))</tt></p>
+<h4><a name="+">( + <em>num</em> ... )	Addition</a></h4>
+<p>Returns: the sum of the arguments <em>num</em> ...</p>
+<p>When called with no arguments, + returns 0.</p>
+<p><tt>(+) =&gt; 0	[ Not implemented ]<br>
+(+ 1 2) =&gt; 3<br>
+(+ 3 4 5) =&gt; 12 [ Not implemented ]<br>
+(+ 3.0 4) =&gt; 7.0</tt></p>
+<h4><a name="-">( - <em>num</em><sub><em>1</em></sub> )	Negation<br>
+</a>( - <em>num</em><sub><em>1</em></sub><em> num</em><sub><em>2</em></sub><em> num</em><sub><em>3</em></sub> ... )	Subtraction</h4>
+<p>Returns: see explanation</p>
+<p>When called with one argument, - returns the negative of num<sub>1</sub>. Thus, (- num<sub>1</sub>) is an idiom for (- 0 num<sub>1</sub>).</p>
+<table border=1 width=65%>
+<tr><td width=50%>(- 3)</td><td width=50%>-3 [ Not implemented -- use (- 0 3) in the meantime
+]</td></tr>
+<tr><td width=50%>(- 4 3.0)</td><td width=50%>1.0</td></tr>
+<tr><td width=50%>(- 4 3 2 1)</td><td width=50%>-2 [ Not implemented ]</td></tr>
+</table>
+<h4><a name="*">( * <em>num</em> ... )	Multiplication</a></h4>
+<p>Returns: the product of the arguments <em>num</em> ...</p>
+<p>When called with no arguments, * returns 1.</p>
+<table border=1 width=65%>
+<tr><td width=50%>(*)</td><td width=50%>1 [ Not implemented ]</td></tr>
+<tr><td width=50%>(* 3.4)</td><td width=50%>3.4 [ Not implemented ]</td></tr>
+<tr><td width=50%>(* 3 4 5.5)</td><td width=50%>66.0</td></tr>
+</table>
+<h4><a name="/">( / <em>num</em><sub><em>1</em></sub> )	Reciprocal<br>
+</a>( / <em>num</em><sub><em>1</em></sub><em> num</em><sub><em>2</em></sub><em> num</em><sub><em>3</em></sub> ... )	Division</h4>
+<p>Returns: see explanation</p>
+<p>When called with one argument, <strong><tt>/</tt></strong> returns the reciprocal of <em>num</em><sub><em>1</em></sub>. That is, <tt>(/ </tt><em><tt>num</tt></em><sub><em><tt>1</tt></em></sub><tt>)</tt> is an idiom for <tt>(/ 1 </tt><em><tt>num</tt></em><sub><em><tt>1</tt></em></sub><tt>)</tt>.</p>
+<p>When called with two or more arguments, <strong><tt>/</tt></strong> returns the result of dividend <em>num</em><sub><em>1</em></sub> by the product of the remaining arguments <em>num</em><sub><em>2</em></sub> ...</p>
+<p>The ANSI/IEEE standard includes only one- and two-argument variants. The more general form is included in the Revised<sup>4</sup> Report.</p>
+<table border=1 width=65%>
+<tr><td width=50%><tt>(/ -17)</tt></td><td colspan=2 width=50%><tt>-0.0588235294	[ Not implemented -- use
+(/ 1 -17) ]</tt></td></tr>
+<tr><td width=50%><tt>(/ 0.5)</tt></td><td colspan=2 width=50%><tt>2.0	[ Not implemented -- use (/ 1 0.5)
+]</tt></td></tr>
+<tr><td width=50%><tt>(/ 3.0 4)</tt></td><td colspan=2 width=50%><tt>0.75</tt></td></tr>
+<tr><td width=50%><tt>(/ 60 5 4 3 2)</tt></td><td colspan=2 width=50%><tt>0.5</tt></td></tr>
+</table>
+<h4><a name="zero?">( zero? <em>num</em> )</a></h4>
+<p>Returns: #t if <em>num</em> is zero, #f otherwise.</p>
+<p><strong><tt>zero?</tt></strong> is equivalent to <tt>(lambda (x) (= x 0))</tt>.</p>
+<table border=1 width=60%>
+<tr><td width=50%><tt>(zero? 0)</tt></td><td width=50%><tt>#t</tt></td></tr>
+<tr><td width=50%><tt>(zero? 1)</tt></td><td width=50%><tt>#f</tt></td></tr>
+<tr><td width=50%><tt>(zero? (- 3.0 3.0))</tt></td><td width=50%><tt>#t</tt></td></tr>
+<tr><td width=50%><tt>(zero? (+ (/ 1 2) (/ 1 2)))</tt></td><td width=50%><tt>#f</tt></td></tr>
+</table>
+<h4><a name="positive?">( positive? <em>real</em> )</a></h4>
+<p>Returns: to #t if <em>real</em> is greater than zero, #f otherwise.</p>
+<p><strong><tt>positive?</tt></strong> is equivalent to <tt>(lambda (x) (&gt; x 0))</tt>.</p>
+<table border=1 width=65%>
+<tr><td width=50%><tt>(positive? 128)</tt></td><td width=50%><tt>#t</tt></td></tr>
+<tr><td width=50%><tt>(positive? 0.0)</tt></td><td width=50%><tt>#f</tt></td></tr>
+<tr><td width=50%><tt>(positive? (/ -2 3))</tt></td><td width=50%><tt>#f</tt></td></tr>
+</table>
+<h4><a name="negative?">( negative? <em>real</em> )</a></h4>
+<p>Returns: to #t if <em>real</em> is less than zero, #f otherwise.</p>
+<p><strong><tt>negative?</tt></strong> is equivalent to <tt>(lambda (x) (&lt; x 0))</tt>.</p>
+<table border=1 width=65%>
+<tr><td width=50%><tt>(negative? -65)</tt></td><td width=50%><tt>#t</tt></td></tr>
+<tr><td width=50%><tt>(negative? 0)</tt></td><td width=50%><tt>#f</tt></td></tr>
+<tr><td width=50%><tt>(negative? -0.0121)</tt></td><td width=50%><tt>#t</tt></td></tr>
+<tr><td width=50%><tt>(negative? (/ 15 16))</tt></td><td width=50%><tt>#f</tt></td></tr>
+</table>
+<h4><a name="quotient">( quotient <em>int</em><sub><em>1</em></sub><em> int</em><sub><em>2</em></sub> )</a></h4>
+<p>Returns: the integer quotient of <em>int</em><sub><em>1</em></sub> and <em>int2</em></p>
+<table border=1 width=65%>
+<tr><td width=50%><tt>(quotient 45 6)</tt></td><td width=50%>7</td></tr>
+<tr><td width=50%><tt>(quotient 6.0 2.0)</tt></td><td width=50%>3.0</td></tr>
+<tr><td width=50%><tt>(quotient 3.0 -2)</tt></td><td width=50%>-1.0</td></tr>
+</table>
+<h4><a name="remainder">( remainder <em>int</em><sub><em>1</em></sub> int2 )</a></h4>
+<p>Returns: the integer remainder of <em>int</em><sub><em>1</em></sub> and <em>int</em><sub><em>2</em></sub></p>
+<p>The result of remainder has the same sign as <em>int</em><sub><em>1</em></sub>.</p>
+<table border=1 width=65%>
+<tr><td width=50%><tt>(remainder 16 4)</tt></td><td width=50%><tt>0</tt></td></tr>
+<tr><td width=50%><tt>(remainder 5 2)</tt></td><td width=50%><tt>1</tt></td></tr>
+<tr><td width=50%><tt>(remainder -45.0 7)</tt></td><td width=50%><tt>-3.0</tt></td></tr>
+<tr><td width=50%><tt>(remainder 10.0 -3.0)</tt></td><td width=50%><tt>1.0</tt></td></tr>
+<tr><td width=50%><tt>(remainder -17 -9)</tt></td><td width=50%><tt>-8</tt></td></tr>
+</table>
+<h4><a name="truncate">( truncate <em>real</em> )</a></h4>
+<p>Returns: the integer closes to <em>real</em> toward zero.</p>
+<table border=1 width=65%>
+<tr><td width=50%><tt>(truncate 19)</tt></td><td width=50%><tt>19</tt></td></tr>
+<tr><td width=50%><tt>(truncate (/ 2 3))</tt></td><td width=50%><tt>0</tt></td></tr>
+<tr><td width=50%><tt>(truncate (/ -2 3)) </tt></td><td width=50%><tt>0</tt></td></tr>
+<tr><td width=50%><tt>(truncate 17.3)</tt></td><td width=50%><tt>17.0</tt></td></tr>
+<tr><td width=50%><tt>(truncate 17.3)</tt></td><td width=50%><tt>-9</tt></td></tr>
+</table>
+<h4><a name="floor">( floor <em>real</em> )</a></h4>
+<p>Returns: the integer closes to <em>real</em> toward -infinity.</p>
+<table border=1 width=65%>
+<tr><td width=50%><tt>(floor 19)</tt></td><td width=50%><tt>19</tt></td></tr>
+<tr><td width=50%><tt>(floor (/ 2 3))</tt></td><td width=50%><tt>0</tt></td></tr>
+<tr><td width=50%><tt>(floor (/ -2 3))</tt></td><td width=50%><tt>-1</tt></td></tr>
+<tr><td width=50%><tt>(floor 17.3)</tt></td><td width=50%><tt>17.0</tt></td></tr>
+<tr><td width=50%><tt>(floor (/ -17 2))</tt></td><td width=50%><tt>-9</tt></td></tr>
+</table>
+<h4><a name="ceiling">( ceiling <em>real</em> )</a></h4>
+<p>Returns: the integer closes to <em>real</em> toward +infinity.</p>
+<table border=1 width=65%>
+<tr><td width=50%><tt>(ceiling 19)</tt></td><td width=50%><tt>19</tt></td></tr>
+<tr><td width=50%><tt>(ceiling (/ 2 3))</tt></td><td width=50%><tt>1</tt></td></tr>
+<tr><td width=50%><tt>(ceiling (/ -2 3))</tt></td><td width=50%><tt>0</tt></td></tr>
+<tr><td width=50%><tt>(ceiling 17.3)</tt></td><td width=50%><tt>18.0</tt></td></tr>
+<tr><td width=50%><tt>(ceiling (/ -17 2))</tt></td><td width=50%><tt>-8</tt></td></tr>
+</table>
+<h4><a name="round">( round <em>real</em> )</a></h4>
+<p>Returns: the integer closes to <em>real</em>.</p>
+<table border=1 width=65%>
+<tr><td width=50%><tt>(round 19)</tt></td><td width=50%><tt>19</tt></td></tr>
+<tr><td width=50%><tt>(round (/ 2 3))</tt></td><td width=50%><tt>1</tt></td></tr>
+<tr><td width=50%><tt>(round (/ -2 3))</tt></td><td width=50%><tt>-1</tt></td></tr>
+<tr><td width=50%><tt>(round 17.3)</tt></td><td width=50%><tt>17.0</tt></td></tr>
+<tr><td width=50%><tt>(round (/ -17 2))</tt></td><td width=50%><tt>-8</tt></td></tr>
+<tr><td width=50%><tt>(round 2.5)</tt></td><td width=50%><tt>2.0</tt></td></tr>
+<tr><td width=50%><tt>(round 3.5)</tt></td><td width=50%><tt>4.0</tt></td></tr>
+</table>
+<h4><a name="abs">( abs <em>real</em> )</a></h4>
+<p>Returns: the absolute value of <em>real</em></p>
+<p>Equivalent to: (lambda (x) (if (&lt; x 0) (- x) x))</p>
+<table border=1 width=65%>
+<tr><td width=50%><tt>(abs 1)</tt></td><td width=50%><tt>1</tt></td></tr>
+<tr><td width=50%><tt>(abs (/ -3 4))</tt></td><td width=50%><tt>0.75</tt></td></tr>
+<tr><td width=50%><tt>(abs 1.83)</tt></td><td width=50%><tt>1.83</tt></td></tr>
+<tr><td width=50%><tt>(abs -0.093)</tt></td><td width=50%><tt>0.093</tt></td></tr>
+</table>
+<h4><a name="max">( max <em>real</em><sub><em>1</em></sub> </a><a name="min"><em>real</em><sub><em>2</em></sub></a><a name="max"> )</a></h4>
+<p>Returns: the maximum of <em>real</em><sub><em>1</em></sub> real2</p>
+<table border=1 width=65%>
+<tr><td width=50%><tt>(max 4 -7 2 0 -6)</tt></td><td width=50%><tt>4</tt></td></tr>
+<tr><td width=50%><tt>(max 1.5 1.3 -0.3 0.4 2.0 1.8)</tt></td><td width=50%><tt>2.0</tt></td></tr>
+<tr><td width=50%><tt>(max 5 2.0)</tt></td><td width=50%><tt>5.0</tt></td></tr>
+<tr><td width=50%><tt>(max -5 -2.0)</tt></td><td width=50%><tt>-2.0</tt></td></tr>
+</table>
+<h4><a name="min">( min <em>real</em><sub><em>1</em></sub> <em>real</em><sub><em>2</em></sub> )</a></h4>
+<p>Returns: the minimum of <em>real</em><sub><em>1</em></sub> <em>real</em><sub><em>2</em></sub></p>
+<table border=1 width=65%>
+<tr><td width=50%><tt>(min 4 -7 2 0 -6)</tt></td><td width=50%><tt>-7</tt></td></tr>
+<tr><td width=50%><tt>(min 1.5 1.3 -0.3 0.4 2.0 1.8)</tt></td><td width=50%><tt>-0.3</tt></td></tr>
+<tr><td width=50%><tt>(min 5 2.0)</tt></td><td width=50%><tt>2.0</tt></td></tr>
+<tr><td width=50%><tt>(min -5 -2.0)</tt></td><td width=50%><tt>-5.0</tt></td></tr>
+</table>
+<h4><a name="&lt;&lt;">( &lt;&lt; <em>int</em><sub><em>1</em></sub> <em>int</em><sub><em>2</em></sub> )	Left shift</a></h4>
+<p>Returns: <em>int</em><sub><em>1</em></sub> shifted left <em>int</em><sub><em>2</em></sub> times. If <em>int</em><sub><em>2</em></sub> is negative, this is the same as ( &gt;&gt; <em>int</em><sub><em>1</em></sub> -<em>int</em><sub><em>2</em></sub> )</p>
+<table border=1 width=65%>
+<tr><td width=50%><tt>(&lt;&lt; 1 0)</tt></td><td width=50%><tt>1</tt></td></tr>
+<tr><td width=50%><tt>(&lt;&lt; 1 1)</tt></td><td width=50%><tt>2</tt></td></tr>
+<tr><td width=50%><tt>(&lt;&lt; 1 2)</tt></td><td width=50%><tt>4</tt></td></tr>
+<tr><td width=50%><tt>(&lt;&lt; 1 7)</tt></td><td width=50%><tt>128</tt></td></tr>
+<tr><td><tt>(&lt;&lt; 3 3)</tt></td><td><tt>24</tt></td></tr>
+<tr><td><tt>(&lt;&lt; 128 -7)</tt></td><td><tt>1</tt></td></tr>
+</table>
+<h4><a name="&gt;&gt;">( &gt;&gt; <em>int</em><sub><em>1</em></sub> <em>int</em><sub><em>2</em></sub> )	Right shift</a></h4>
+<p>Returns: <em>int</em><sub><em>1</em></sub> shifted right <em>int</em><sub><em>2</em></sub> times. If <em>int</em><sub><em>2</em></sub> is negative, this is the same as ( &lt;&lt; <em>int</em><sub><em>1</em></sub> -<em>int</em><sub><em>2</em></sub> )</p>
+<table border=1 width=65%>
+<tr><td width=50%><tt>(&gt;&gt; 1 1)</tt></td><td width=50%><tt>1</tt></td></tr>
+<tr><td width=50%><tt>(&gt;&gt; 2 1)</tt></td><td width=50%><tt>1</tt></td></tr>
+<tr><td width=50%><tt>(&gt;&gt; 4 2)</tt></td><td width=50%><tt>1</tt></td></tr>
+<tr><td width=50%><tt>(&gt;&gt; 128 7)</tt></td><td width=50%><tt>1</tt></td></tr>
+<tr><td><tt>(&gt;&gt; 709 5)</tt></td><td><tt>22</tt></td></tr>
+<tr><td><tt>(&gt;&gt; 1 -7)</tt></td><td><tt>128</tt></td></tr>
+</table>
+<h4><a name="&amp;">( &amp; <em>int</em><sub><em>1</em></sub> <em>int</em><sub><em>2</em></sub> )	Bitwise and</a></h4>
+<p>Returns: </p>
+<h4><a name="|">( | <em>int</em><sub><em>1</em></sub> <em>int</em><sub><em>2</em></sub> )	Bitwise or</a></h4>
+<p>Returns: </p>
+<h4><a name="^">( ^ <em>int</em><sub><em>1</em></sub> <em>int</em><sub><em>2</em></sub> )	Bitwise exclusive-or</a></h4>
+<p>Returns: </p>
+<h4><a name="~">( ~ <em>int</em> )	Bitwise not</a></h4>
+<p>Returns: </p>
+<h4><a name="random">( random <em>int</em> )</a></h4>
+<p>Returns: a whole number greater than or equal to 0 and less than <em>int</em></p>
+<h4><a name="read-mailbox">( read-mailbox </a><a name="write-to-mailbox"><em>int</em><sub><em>1</em></sub> </a><a name="^"><em>int</em><sub><em>2</em></sub></a><a name="read-mailbox"> )</a></h4>
+<p>Returns: </p>
+<h4><a name="write-to-mailbox">( write-to-mailbox <em>int</em><sub><em>1</em></sub> </a><a name="^"><em>int</em><sub><em>2</em></sub></a><a name="write-to-mailbox"> </a><a name="^"><em>int</em><sub><em>3</em></sub></a> <a name="write-to-mailbox">)<br>
+( write-mailbox <em>int</em><sub><em>1</em></sub> </a><a name="^"><em>int</em><sub><em>2</em></sub></a><a name="write-to-mailbox"> </a><a name="^"><em>int</em><sub><em>3</em></sub></a> <a name="write-to-mailbox">)</a></h4>
+<p>Returns: </p>
+<h4><a name="send-message">( send-message <em>int</em><sub><em>1</em></sub> </a><a name="^"><em>int</em><sub><em>2</em></sub></a><a name="send-message"> </a><a name="^"><em>int</em><sub><em>3</em></sub></a><a name="send-message"> )</a></h4>
+<p>Returns: </p>
+<h4>( <a name="sin">sin</a> <a name="max"><em>real</em></a><a name="send-message"> )</a></h4>
+<p>Returns: the sine of <em>real </em>(in revolutions)</p>
+<h4>( <a name="cos">cos</a> <a name="max"><em>real</em></a><a name="send-message"> )</a></h4>
+<p>Returns: the cosine of <em>real </em>(in revolutions)</p>
+<h4>( <a name="asin">asin</a> <a name="max"><em>real</em></a><a name="send-message"> )</a></h4>
+<p>Returns: the arc sine of <em>real </em>(in revolutions)</p>
+<h4>( <a name="acos">acos</a> <a name="max"><em>real</em></a><a name="send-message"> )</a></h4>
+<p>Returns: the arc cosine of <em>real </em>(in revolutions)</p>
+<h4>( <a name="atan2">atan2</a> <a name="max"><em>real</em><sub><em>1</em></sub></a><sub><em> </em></sub><a name="min"><em>real</em><sub><em>2</em></sub></a> <a name="send-message">)</a></h4>
+<p>Returns: </p>
+<h4>( <a name="atan2quick">atan2quick</a> <a name="max"><em>real</em><sub><em>1</em></sub></a><sub><em> </em></sub><a name="min"><em>real</em><sub><em>2</em></sub></a><sub><em> </em></sub><a name="send-message">)</a></h4>
+<p>Returns: </p>
+<h4>( <a name="euler-to-vector">euler-to-vector</a> <a name="max"><em>real</em><sub><em>1</em></sub></a><sub><em> </em></sub><a name="min"><em>real</em><sub><em>2</em></sub></a> <a name="send-message">)</a></h4>
+<p>Returns: </p>
+<h4>( <a name="vector-to-euler">vector-to-euler</a> <a name="max"><em>real</em><sub><em>1</em></sub></a><sub><em> </em></sub><a name="send-message">)</a></h4>
+<p>Returns: </p>
+<h4><a name="exit">( exit )</a></h4>
+<p>Terminates the script.</p>
+<p>Returns: Undefined (doesn't return)</p>
+<p>Note: Untested</p>
+<h4><a name="sleep">( sleep )</a></h4>
+<p>&nbsp;</p>
+<p>Returns: Undefined</p>
+<h4><a name="write">( write <em>real</em> )<br>
+( write <em>string</em> )</a></h4>
+<p>Writes <em>real </em>or <em>string </em>to the Scheme Script stream. See other documentation on how to redirect the stream.</p>
+<p>Returns: Undefined</p>
+<h4><a name="newline">( newline )</a></h4>
+<p>Writes a newline (carriage return) to the Scheme Script stream. See other documentation on how to redirect the stream.</p>
+<p>Returns: Undefined </p>
+<h4><a name="writeln">( writeln <em>real</em> )<br>
+( writeln <em>string</em> )</a></h4>
+<p>Writes <em>real </em>or <em>string </em>to the Scheme Script stream followed by a newline (carriage return). See other documentation on how to redirect the stream.</p>
+<p>Returns: Undefined </p>
+<h4><a name="int">( int <em>real</em> )</a></h4>
+<p>Returns: <em>real </em>converted to a format which can be passed to functions which take integer arguments</p>
+<h4><a name="fixed">( fixed <em>int </em>)</a></h4>
+<p>Returns: <em>int </em>converted to a format which can be passed to functions which take real arguments</p>
+<h4><a name="create-object">( create-object )</a></h4>
+<p>Returns: </p>
+<h4><a name="run-to">( run-to  )</a></h4>
+<p>Object runs to specified location</p>
+<p>Returns: Undefined</p>
+<h4><a name="self">( self )</a></h4>
+<p>Returns: the object ID of the object running the script.</p>
+<h4><a name="find-class">( find-class )</a></h4>
+<p>Returns: </p>
+<hr>
+<h2><a name="Boolean data forms">Boolean data forms</a></h2>
+<table border=1 width=20%>
+<tr><td width=50%><tt>#t</tt></td><td width=50%>1</td></tr>
+<tr><td width=50%><tt>#f</tt></td><td width=50%>0</td></tr>
+</table>
+<hr>
+<h2><a name="Script Examples">Script Examples</a></h2>
+<h3><a name="Rotating Object">Rotating Object</a></h3>
+<p>I have used this script to add a little &quot;spice&quot; to some ordinary objects. For example, rotating piece of gold or the player's shield:</p>
+<blockquote>
+<p><tt>(<br>
+include &quot;..\mailbox.def&quot;<br>
+include &quot;..\user.def&quot;<br>
+include &quot;..\joystick.def&quot;<br>
+<br>
+( write-mailbox self ROTATION_C<br>
+( read-mailbox Velocity ROTATION_C )<br>
+)</tt></p>
+</blockquote>
+<h3><a name="&quot;Hunter / Seeker&quot;">&quot;Hunter / Seeker&quot;</a></h3>
+<blockquote>
+<p><tt>include &quot;../mailbox.def&quot;<br>
+<br>
+( define delta-x 2000 )<br>
+( define delta-y 2001 )<br>
+( define delta-z 2002 )<br>
+( define roll 2003 )<br>
+( define phi 2004 )<br>
+( define theta 2005 )<br>
+( define speed 2006 )<br>
+( define time-to-reorient 2007 )<br>
+( define delta-roll 2008 )<br>
+( define delta-phi 2009 )<br>
+( define delta-theta 2010 )<br>
+( define time-to-pause 2011 )<br>
+<br>
+( if ( = ( read-mailbox self time-to-reorient ) 0.0 )<br>
+( or<br>
+( write-to-mailbox self time-to-reorient ( read-mailbox self TIME ) )<br>
+( write-to-mailbox self time-to-pause<br>
+( + ( read-mailbox self time-to-reorient ) PAUSE_TIME ) )<br>
+)<br>
+0<br>
+)<br>
+<br>
+( if ( &gt;= ( read-mailbox self TIME ) ( read-mailbox self time-to-reorient ) )<br>
+; rotate to target, but first pause for predefined amount of time (PAUSE_TIME)<br>
+( if ( &lt; ( read-mailbox self TIME ) ( read-mailbox self time-to-pause ) )<br>
+( euler-to-vector<br>
+( read-mailbox self ROTATION_A ) ( read-mailbox self ROTATION_B ) ( read-mailbox self ROTATION_C )<br>
+0.0 self XSPEED<br>
+)<br>
+; ( or<br>
+; ( if ( &lt; ( read-mailbox self TIME ) ( read-mailbox self time-to-pause ) )<br>
+; ( exit )<br>
+; 0<br>
+; )<br>
+( or<br>
+; delta x<br>
+( write-to-mailbox self delta-x<br>
+( - ( read-mailbox target X_POS ) ( read-mailbox self X_POS ) )<br>
+)<br>
+( or<br>
+; delta y<br>
+( write-to-mailbox self delta-y<br>
+( - ( read-mailbox target Y_POS ) ( read-mailbox self Y_POS ) )<br>
+)<br>
+( or<br>
+; delta z<br>
+( write-to-mailbox self delta-z<br>
+( - ( read-mailbox target Z_POS ) ( read-mailbox self Z_POS ) )<br>
+)<br>
+( or<br>
+; calculate eulers and write to local storage roll,phi,theta<br>
+( vector-to-euler<br>
+( read-mailbox self delta-x ) ( read-mailbox self delta-y ) ( read-mailbox self delta-z )<br>
+self roll<br>
+)<br>
+<br>
+( or<br>
+( write-to-mailbox self delta-phi ( - ( read-mailbox self phi ) ( read-mailbox self ROTATION_B ) ) )<br>
+( or<br>
+( write-to-mailbox self delta-phi ( min ( max ( read-mailbox self delta-phi ) MAX_NEG_ROTATION )
+MAX_POS_ROTATION ) )<br>
+( or<br>
+( write-to-mailbox self phi ( + ( read-mailbox self ROTATION_B ) ( read-mailbox self delta-phi ) ) )<br>
+( or<br>
+( write-to-mailbox self ROTATION_B ( read-mailbox self phi ) )<br>
+<br>
+( or<br>
+( write-to-mailbox self delta-theta ( - ( read-mailbox self theta ) ( read-mailbox self ROTATION_C ) ) )<br>
+( or<br>
+( write-to-mailbox self delta-theta ( min ( max ( read-mailbox self delta-theta ) MAX_NEG_ROTATION )
+MAX_POS_ROTATION ) )<br>
+( or<br>
+( write-to-mailbox self theta ( + ( read-mailbox self ROTATION_C ) ( read-mailbox self delta-theta ) ) )<br>
+( or<br>
+( write-to-mailbox self ROTATION_C ( read-mailbox self theta ) )<br>
+<br>
+( or<br>
+; calculate velocity and write to LinVelocity mailboxes<br>
+( euler-to-vector<br>
+( read-mailbox self roll ) ( read-mailbox self phi ) ( read-mailbox self theta )<br>
+( read-mailbox self speed )<br>
+self XSPEED<br>
+)<br>
+<br>
+( if ( and<br>
+( &lt; ( abs ( read-mailbox self delta-phi ) ) MAX_POS_ROTATION )<br>
+( &lt; ( abs ( read-mailbox self delta-theta ) ) MAX_POS_ROTATION )<br>
+)<br>
+( or<br>
+( write-to-mailbox self time-to-reorient ( + ( read-mailbox self TIME ) CRUISE_TIME ) )<br>
+( write-to-mailbox self time-to-pause ( + ( read-mailbox self time-to-reorient ) PAUSE_TIME ) )<br>
+)<br>
+0<br>
+)<br>
+<br>
+))))))))))))) ; end of all the ors<br>
+) ; end of if ( time-to-pause )<br>
+<br>
+; keep on truckin'<br>
+( euler-to-vector<br>
+( read-mailbox self roll ) ( read-mailbox self phi ) ( read-mailbox self theta )<br>
+SPEED<br>
+self XSPEED<br>
+)<br>
+)<br>
+</tt></p>
+</blockquote>
+<h3><a name="Bomber">Bomber</a></h3>
+<blockquote>
+<p><tt>include &quot;../mailbox.def&quot;<br>
+include &quot;../joystick.def&quot;<br>
+<br>
+( define delta-x 2000 )<br>
+( define delta-y 2001 )<br>
+( define delta-z 2002 )<br>
+( define roll 2003 )<br>
+( define phi 2004 )<br>
+( define theta 2005 )<br>
+( define speed 2006 )<br>
+( define time-to-fire 2007 )<br>
+<br>
+<br>
+; Fire the grenade every &quot;Shoot_Time&quot; period<br>
+;<br>
+( if ( &gt; ( read-mailbox self TIME ) ( read-mailbox self time-to-fire ) )<br>
+( or<br>
+( write-mailbox self INPUT ( int JOYSTICK_BUTTON_A ) ) ; fire grenade<br>
+( write-to-mailbox self time-to-fire ( + ( read-mailbox self TIME ) SHOOT_TIME ) )<br>
+)<br>
+0<br>
+)<br>
+<br>
+; Calculate Delta x,y,z from Turret to TARGET<br>
+;<br>
+; delta x<br>
+( write-to-mailbox self delta-x<br>
+( - ( read-mailbox TARGET X_POS ) ( read-mailbox self X_POS ) )<br>
+)<br>
+; delta y<br>
+( write-to-mailbox self delta-y<br>
+( - ( read-mailbox TARGET Y_POS ) ( read-mailbox self Y_POS ) )<br>
+)<br>
+; don't need delta z, as cloud always stays at same height<br>
+; ( write-to-mailbox self delta-z<br>
+; ( - ( read-mailbox TARGET Z_POS ) ( read-mailbox self Z_POS ) )<br>
+; )<br>
+<br>
+; calculate eulers and write to local storage roll,phi,theta<br>
+( vector-to-euler ( read-mailbox self delta-x ) ( read-mailbox self delta-y ) 0.0 self roll )<br>
+<br>
+; calculate velocity and write to LinVelocity mailboxes so logical and physical facings match<br>
+( euler-to-vector<br>
+( read-mailbox self roll ) ( read-mailbox self phi ) ( read-mailbox self theta )<br>
+SPEED self XSPEED<br>
+)</tt></p>
+</blockquote>
+<hr>
+<h2><a name="Known Bugs and Upcoming Features Updates">Known Bugs and Upcoming Features Updates</a></h2>
+<ul>
+<li>Subroutine definitions need to be added</li>
+</ul>
+<blockquote>
+<p><tt>( define function-name<br>
+( lambda X<br>
+( X )<br>
+)<br>
+)</tt></p>
+</blockquote>
+<ul>
+<li>beginp</li>
+</ul>
+<blockquote>
+<p>The World Foundry Scheme system doesn't currently have the ability to begin a block structure consisting of more than one statement. For
+example, say you wanted to write to two mailboxes when something happened.</p>
+<p>In actual Scheme, you would write something like this:</p>
+<p><tt>( if ( read-mailbox self TIME_TO_LEAP )<br>
+( begin<br>
+( write-mailbox self )<br>
+( write-mailbox self )<br>
+)<br>
+'()<br>
+)</tt></p>
+<p>Until World Foundry Scheme gets block structures, you'll have to fake it using the or operator:</p>
+<p><tt>( if ( read-mailbox self TIME_TO_LEAP )<br>
+( or<br>
+( write-mailbox self )<br>
+( write-mailbox self )<br>
+)<br>
+'()<br>
+)</tt></p>
+<p>This can be repeated for more than two things, but it become tedious:</p>
+<p><tt>( if ( read-mailbox self TIME_TO_LEAP )<br>
+( or<br>
+( write-mailbox self )<br>
+( or<br>
+( write-mailbox self )<br>
+( write-mailbox self )<br>
+))<br>
+'()<br>
+)</tt></p>
+</blockquote>
+<ul>
+<li>if<br>
+<br>
+There is currently a problem nesting if's. They control flow fails if the number of ifs if more than two deep. This bug is being worked on.<br>
+</li>
+<li>To Be Implemented: cond / else<br>
+</li>
+<li>To Be Implemented: Actual lists</li>
+</ul>
+<hr>
+<h2><a name="Technical Specifications">Technical Specifications</a></h2>
+<p>The only internal representation for data types (real numbers, integral numbers, booleans) in the runtime scripting language is fixed point with 16 significant bits for
+the whole portion (including a sign bit) and 14 signification bits for the fractional portion. Therefore, the range of numbers which can be stored is -32768.0 to
+32766.999985.</p>
+<p>Functions which take an integer as a parameter are automatically converted from a real number to an integer by applying the equivalent of the truncate function.</p>
+<p>#f is stored internally as 0, #t is stored internally as 1.</p>
+</body>
+
+</html>

@@ -1,0 +1,95 @@
+//============================================================================
+// oad.hp:
+// By Kevin T. Seghetti
+// Copyright (c) 1995-1999, World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+//==============================================================================
+
+// use only once insurance
+#ifndef _oAD_HP
+#define _oAD_HP
+
+//============================================================================
+
+#include <cpplib/stdstrm.hp>
+//#include <pclib/boolean.hp>
+//#include <brender.h>
+
+#include <vector>
+#include <string>
+using namespace std;
+
+//#include "pigtool.h"
+#include "asset.hp"
+#pragma pack(1)
+extern "C" {
+#include <oas/oad.h>			// from the velocity project
+};
+#pragma pack()
+
+class QLevel;
+
+//============================================================================
+
+class QObjectAttributeDataEntry
+{
+public:
+	QObjectAttributeDataEntry() { strcpy(entry.string,"Uninitialized"); }
+	bool Load(istream& input, ostream& error);
+	bool LoadStruct(istream& input, ostream& error);
+	size_t SizeOfOnDisk(void);									// returns size in bytes of on-disk representation
+
+	const _typeDescriptor& Get(void) const { return (entry); }
+
+	friend ostream& operator<<(ostream& s, const QObjectAttributeDataEntry &oad);
+private:
+	_typeDescriptor entry;
+};
+
+//============================================================================
+
+class QObjectAttributeData
+{
+public:
+	QObjectAttributeData(char* commonBlock = 0, int32 commonBlockLength = 0) : entries(40) { }
+
+	bool Load(istream& input, ostream& error);
+	bool LoadEntries(istream& input, ostream& error);		// load from a stream which has no header
+	bool LoadStruct(istream& input, ostream& error,char* commonBlockAddr,int32 commonBlockSize);		// load from the binary oad produced for the game
+	size_t SizeOfOnDisk(void);									// returns size in bytes of on-disk representation
+
+	void Apply(const QObjectAttributeData& overRide);			// override current oad with fields from new oad
+
+	bool	ContainsButtonType(buttonType type);
+	int32 GetOADFlags(void);
+
+	const QObjectAttributeDataEntry* GetEntryByName(const char* name);
+
+	friend ostream& operator<<(ostream& s, const QObjectAttributeData &oad);
+
+	// this data is public, since this isn't really a class, it just has some header information to this list
+	vector<QObjectAttributeDataEntry> entries;
+
+private:
+	void SetFixed32(const string name,int32 value,ostream& error);
+	_oadHeader header;
+};
+
+//============================================================================
+#endif
+//============================================================================

@@ -1,0 +1,295 @@
+//==============================================================================
+// bitmap.hp:
+// Copyright (c) 1995-1999, World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+//==============================================================================
+
+#ifndef BITMAP_HP
+#define BITMAP_HP
+
+#include "global.hp"
+
+#if defined(__WIN__)
+#include <istream>
+#endif
+#include <iostream>
+#include <fstream>
+#include "types.h"
+
+using namespace std;
+
+class AllocationMap;
+
+typedef struct
+{
+	char r, g, b, Reserved;
+} RGBQUAD;
+
+// TODO: make template function
+inline void
+SWAP( RGBQUAD& n1, RGBQUAD& n2 )
+{
+	RGBQUAD _ = n1;
+	n1 = n2;
+	n2 = _;
+}
+
+class ColourCycle
+{
+public:
+	ColourCycle();
+	ColourCycle( int start, int end, float speed );
+	~ColourCycle();
+	bool operator==( const ColourCycle& cc ) const;
+	bool operator!=( const ColourCycle& cc ) const;
+
+//protected:
+	int _start;
+	int _end;
+	float _speed;
+};
+
+
+class Bitmap
+{
+public:
+	Bitmap();
+	Bitmap( const int width, const int height, const uint16 bgColor=0 );
+	Bitmap( const Bitmap& );			// create bitmap from palette
+	virtual ~Bitmap();
+
+	bool operator>( const Bitmap& ) const;	// for sorting (based on w x h x b)
+	inline int width() const;
+	inline int height() const;
+	inline int bitdepth() const;
+
+	bool texture_fit( Bitmap* add, AllocationMap& am, const char* szRoomName,
+		const char* szTextureType, int i=0 );
+
+	void hline( int x, int y, int width );
+	void vline( int x, int y, int height );
+	void box( int x, int y, int width, int height );
+	void frame( int x, int y, int width, int height );
+
+	void save( const char* filename ) const;
+
+	bool find( const Bitmap* bmAdd, AllocationMap& allocated, int& x, int& y ) const;
+	bool sameBitmap( int x, int y, const Bitmap* bmCheck ) const;
+	void copy( const Bitmap* src, const int xDest, const int yDest );
+	void crop( const int width, const int height );
+
+	char* name;
+
+	int coloursUsed() const;
+
+	bool _bPowerOf2Size;
+
+	int xPal, yPal;
+	int _subx, _suby;
+	int _idxPal;
+	int _startColour, _endColour;
+
+	void removeColourCycles();
+
+	// TODO: turn into list (not every bitmap needs all these entries!)
+	enum { _MAX_COLOUR_CYCLES = 128 };
+	ColourCycle _colourCycle[ _MAX_COLOUR_CYCLES ];
+	int _nColourCycles;
+
+	void forceTranslucent();
+	bool hasTransparentColour() const;
+
+	typedef void (*fnPixel)( uint16& );
+	void foreach_pixel( fnPixel );
+
+	static void Pixel_NOP( uint16& );
+	static void Pixel_RGB_BRG( uint16& pixel );
+	static void Pixel_Print( uint16& );
+	static void Pixel_TransparentRemap( uint16& );
+	static void Pixel_ForceTranslucent( uint16& );
+#if !defined( NDEBUG )
+	static void Pixel_VerifyTranslucent( uint16& );
+#endif
+
+	bool checkAcceptablePowerof2();
+
+	void* pixels;
+protected:
+
+	enum { TRANSLUCENT = 1U<<15 };
+	void loadColourCycles();
+
+	void _calculatePaletteInfo( RGBQUAD*, int );
+
+	int _width;
+	int _height;
+	int _bitdepth;
+
+	int _cbRow;
+	int _bufWidth;
+
+
+	void _calculateArea();
+	int _area;
+
+	int _bufHeight;
+
+	int _CMapStart;
+	int _CMapLength;
+	uint16* _convertedPalette;
+
+	bool checkForTransparentColour() const;
+	bool _bHasTransparentColour;
+
+public:	// new [soon to be] .dll interface
+	virtual bool Validate( void* header, size_t );
+	virtual void ReadBitmap( istream& input );
+};
+
+
+#pragma pack( 1 )
+typedef struct
+{
+    char IDLength;
+    char ColorMapType;
+    char ImageType;
+	int16 CMapStart;
+	int16 CMapLength;
+    char CMapDepth;
+    int16 XOffset;
+    int16 YOffset;
+    int16 Width;
+    int16 Height;
+    char PixelDepth;
+    char ImageDescriptor;
+} TGA_HEADER;
+#pragma pack()
+
+class TargaBitmap : public Bitmap
+{
+public:
+	TargaBitmap( istream& input, const char* szBitmapName );
+	TargaBitmap( const int width, const int height, const uint16 bgColor );
+	~TargaBitmap();
+	void save( const char* filename ) const;
+	void save( ostream& s ) const;
+	void reduceTo16();
+	void reduceTo8( uint16* palette, int nColours );
+	void reduceTo4( uint16* palette, int nColours );
+
+protected:
+	TGA_HEADER	th;
+
+public:	// new (soon to be) .dll interface
+	bool Validate( void* header, size_t );
+	void ReadBitmap( istream& input );
+};
+
+
+#pragma pack(1)
+typedef struct _SGI_Header
+{
+	unsigned short  magic;     	// IRIS image file magic number
+	char   storage;   			// Storage format
+	char   bpc;       			// Number of bytes per pixel channel
+	unsigned short dimension;	// Number of dimensions
+	unsigned short ixsize;     	// X size in pixels
+	unsigned short iysize;     	// Y size in pixels
+	unsigned short zsize;     	// Number of channels
+	long   pixmin;    			// Minimum pixel value
+	long   pixmax;    			// Maximum pixel value
+	char   _[ 4 ];			// Ignored
+	char   imagename[ 80 ]; 	// Image name
+	long   colormap;			// Colormap ID
+	char   __[ 404 ];    	// Ignored
+} SGI_Header;
+#pragma pack()
+
+class SgiBitmap : public Bitmap
+{
+public:
+	SgiBitmap( istream& input, const char* szBitmapName );
+	SgiBitmap( const int width, const int height, const uint16 bgColor );
+	~SgiBitmap();
+//	void save( const char* filename ) const;
+//	void save( ostream& s ) const;
+//	void reduceTo16();
+//	void reduceTo8( uint16* palette, int nColours );
+//	void reduceTo4( uint16* palette, int nColours );
+
+protected:
+	SGI_Header	sh;
+
+public:	// new (soon to be) .dll interface
+	bool Validate( void* header, size_t );
+	void ReadBitmap( istream& input );
+};
+
+
+#pragma pack( 2 )
+typedef struct
+{
+	int16 bfType;
+	int32 bfSize;
+	int16 bfReserved1;
+	int16 bfReserved2;
+	int32 bfOffBits;
+} BITMAPFILEHEADER;
+
+typedef struct
+{
+	int32 biSize;
+	int32 biWidth;
+	int32 biHeight;
+	int16 biPlanes;
+	int16 biBitCount;
+	int32 biCompression;
+	int32 biSizeImage;
+	int32 biXPelsPerMeter;
+	int32 biYPelsPerMeter;
+	int32 biClrUsed;
+	int32 biClrImportant;
+} BITMAPINFOHEADER;
+#pragma pack()
+
+class WindowsBitmap : public Bitmap
+{
+public:
+	WindowsBitmap( istream& input, const char* szBitmapName );
+	WindowsBitmap( const int width, const int height, const uint16 bgColor );
+	~WindowsBitmap();
+
+	void save( const char* filename ) const;
+
+protected:
+	struct
+	{
+		BITMAPFILEHEADER fh;
+		BITMAPINFOHEADER ih;
+	} BmpHeader;
+	RGBQUAD* palette;
+
+public:	// new (soon to be) .dll interface
+	bool Validate( void* header, size_t );
+	void ReadBitmap( istream& input );
+};
+
+#include "bitmap.hpi"
+
+#endif	/* BITMAP_HP */
+

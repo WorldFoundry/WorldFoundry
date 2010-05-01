@@ -1,0 +1,84 @@
+//=============================================================================
+// source.hp:
+// By Kevin T. Seghetti
+// Copyright (c) 1995-1999, World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+//=============================================================================
+
+#ifndef _source_hp
+#define _source_hp
+
+//=============================================================================
+
+#define MAXIMUM_INCLUDE_DEPTH 100
+
+//=============================================================================
+
+#include "global.hp"
+#include <iostream>
+#include <fstream>
+#include <map>
+using namespace std;
+
+#include <recolib/infile.hp>
+#include "macro.hp"
+
+//=============================================================================
+
+class source
+{
+public:
+	source(const string& newFileName);
+	source(const string& newFileName,map<string,macro, less<string> >& newMacros);
+	~source();
+	bool LinesLeft() const;
+	string GetNextLine();
+
+	string SourceError();
+private:
+	source();			// prevent use of constructor with no parameters
+	void construct(const string& newFileName);		// used by the constructors
+
+	string ApplyMacrosToLine(string& inputLine,map<string,macro,less<string> >& macros);
+	string _ApplyMacrosToLine(string& inputLine,map<string,macro,less<string> >& macros);
+
+	string ReadSourceLine();
+	string ParseCommand(string inputLine);
+
+	double ParseExpression(const string& expression);
+
+	void TranslateLine();
+	void OpenFile(const string& newFileName);
+
+	int includeDepth;
+	inputFile* input[MAXIMUM_INCLUDE_DEPTH];
+	string FileNameAndLine(int incDepth);
+
+	int commentCount;							// incremented for each nested comment
+
+	bool concatNextLine;
+
+    ostream* alternateOutput;                   // used to redirect output to a file
+    string partialLine;                         // partial line (used by file redirection to allow part of the line to go to the old file, and part to go to the new
+
+	map<string,macro,less<string> > macros;
+};
+
+//=============================================================================
+#endif
+//=============================================================================

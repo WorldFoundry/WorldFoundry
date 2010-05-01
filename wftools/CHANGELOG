@@ -1,0 +1,43 @@
+CHANGELOG
+
+================================================================================
+
+20 Mar 99
+* added fixlex.pl; used by [all] tools which use flex and bison
+* [cvs] delete recolib, moved to pigs2
+
+================================================================================
+
+19 Mar 99
+* eval [created stub program which calls library; moved library itself to pigs2]
+* iffwrite -- moved to pigs2
+* iffcomp
+
+The following files are not abandoned, but currently not upgraded
+due to missing files or not used
+* disr3000 -- missing dumpobj.cc
+* vrml2iff [flex/bison]
+* link [doesn't even have a Makefile]
+* stripper
+
+================================================================================
+
+18 Mar 99
+The following tools now compile using the new headers:
+
+* chargrab
+* eval
+* iffdb
+* iffdump
+* imagedir
+* lvldump
+* oaddump
+* prep
+* progress [not actually a tool]
+* psxdisc [doesn't use pigs--that's ok]
+* psxprof
+* textile
+* wfbind
+* xcd
+
+================================================================================

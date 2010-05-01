@@ -1,0 +1,20 @@
+{ 'CROW'
+	{ 'BMPL'	// Bitmap List
+		// These will become assets IDs instead of names
+		"logo.sgi"
+//		"logo.tga"
+//		"logo1.tga"
+//		"logo2.tga"
+//		"logo3.tga"
+//		"logo4.tga"
+//		"logo5.tga"
+//		"logo6.tga"
+//		"logo7.tga"
+		// Also, number of frames isn't stored -- it will be easily calculated -- chunkSize / sizeof( assetID )
+	}
+	{ 'FLPB'	// Flipbook
+		60.0l					// Frame rate to play back the data
+		{ Y 0 1 2 3 4 5 6 7 6 5 4 3 2 1 }	// Frames
+	}
+}
+

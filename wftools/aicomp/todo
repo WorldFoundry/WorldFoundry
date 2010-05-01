@@ -1,0 +1,31 @@
+failed includes inside of other includes don't report an error 
+
+
+15 Mar 99
+
+* rename backpa~1.cc -> backpatch.cc
+
+* [cvs] rename *.hpp -> *.hp
+
+* [cvs] delete dll.cc
+
+* [cvs] delete backpa~1.cc
+
+* move beep to somewhere
+
+* [cvs] delete assert.c
+
+* [cvs] rename airun.h -> airun.hp
+
+* [cvs] delete fixlex.pl
+
+* Separate %token into separate file to generate ai_tab.h [indepdent of language]
+
+* [cvs] delete todo.txt
+
+* [cvs] add TODO CHANGELOG
+
+* update dependencies to reflect actual dependence on FlexLe~1.h
+
+* get Win32 version of flex and bison to deal with these stupid 8.3 problems
+

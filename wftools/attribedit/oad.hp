@@ -1,0 +1,202 @@
+//==============================================================================
+// oad.hp: oad and oadentry classes
+//==============================================================================
+
+#ifndef OAD_H
+#define OAD_H
+     
+#include <string>
+
+#if defined(USEXML)
+#include <xmloutput.h>
+#include <xmlinput.h>
+typedef XML::Element OADInput;
+typedef XML::Output OADOutput;
+#include <iff/iffread.hp>
+#include <iffwrite/iffwrite.hp>
+#else
+#include <iff/iffread.hp>
+#include <iffwrite/iffwrite.hp>
+typedef _IffWriter OADOutput;
+typedef IFFChunkIter OADInput;
+#endif
+
+#include "parsetreenode.hp"
+
+//==============================================================================
+
+class TypeBase : public ParseTreeNode
+{
+public:
+
+    typedef enum       // this has to match the enum in wfsource/source/oas/iff.s
+    {
+       SHOW_AS_N_A,
+       SHOW_AS_NUMBER,                                 // numbers
+       SHOW_AS_SLIDER,                                 // numbers
+       SHOW_AS_TOGGLE,           
+       SHOW_AS_DROPMENU,         
+       SHOW_AS_RADIOBUTTONS,     
+       SHOW_AS_HIDDEN,                                 // anything
+       SHOW_AS_COLOR,                                  // int32
+		SHOW_AS_CHECKBOX,  
+		SHOW_AS_MAILBOX,   
+		SHOW_AS_COMBOBOX,  
+		SHOW_AS_TEXTEDITOR,
+		SHOW_AS_FILENAME
+    }  ShowAs;
+
+
+    // constructors
+    TypeBase();
+
+    // accessors
+    const std::string& NameNoSpaces() const;
+    const std::string& Name() const;
+    const std::string& DisplayName() const;
+    const std::string& Help() const;
+    const std::string& EnableExpression() const;
+    
+    ShowAs GetShowAs() const;
+    bool Overridden() const;
+
+    // modifiers
+    void Name(const std::string& newName);
+    void DisplayName(const std::string& newDisplayName);
+    void Help(const std::string& newHelp);
+    void EnableExpression(const std::string& newExpression);
+    void SetShowAs(ShowAs newShowAs);
+    void Overridden(bool newOverridden);
+
+    virtual void ReadOverride(OADInput& input) = 0;
+    virtual void WriteOverride(OADOutput& iffOut) const = 0;
+
+    friend std::ostream& operator<<(std::ostream& out, const TypeBase& tb);
+protected:
+    void ParseIFFChunk(IFFChunkIter& chunkIter);         // called by derived classes for common chunks
+    virtual void Print(std::ostream& out) const;
+
+	std::string name;
+    std::string nameNoSpaces;
+	std::string displayName;
+	std::string help;
+	std::string enableExpression;
+	ShowAs showAs;
+    std::string hint;
+    bool overridden;
+private:
+};
+
+  
+class TypeInt32 : public TypeBase
+{
+public:
+    // constructors
+    TypeInt32(IFFChunkIter& chunkIter);
+
+    // accessors 
+    int32 Min() const;
+    int32 Max() const;
+    int32 Default() const;
+    int32 CurrentValue() const;         // if overridden will return override, otherwise returns default
+    const std::string& EnumValues() const;
+
+    // modifiers
+    void Min(int32 newMin);
+    void Max(int32 newMax);
+    void Default(int32 newDefault);
+    void EnumValues(const std::string& newEnumValues);
+    void CurrentValue(int32 newValue);
+
+    virtual void ReadOverride(OADInput& input);
+    virtual void WriteOverride(OADOutput& iffOut) const;
+
+private:
+    virtual void Print(std::ostream& out) const;
+
+	int32 min;
+	int32 max;
+	int32 def;
+    int32 override;
+	std::string enumValues;
+};
+	       
+ 	
+class TypeFixed32 : public TypeBase
+{
+public:
+    // constructors
+    TypeFixed32(IFFChunkIter& chunkIter);
+
+    // accessors 
+    float Min() const;
+    float Max() const;
+    float Default() const;
+    float CurrentValue() const;         // if overridden will return override, otherwise returns default 
+
+    void Min(float newMin);
+    void Max(float newMax);
+    void Default(float newDefault);
+    void CurrentValue(float newValue);
+
+    virtual void ReadOverride(OADInput& input);
+    virtual void WriteOverride(OADOutput& iffOut) const;
+
+private:
+    virtual void Print(std::ostream& out) const;
+
+	float min;
+	float max;
+	float def;
+	float override;
+};
+
+class TypeString : public TypeBase
+{
+public:
+    // constructors
+    TypeString(IFFChunkIter& chunkIter);
+    // accessors
+    const std::string& Default() const;
+    const std::string& CurrentValue() const;         // if overridden will return override, otherwise returns default 
+    const std::string& Type() const;
+
+    // modifiers
+    void Default(const std::string& def);
+    void CurrentValue(const std::string& newValue);
+    void Type(const std::string& newType);
+
+    virtual void ReadOverride(OADInput& input);
+    virtual void WriteOverride(OADOutput& iffOut) const;
+
+private:
+    virtual void Print(std::ostream& out) const;
+
+	std::string def;
+	std::string override;
+	std::string stringType;
+    bool required;              // used by scripts to indicate if a conversion action is required at level conversion time
+};
+
+//==============================================================================
+
+#if 0
+class OAD
+{
+public:
+    OAD();
+
+    void ReadOverride(OADInput& input);
+    void WriteOverride(OADOutput& iffOut) const;
+private:
+    std::string className;
+    vector<TypeBase*> oadEntries;
+};
+#endif
+
+//==============================================================================
+#include "oad.hpi"
+//==============================================================================
+#endif
+//==============================================================================
+

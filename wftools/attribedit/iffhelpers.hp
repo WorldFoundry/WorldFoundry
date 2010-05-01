@@ -1,0 +1,24 @@
+                
+#include <pigsys/pigsys.hp>
+#include <string>
+#include <iff/iffread.hp>
+#include <math/scalar.hp>
+                                
+//==============================================================================
+// iff read helper function to read an entire chunk into a string
+// move these into iffread at some point
+
+std::string
+IFFReadString(IFFChunkIter& iter);
+
+int32
+IFFReadInt32(IFFChunkIter& iter);
+
+Scalar
+IFFReadFixed32(IFFChunkIter& iter);
+
+bool
+IFFReadBool(IFFChunkIter& iter);
+
+//==============================================================================
+

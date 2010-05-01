@@ -1,0 +1,67 @@
+//=============================================================================
+// macro.hp: C pre-processor macro (string)
+// By Kevin T. Seghetti
+// Copyright (c) 1995-1999, World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+//==============================================================================
+
+#ifndef _macro_hp
+#define _macro_hp
+
+//=============================================================================
+
+#include "global.hp"
+#include <recolib/ktstoken.hp>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+//=============================================================================
+
+class macro
+{
+public:
+	macro(const string& newName, const string& newString,const string& parameters, const string& newWhereDefined);
+	macro& operator= (const macro& i);
+	macro();
+	~macro();
+	const string& GetValue();				// return macro's string
+	const string& GetName();
+    const string& GetWhereDefined();
+	size_t ParameterCount() { return( parameters.size());}
+	const string Parameter(int which) { RangeCheck(0,which,int(parameters.size())); return(parameters[which]); }
+	const bool ValidParameter(string which) { return(find(parameters.begin(),parameters.end(),which) != parameters.end()); }
+	const string DefaultArgument(int which) { return(defaultArguments[which]); }
+
+	string DoSubstitution(ktsRWCTokenizer& next,int& substCount);
+	// given an input macro string, produce output string
+
+    friend ostream& operator<< (ostream& out, const macro& m);
+
+private:
+	string name;
+	string value;
+    string whereDefined;            // string describing source and line this macro was defined at
+
+	vector<string> parameters;
+	vector<string> defaultArguments;
+};
+
+//=============================================================================
+#endif
+//=============================================================================

@@ -1,0 +1,10 @@
+// template.hp
+
+#ifndef TEMPATE_HP
+#define TEMPLATE_HP
+#include "global.hp"
+#include "symbol.hp"
+
+string _template( string szTemplate, vector<Symbol> tblSymbols );
+
+#endif

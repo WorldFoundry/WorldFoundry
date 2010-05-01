@@ -1,0 +1,51 @@
+INLINE void AttributeEditor::Validate() const
+{
+#if DO_ASSERTIONS
+#endif // DO_ASSERTIONS
+}
+
+inline const std::string& 
+AttributeEditor::WFConfigPath() const
+{
+    return _wfConfigPath;
+}
+
+inline const std::vector<std::string>& 
+AttributeEditor::ClassList() const
+{
+    return _oadClassList;
+}
+
+
+
+inline const std::string& 
+AttributeEditor::ClassName() const
+{
+   return _className;
+}
+
+inline const std::string& 
+AttributeEditor::OutputFileName() const
+{
+      return _outputFileName;
+}
+
+
+inline void 
+AttributeEditor::OutputFileName(const std::string& newOutputFileName)
+{
+   assert(newOutputFileName.size());
+   _outputFileName = newOutputFileName;
+}
+
+
+//==============================================================================
+
+inline OADescIffBinParser& 
+AttributeEditor::Parser()
+{
+    assert(parser);
+    return *parser;
+}
+
+

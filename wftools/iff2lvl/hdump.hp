@@ -1,0 +1,54 @@
+//============================================================================
+// hdump.hp: formated hex and ascii data dumper
+// Copyright(c) 1994/5 Cave Logic Studios
+// By Kevin T. Seghetti
+// Copyright (c) 1994-1999, World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+//============================================================================
+/* Documentation:
+
+	Abstract:
+			formated hex and ascii data dumper
+	History:
+
+	Class Hierarchy:
+			none
+
+	Dependancies:
+			iostream (cout)
+	Restrictions:
+	Example:
+*/
+//============================================================================
+// use only once insurance
+#ifndef _hDUMP_HP
+#define _hDUMP_HP
+
+#include "global.hp"
+//#include <iostream.h>
+
+//#include <pclib/general.hp>
+
+//============================================================================
+
+void
+HDump(const void* buffer, ulong bufferSize, int indent=0,char* indentString = ">", ostream& out=cout);
+
+//============================================================================
+#endif
+//============================================================================

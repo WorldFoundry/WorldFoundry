@@ -1,0 +1,19 @@
+15 Mar 99
+* Get bugzilla working so that I don't have to create all of these "TODO" files
+* Make .exe dependency run bumpver for tools [or everything, I suppose]
+
+17 Mar 99
+* AICOMP
+* TEMPLATE
+
+19 Mar 99
+* get OBJ_DIR working
+* move fixlex.pl here
+* check for local strmnull.* files in tools -- use pigs instead
+* why doesn't BUILDMODE=tool work in wftools/Makefile.tool?
+* is iffdb a library?  move to pigs2
+* stripper -- not updating at this time -- are we using it???
+* [cvs] move progress to doc/progress
+
+20 Mar 99
+* [cvs] 3ds* don't seem to be deleted

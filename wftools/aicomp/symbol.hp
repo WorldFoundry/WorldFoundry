@@ -1,0 +1,23 @@
+// symbol.hp
+#ifndef SYMBOL_HP
+#define SYMBOL_HP
+
+typedef long int32;
+//typedef enum { false, true } bool;
+#include <math/scalar.hp>
+
+#if defined( STL_SYMBOLS )
+#	include <map>
+#	include <string>
+#else
+typedef struct
+{
+	char* szSymbolName;
+	Scalar nSymbolValue;
+} Symbol;
+
+extern int nSymbols;
+extern Symbol tblSymbols[];
+#endif
+
+#endif	// SYMBOL_HP

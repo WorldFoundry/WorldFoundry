@@ -1,0 +1,52 @@
+//=============================================================================
+// command.hpi: Copyright (c) 1996-1999, World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+//==============================================================================
+
+inline ostream&
+operator<<(ostream& s, const CommandLine &cl)
+{
+	s << "Command Line strings:" << endl;
+	for(vector<string>::const_iterator iter=cl.commands.begin();
+	iter<cl.commands.end();
+	iter++)
+	{
+		s <<	*iter << endl;
+	}
+	return s;
+}
+
+//=============================================================================
+
+inline size_t
+CommandLine::Size() const
+{
+	return(commands.size());
+}
+
+//=============================================================================
+
+inline const string&
+CommandLine::operator[] (int index) const
+{
+	assert(index >= 0);
+	assert(index < commands.size());
+	return commands[index];
+}
+
+//=============================================================================

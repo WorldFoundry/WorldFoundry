@@ -1,0 +1,16 @@
+
+INLINE std::vector<ParseTreeNode*>& ParseTreeNode::children(void)
+{
+  return _children;
+}
+
+INLINE const std::vector<ParseTreeNode*>& ParseTreeNode::children(void) const
+{
+  return _children;
+}
+
+INLINE void ParseTreeNode::Validate(void) const
+{
+  #if DO_ASSERTIONS
+  #endif
+}

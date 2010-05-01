@@ -1,0 +1,4 @@
+30 sep 2002
+--------------------------------------------------------------------------------
+. allow _ in numbers [like perl and spasm] (but not in size specifiers since
+  it's meant to provide more legibility for large numbers)

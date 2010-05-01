@@ -1,0 +1,72 @@
+<title>Instruction Format</title>
+
+<h1>Instruction Format</h1>
+
+All instructions are 32 bits long.  They come in three different formats.
+<p>
+<hr>
+
+<h3>I-Type (Immediate)</h3>
+<pre>
+31     26 25     21 20     16 15                           0   
+   op         rs        rt            immediate
+<p>
+<h3>J-Type (Jump)</h3>
+31     26 25                                               0  
+   op                target
+<p>
+<h3>R-Type (Register)</h3>
+31     26 25     21 20     16 15     11 10       6 5       0  
+   op         rs        rt       rd        shamt     funct
+</pre>
+<hr>
+<h3>Definitions</h3>
+<table border>
+<tr><td>op<td>a 6-bit operation code
+<tr><td>rs  <td>a 5-bit source register specifier
+<tr><td>rt     <td>a 5-bit target (source/destination) register or branch 
+condition
+<tr><td>immediate   <td>a 16-bit immediate, branch displacement or address displacement
+<tr><td>target     <td>a 26-bit jump target address
+<tr><td>rd     <td>a 5-bit destination register specifier
+<tr><td>shamt     <td>a 5-bit shift amount
+<tr><td>funct     <td>a 6-bit function field
+</table>
+
+<p>
+<hr>
+<h3>Floating Point</h3>
+<h3>I-Type (Immediate)</h3>
+<pre>
+31     26 25     21 20     16 15                           0   
+  cop        base       ft            offset
+<h3>R-Type (Floating Point Register)</h3>
+31     26 25     21 20     16 15     11 10       6 5       0  
+  cop        fmt        ft       fs         fd       funct
+</pre>
+<p>
+<hr>
+<h3>FP Definitions</h3>
+<table border>
+<tr><td>cop<td>a 6-bit operation code
+<tr><td>base  <td>a 5-bit base register specifier
+<tr><td>fmt  <td>a 5-bit format specifier
+<tr><td>fs     <td>a 5-bit source1 register
+<tr><td>ft     <td> (R) a 5-bit source2 register; <br> (I) source (for stores) or destination (for loads) FPA register specifier
+<tr><td>fd     <td>a 5-bit destination register 
+<tr><td>funct     <td>a 6-bit function field
+<tr><td>offset     <td>a 16-bit signed immediate offset
+</table>
+<p>
+The <strong>fmt</strong> field refers to operand size.
+
+<h3>Format Definitions</h3>
+<table border>
+<tr><td>Mnemonic<td>Size<td>Code
+<tr><td>S  <td>single precision - binary floating-point  <td>0x10
+<tr><td>D  <td>double precision - binary floating-point  <td>0x11
+<tr><td>W  <td>single precision - binary fixed-point  <td>0x14
+</table>
+<p>
+<hr> <p>
+<i>This information was taken from the <strong>MIPS R4000 User's Guide</strong>.</i>

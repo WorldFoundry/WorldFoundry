@@ -1,0 +1,81 @@
+//============================================================================
+// asset.hp:
+// Copyright(c) 1996 Cave Logic Studios / PF.Magic
+//============================================================================
+/* Documentation:
+
+	Abstract:
+			class containing array of assets, plua s class for packing asset id's
+	History:
+			Created	6/19/96 11:51AM Kevin T. Seghetti
+
+	Class Hierarchy:
+			none
+
+	Dependancies:
+		PIGS, STL, iostream
+	Restrictions:
+
+	Example:
+*/
+//============================================================================
+
+// use only once insurance
+#ifndef _ASSET_HP
+#define _ASSET_HP
+
+//============================================================================
+
+#include "global.hp"
+//#include "pigtool.h"
+
+#include <vector>
+#include <string>
+#include <iterator>
+#include <streams/asset.hp>
+//#include <stl/bstring.h>
+//#include <stl/vector.h>
+
+//============================================================================
+
+class AssetExtensions
+{
+	vector<string> extensions;
+public:
+	AssetExtensions() {}
+	~AssetExtensions() {}
+	void Load(istream& in);
+	void Save(ostream& out);
+
+	int Entries();
+	const string& operator[](int index);
+	int Lookup(const string& extension);
+};
+
+//============================================================================
+// asset numbering scheme: 32 bit #: type:8, room:12, id:12 bits
+
+class asset
+{
+public:
+	asset() : _id() {  }
+	asset(const char* name, packedAssetID id) { _name = string(name); _id = id; }
+	const string& Name(void) { return _name; }
+	const string& Name(const string& name) { _name = name; return _name; }
+//	int32 ID(void) const { return _id.ID(); }
+	packedAssetID ID(void) const { return _id; }
+	int32 ID(int32 newID) { _id = packedAssetID(newID); return newID; }
+
+	friend ostream& operator<<(ostream& s, const asset &a) { return s << a._name << ',' << hex << a._id.ID() << dec; }
+
+	bool operator==(const asset &c) const { return ( (_name == c._name) && (_id == c._id) ); }
+	asset& operator=(const asset& left) { _name = left._name; _id = left._id; return *this; }
+
+private:
+	string _name;
+	packedAssetID _id;
+};
+
+//============================================================================
+#endif
+//============================================================================

@@ -1,0 +1,25 @@
+#ifndef SYMBOL_HP
+#define SYMBOL_HP
+
+#include "global.hp"
+//#include <stl/bstring.h>
+
+class Symbol
+	{
+public:
+	Symbol( const string szName, const string szValue = "" );
+	virtual ~Symbol();
+	Symbol();
+
+	const string Name() const			{ return _szName; }
+	const string Value() const			{ return _szValue; }
+
+    friend ostream& operator<<( ostream& s, const Symbol& sym )		{ return s << sym.Name() << " = " << sym.Value(); }
+	bool operator==( const Symbol& sym2 ) const						{ return Name() == sym2.Name(); }
+
+protected:
+	string		_szName;
+	string		_szValue;
+	};
+
+#endif	/* SYMBOL_HP */

@@ -1,0 +1,160 @@
+//=============================================================================
+// inputdig.hp: Copyright (c) 1996-1999, World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+//=============================================================================
+/*
+Documentation:
+
+	Abstract:
+	   		C++ class representing current and last state of
+	   		an input device with buttons
+
+	History:
+			Created	by Joseph Boyle 24 Jan 95
+			InputCameraRemapper class added 4/9/96 by Phil Torre
+
+
+	Class Hierarchy:
+			none
+
+	Dependencies:
+			none
+
+	Restrictions:
+
+
+*/
+//==============================================================================
+
+#ifndef _INPUTDIG_HP
+#define _INPUTDIG_HP
+#include "global.hp"
+#include <math/vector3.hp>
+
+//==============================================================================
+class Input
+{
+public:
+	Input()						{ }
+	virtual ~Input()			{ }
+
+	virtual joystickButtonsF read() = 0;
+	virtual joystickButtonsF readRaw() = 0;
+	virtual void setButtons( joystickButtonsF ) = 0;
+};
+
+
+//=============================================================================
+class InputNull : public Input
+{
+public:
+	InputNull();
+	virtual ~InputNull()		{ }
+
+	virtual joystickButtonsF read();
+	virtual joystickButtonsF readRaw();
+	virtual void setButtons( joystickButtonsF );
+};
+
+
+//=============================================================================
+class InputScript : public Input
+{
+public:
+	InputScript();
+	virtual ~InputScript()		{ }
+
+	virtual joystickButtonsF read();
+	virtual joystickButtonsF readRaw();
+	virtual void setButtons( joystickButtonsF );
+
+protected:
+	joystickButtonsF _buttons;
+};
+
+
+//=============================================================================
+class InputJoystick : public Input
+{
+public:
+	InputJoystick( joystickWhich );
+	virtual ~InputJoystick();
+
+	virtual joystickButtonsF read();
+	virtual joystickButtonsF readRaw();
+	virtual void setButtons( joystickButtonsF )		{ assert( 0 ); }
+
+protected:
+	IJoystick _stick;
+};
+
+//=============================================================================
+class InputCameraRemapper : public Input
+{
+public:
+	InputCameraRemapper(Input* unmappedInput);
+	virtual ~InputCameraRemapper();
+
+	virtual joystickButtonsF read();
+	virtual joystickButtonsF readRaw();
+	virtual void setButtons( joystickButtonsF )		{ assert( 0 ); }
+
+protected:
+	Input* inputSource;
+};
+
+//=============================================================================
+class QInputDigital
+{
+public:
+	// Item joystick is not owned exclusively
+	QInputDigital( Input* input );
+	~QInputDigital()			{ }
+
+	void update();	// Read hardware, then update change info.
+	void reset();
+	void setButtons( joystickButtonsF );
+	joystickButtonsF arePressed( joystickButtonsF joyMask = ~0 ) const;	// Buttons currently pressed
+	joystickButtonsF justPressed( joystickButtonsF joyMask = ~0 ) const;	// Buttons just pressed this time
+	joystickButtonsF justReleased( joystickButtonsF joyMask = ~0 ) const;	// Buttons pressed before last update, but now now
+
+	joystickButtonsF arePressedRaw( joystickButtonsF joyMask = ~0 ) const;	// Buttons currently pressed
+	joystickButtonsF justPressedRaw( joystickButtonsF joyMask = ~0 ) const;	// Buttons just pressed this time
+	joystickButtonsF justReleasedRaw( joystickButtonsF joyMask = ~0 ) const;	// Buttons pressed before last update, but now now
+
+	void SetInputDevice(Input* newInputDevice);
+#if DEBUG
+	static void test();
+#endif
+
+private:
+	Input* _input;
+	joystickButtonsF _current;
+	joystickButtonsF _previous;
+	joystickButtonsF _edgeDown;
+	joystickButtonsF _edgeUp;
+	joystickButtonsF _currentRaw;
+	joystickButtonsF _previousRaw;
+	joystickButtonsF _edgeDownRaw;
+	joystickButtonsF _edgeUpRaw;
+};
+
+//=============================================================================
+
+
+#endif

@@ -1,0 +1,127 @@
+//==============================================================================
+// gui.hp:
+//==============================================================================
+
+#include <gtk--/box.h>
+#include <gtk--/window.h>
+#include <gtk--/button.h>
+#include <gtk--/label.h>
+#include <gtk--/togglebutton.h>
+#include <gtk--/radiobutton.h>
+#include <gtk--/checkbutton.h>
+#include <gtk--/separator.h>
+#include <gtk--/scale.h>
+#include <gtk--/adjustment.h>
+#include <gtk--/range.h>     
+#include <gtk--/menu.h>
+#include <gtk--/optionmenu.h>
+#include <gtk--/scrollbar.h>
+#include <gtk--/notebook.h>
+#include <gtk--/entry.h>
+#include <gtk--/colorselection.h>
+
+#include <vector>
+#include <string>
+#include <iostream>
+          
+#include "parsetreenode.hp"
+#include "oad.hp"
+                                          
+//==============================================================================
+
+class GUIElement : public SigC::Object
+{    
+public:
+    //Gtk::Widget* widget;
+
+    GUIElement(Gtk::Widget* newWidget=NULL);
+
+};
+
+
+class GUIElementOAD : public GUIElement
+{
+public:
+   bool CheckEnabled(double (*fnSymbolLookup)( const char* yytext ));                // re-evaluate enable expression and enable accordingly
+   void UpdateEnabled(double (*fnSymbolLookup)( const char* yytext ));                // re-evaluate enable expression and enable accordingly
+    const TypeBase& OAD() const { return oadEntry; }
+protected:
+    GUIElementOAD(TypeBase& newOadEntry, Gtk::Box& parent);
+
+   void AddHelp (Gtk::Widget& widget, const std::string* additionalHelp=NULL);
+
+    TypeBase& oadEntry;
+
+    Gtk::HBox* elementBox;             // hbox containing the element (but not the enable checkbox) 
+    Gtk::ToggleButton* enableButton;
+
+    void EnableCallback();              // callback which occurs when enable check box is clicked
+};
+
+class GUIElementCommandButton : public GUIElement
+{
+public:
+    enum
+    {
+        STATIC_BUTTON_CANCEL,
+        STATIC_BUTTON_OK,
+        STATIC_BUTTON_COPY,
+        STATIC_BUTTON_PASTE,
+        STATIC_BUTTON_TEST
+    };
+
+    GUIElementCommandButton(const char* name, int newButtonIndex, Gtk::Widget* newWidget);
+
+//private:
+    int buttonIndex;
+    const char* name;
+};
+
+//==============================================================================
+
+class GUIElementInteger : public GUIElementOAD
+{
+public:
+    GUIElementInteger(TypeInt32& newOadEntry,Gtk::Box& box);
+
+private:
+    Gtk::Adjustment* intAdj;
+    Gtk::ToggleButton* toggleButton;
+    Gtk::ColorSelection* picker;
+
+    void Callback();
+    void RadioCallback(int index);
+    void ColorCallback();
+    void MenuCallback(int index);               // menu selection callback
+
+};
+
+//==============================================================================
+
+class GUIElementFixed : public GUIElementOAD
+{
+public:
+    GUIElementFixed(TypeFixed32& newOadEntry,Gtk::Box& box);
+
+private:
+    Gtk::Adjustment* fixedAdj;
+    void Callback();
+};
+
+//==============================================================================
+
+class GUIElementString : public GUIElementOAD
+{
+public:
+    GUIElementString(TypeString& newOadEntry,Gtk::Box& box);
+
+private:
+    Gtk::Entry* textEntry;          
+    void Callback();
+    void EditCallback();
+    void FileReqCallback();
+
+};
+
+//==============================================================================
+

@@ -1,0 +1,85 @@
+// must allow wildcards in chunk names
+
+{ 'UDM'				// list of possible data which could appear in any order
+	{ 'IFFC' { 'NAME' "GAME" }
+
+		{ 'IFFC'			// IFF Chunk
+			{ 'NAME' "TOC" }		// note: IFF Chunk names must not exceed 4 chars
+			{ 'ARRY'				// toc is an array of entries
+				{ 'STRU'			// this is the structure for each entry
+					{ 'STR' { 'NAME' "Tag" } { 'LEN' 4L } }
+					{ 'I32' { 'NAME' "Offset" } }
+					{ 'I32' { 'NAME' "Size" } }
+				}
+			}
+		}
+
+		{ 'IFFC'			// IFF Chunk
+			{ 'NAME' "ALGN" }		// note: IFF Chunk names must not exceed 4 chars
+			{ 'ARRY'				// filled with padding
+				{ 'I8' { 'NAME' "Padding" } }
+			}
+		}
+
+
+		{ 'IFFC'
+			{ 'NAME' "SHEL" }
+			{ 'DSNM' "World Foundry Scripting Language Script" }
+			{ 'ARRY'
+				{ 'I32' { 'NAME' "Script Data" } }
+			}
+		}
+
+		{ 'IFFC'
+			{ 'NAME' "L0" }
+			{ 'STRU'
+				{ 'ARRY'
+					{ 'NAME' "Padding" }
+					{ 'SIZE' 2040 }			// padding
+				}
+				{ 'IFFC'
+					{ 'NAME' "LVAS" }
+
+					{ 'IFFC'			// IFF Chunk
+						{ 'NAME' "TOC" }		// note: IFF Chunk names must not exceed 4 chars
+						{ 'ARRY'				// toc is an array of entries
+							{ 'STRU'			// this is the structure for each entry
+								{ 'STR' { 'NAME' "Tag" } { 'LEN' 4L } }
+								{ 'I32' { 'NAME' "Offset" } }
+								{ 'I32' { 'NAME' "Size" } }
+							}
+						}
+					}
+
+					{ 'IFFC'			// IFF Chunk
+						{ 'NAME' "ALGN" }		// note: IFF Chunk names must not exceed 4 chars
+						{ 'ARRY'				// filled with padding
+							{ 'I8' { 'NAME' "Padding" } }
+						}
+					}
+
+					{ 'IFFC'
+						{ 'NAME' "ASMP" }
+						{ 'ARRY'
+							{ 'STRU'
+								{ 'I32'
+									{ 'NAME' "AssetID" }
+								}
+								{ 'IFFC'
+									{ 'NAME' "STR" }
+									{ 'STR'
+										{ 'NAME' "Asset Name" }
+									}
+								}
+							}
+						}
+					}
+					{ 'ARRY'
+						{ 'NAME' "Level Data" }
+						{ 'I8' { 'NAME' "Level Data Piece" } }
+					}
+				}
+			}
+		}
+	}
+}

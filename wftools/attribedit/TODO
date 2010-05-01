@@ -1,0 +1,43 @@
+Empty destroy object outputs this, fix it:
+
+{ 'OBJ' 
+        { 'STR' 
+                { 'NAME' "Class Name" 
+                }
+                { 'DATA' "destroy" 
+                }
+        }
+        { 'I32' 
+                { 'NAME' "Check Below Only Once" 
+                }
+                { 'DATA' 1l 
+                }
+                { 'STR' "1" 
+                }
+        }
+        { 'I32' 
+                { 'NAME' "Activated By" 
+                }
+                { 'DATA' 1l 
+                }
+                { 'STR' "1" 
+                }
+        }
+
+
+
+
+make filename and edit types work
+
+add color picker
+
+add expressions back in
+
+invent a file which lists all object names,
+then write an object selector
+
+Convert all fields back to strings which can hold expressions
+(probably require deriving new GUI components)
+
+
+

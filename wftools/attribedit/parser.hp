@@ -1,0 +1,16 @@
+#include <pigsys/pigsys.hp>
+#include <iff/iffread.hp>
+#include <vector>
+
+class ParseTreeNode
+{
+ public:
+  inline vector<ParseTreeNode*>& children();
+  INLINE void Validate(void);
+  virtual ~ParseTreeNode() {}
+
+ private:
+  vector <ParseTreeNode*> _children;
+  virtual void dummy(void){}; // so that we have a virtual func table and can dynamic_cast
+};
+

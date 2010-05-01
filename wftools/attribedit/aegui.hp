@@ -1,0 +1,81 @@
+//==============================================================================
+// aegui.hp:
+//==============================================================================
+
+#ifndef _AEGUI_HP
+#define _AEGUI_HP
+
+#include <gtk--/main.h>
+#include <gtk--/box.h>
+#include <gtk--/window.h>
+#include <gtk--/button.h>
+#include <gtk--/label.h>
+#include <gtk--/togglebutton.h>
+#include <gtk--/radiobutton.h>
+#include <gtk--/checkbutton.h>
+#include <gtk--/separator.h>
+#include <gtk--/scale.h>
+#include <gtk--/adjustment.h>
+#include <gtk--/range.h>     
+#include <gtk--/menu.h>
+#include <gtk--/optionmenu.h>
+#include <gtk--/scrollbar.h>
+#include <gtk--/notebook.h>
+
+#include <vector>
+#include <string>
+#include <iostream>
+          
+#include "parsetreenode.hp"
+#include "oadesciffbinparser.hp"
+#include "oad.hp"
+#include "guihelpers.hp"
+
+                       
+class AttributeEditor;
+//==============================================================================
+          
+class AttributeEditorGUI : public Gtk::Window
+{
+public:
+    AttributeEditorGUI(AttributeEditor& editor, const std::string& title, bool writeAll=false);
+
+    void DynamicButtonCallback(GUIElementOAD* scd);
+    void StaticButtonCallback(GUIElementCommandButton* scd);
+
+    void UpdateButtonEnables();
+
+    gint delete_event_impl(GdkEventAny*);
+
+    void SelectNewClass(std::string name);
+
+    const std::vector<GUIElementOAD*>& Elements() const { return elements; }
+
+private:
+    void ConstructStaticInterface(const std::string& title);
+    void ConstructOADInterface(ParseTreeNode* root,Gtk::Box& box);
+    void DestroyOADInterface();
+    void _recursiveGenerate(ParseTreeNode* root, Gtk::Notebook& noteBook, Gtk::Box* box,int groupRecursionLevel, int structRecursionLevel);
+
+
+
+    Gtk::VBox masterBox;
+    Gtk::HBox toolBox;
+    Gtk::VBox attribContainerBox;
+    Gtk::VBox* attribBox;
+    Gtk::Menu *menuClassName;
+    LabeledOptionMenu* optionMenuClassName;
+
+//    std::vector<Gtk::Widget*> widgets;
+    std::vector<GUIElementOAD*> elements;
+
+    AttributeEditor& editor;
+    bool _writeAll;
+};
+
+//==============================================================================
+#endif
+//==============================================================================
+
+
+

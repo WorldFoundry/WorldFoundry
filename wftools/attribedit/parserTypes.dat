@@ -1,0 +1,20 @@
+NonterminalType
+NonterminalStruct
+NonterminalAnyField
+NonterminalF32Field
+NonterminalI32Field
+NonterminalStringField
+TerminalName char[256] char*
+TerminalFlag char[256] char*
+TerminalOpen int
+TerminalFieldName char[256] char*
+TerminalDisplayName char[256] char*
+TerminalRange Range
+TerminalData
+TerminalDisplayType int
+TerminalHelp char[256] char*
+TerminalHint char[256] char*
+TerminalEnabled int
+TerminalChoiceList char[512] char*
+NonterminalBoolField
+TerminalDef

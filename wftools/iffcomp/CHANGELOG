@@ -1,0 +1,18 @@
+30 sep 02
+--------------------------------------------------------------------------------
+* lang.l cleanup: changed "{0,1}" to equivalent "?"
+* ease floating point use, i.e., allow:
+  * .45 [without leading zero] 
+  * 3.0 [without fixed point specifier--but only when unambigious]
+    * apparently this was already done...
+* allow size specifier for strings e.g., "some string"(256)
+  * particurarly useful for creating string which go into c fixed-sized structures
+. [cvs] move unistd.h to win/ directory
+
+19 Mar 99
+--------------------------------------------------------------------------------
+* Changed VELOCITY_DIR to WF_DIR [for system include]
+* [cvs] add unistd.h
+* [cvs] delete version.hpp
+* [cvs] delete fixlex.pl
+* rename .hpp files -> .hp

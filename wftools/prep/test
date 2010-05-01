@@ -1,0 +1,149 @@
+//==============================================================================
+// prep test file
+
+// Will wanted me to add named parameters, where the caller could pass in parameters in any order by giving their name
+
+@define foo(param1=1, param2=2)  first is param1, second is param2
+
+foo(param2=>second)
+
+//==============================================================================
+accumulating a list of names
+
+// need to build autovar_list as a list of a bunch of AUTOVAR_PROCESS(a,b,c); macros glued together....  how?
+not sure exactly what you are looking for here, but here is an example of how to accumulate a list
+
+// namelist starts empty
+@define NAMELIST 
+
+@define ENTRY(var) @redefine NAMELIST @e1(NAMELIST) var@t
+
+
+ENTRY(first)
+ENTRY(second)
+ENTRY(third)
+
+Ok, now print list:
+
+NAMELIST
+
+//==============================================================================
+output redirection
+
+
+@redirectoutput(test2) 
+this is file test2
+@redirectend           goes to first file
+
+
+			
+@define FOO this goes to original file @redirectoutput(test3) this goes to test3 @redirectend this goes to original file
+
+
+FOO
+
+
+//==============================================================================
+// file and line
+
+filename is @file
+
+this is line @line
+
+//==============================================================================
+// multi-line macro defintion
+
+
+@definem TEST this
+is
+a
+multi-line
+macro
+@t
+
+
+
+TEST
+
+
+//==============================================================================
+
+
+@define FOO left
+@define BAR right
+@define leftright final
+
+FOO@+BAR
+
+//==============================================================================
+// sample of concatinanting a string in a file include
+
+@define filenameleft tes
+@define filenameright t2
+about to include test2
+@include filenameleft@+filenameright
+just after including file test2
+
+//==============================================================================
+	
+@define AVP ORIGINAL
+@define AUTOVAR_LIST AVP (test)
+
+@define GENERATE_AUTOVAR_FUNCTIONS @n@\
+	 @redirectoutput(ktstestoutput)@n@\
+	 @redefine AVP AUTOVAR_PROCESS_SAVE@t@n@\
+	 test AUTOVAR_LIST test@n@\
+	 @redirectend @n@\
+
+GENERATE_AUTOVAR_FUNCTIONS
+
+//==============================================================================
+// ifdef test
+
+@ifdef(DEFAULT_FRICTION)(should NOT see this)
+@ifndef(DEFAULT_FRICTION)(should see this)
+
+@define DEFAULT_FRICTION foobar
+
+@ifdef(DEFAULT_FRICTION)(should see this)
+@ifndef(DEFAULT_FRICTION)(should NOT see this)
+
+
+
+//==============================================================================
+// multi-line comments
+
+
+@begincomment
+
+should NOT see this
+@define PLAIN OOPS
+
+@endcomment
+
+PLAIN
+
+
+
+@if(0)(@begincomment)
+SHOULD see this
+@endcomment
+
+//==============================================================================
+// data structures
+// here is an example of storing data in a structure
+// KTS: THIS DOESN'T WORK YET
+
+
+
+// a structure with 2 
+@define MAKECUSTOMER(customername,address,city) @define @e1(CUSTOMER@+customername@+ADDRESS) address@t@define CUSTOMER@+@e1(customername)@+CITY city@t
+
+@define PRINTCUSTOMER(customername) Customer: customername@naddress: CUSTOMER@+customername@+ADDRESS@nCity: CUSTOMER@+customername@+CITY@n
+
+
+MAKECUSTOMER(bob,redding,ca)
+MAKECUSTOMER(fred,redding,ca)
+
+PRINTCUSTOMER(bob)
+

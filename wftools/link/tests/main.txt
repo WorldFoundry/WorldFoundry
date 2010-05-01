@@ -1,0 +1,26 @@
+
+Header : LNK version 2
+46 : Processor type 7
+16 : Section symbol number $1 '.rdata' in group $0 alignment 8
+16 : Section symbol number $2 '.text' in group $0 alignment 8
+16 : Section symbol number $3 '.data' in group $0 alignment 8
+16 : Section symbol number $4 '.sdata' in group $0 alignment 8
+16 : Section symbol number $5 '.sbss' in group $0 alignment 8
+16 : Section symbol number $6 '.bss' in group $0 alignment 8
+16 : Section symbol number $7 '.ctors' in group $0 alignment 8
+16 : Section symbol number $8 '.dtors' in group $0 alignment 8
+28 : Define file number 9 as "D:\VELTOOLS\LINKER\TESTS\MAIN.CC"
+6 : Switch to section $2
+6 : Switch to section $2
+2 : Code 136 bytes
+10 : Patch type 74 at offset $c with (sectbase($2)+$1c)
+10 : Patch type 74 at offset $14 with (sectbase($2)+$1c)
+10 : Patch type 74 at offset $48 with [$c]
+10 : Patch type 74 at offset $50 with (sectbase($2)+$0)
+10 : Patch type 74 at offset $5c with (sectbase($2)+$70)
+10 : Patch type 74 at offset $68 with (sectbase($2)+$70)
+6 : Switch to section $2
+14 : XREF symbol number $c '__main'
+12 : XDEF symbol number $b 'main' at offset $30 in section $2
+12 : XDEF symbol number $a 'a__Fv' at offset $0 in section $2
+0 : End of file

@@ -1,0 +1,41 @@
+//==============================================================================
+// guihelpers.hp
+//==============================================================================
+
+#ifndef GUIHELPERS_HP
+#define GUIHELPERS_HP
+       
+//==============================================================================
+                
+#include <gtk--/box.h>
+#include <gtk--/label.h>
+#include <gtk--/menu.h>
+#include <gtk--/optionmenu.h>
+
+//==============================================================================
+
+class LabeledOptionMenu : public Gtk::HBox
+{
+  Gtk::Label m_label;
+
+public:
+    LabeledOptionMenu(const Gtk::string &menutitle, Gtk::Menu *menu,
+		      bool homogeneous=false,
+		      gint spacing=10);
+    Gtk::Menu *m_menu;
+    Gtk::OptionMenu *om;
+};
+
+//==============================================================================
+
+void pop_dialog();
+
+//==============================================================================
+
+
+std::string 
+FileRequester(const std::string& current);
+
+//==============================================================================
+#endif      // ndef GUIHELPERS_HP
+//==============================================================================

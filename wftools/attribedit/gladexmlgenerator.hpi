@@ -1,0 +1,5 @@
+INLINE void GladeXMLGenerator::Validate(void) const
+{
+  #if DO_ASSERTIONS
+  #endif
+}

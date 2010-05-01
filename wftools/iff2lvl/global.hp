@@ -1,0 +1,190 @@
+//============================================================================
+// global.hp: for levelcon, all levelcon files include this
+//============================================================================
+
+// Copyright(c) 1995 Cave Logic Studios / PF.Magic
+// By Kevin T. Seghetti
+//============================================================================
+
+// use only once insurance
+#ifndef _GLOBAL_HP
+#define _GLOBAL_HP
+
+#define PI  ((float)3.1415926535)
+
+#define LEVELCON_VER "0.200"
+
+#ifdef _DEBUG
+#define DEBUG 1
+#endif
+
+#if DEBUG > 0
+#define SW_DBSTREAM 3
+#else
+#define SW_DBSTREAM 0
+#endif
+
+#ifndef __WIN__
+#include "recolib/fpath.hp"
+#endif
+
+
+
+//#define OLD_IOSTREAMS 1
+
+
+#pragma warning( disable : 4786 )
+const char eos = '\0';
+
+
+///#define NOMINMAX		// Turn off windows.h definition of min() and max(),
+						// use the one from STL instead
+
+typedef unsigned long ulong;
+
+//#include <stl/algobase.h>
+//#include <stl/bstring.h>
+
+#include <vector>
+#include <map>
+#include <iterator>
+#include <string>
+#include <algorithm>
+
+//#include <max.h>
+//#include <istdplug.h>
+//#include <iostream.h>
+//#include <ostream.h>
+#include <pigsys/pigsys.hp>
+#include <cpplib/stdstrm.hp>
+#include "dbstrm.hp"
+//#include "pigtool.h"
+#define DllExport 
+#include <float.h>
+#include <math.h>
+
+
+// This is a replacement (in progress) for br_euler.  The ordering is always XYZ_S
+typedef struct
+{
+	float a;
+	float b;
+	float c;
+} Euler;
+
+
+inline std::ostream& operator<<(std::ostream& out, const Euler& e)
+{
+	out << "Euler: " << e.a << ", " << e.b << ", " << e.c;
+	return out;
+}
+
+//#include <iostream.h>
+//#include <strstrea.h>
+//#include <pigsys/assert.hp>
+
+typedef unsigned long DWORD;
+typedef int                 BOOL;
+
+
+enum {
+	FALSE, TRUE
+};
+
+//============================================================================
+// kts these macros is used to convert floats into world foundry compatible scalars
+
+#define WF_ONE_LS 	(1<<16)
+#define WF_FLOAT_TO_SCALAR(f) ((fixed32)((f)*(float)WF_ONE_LS))
+#define WF_SCALAR_TO_FLOAT(s)	((s)/(float)WF_ONE_LS)
+#define WF_INT_TO_SCALAR(i)	((fixed32)((i)*(int)WF_ONE_LS))
+
+//============================================================================
+// Exception handling class
+//class LVLExporterException
+//{
+//public:
+//	long	errorCode;
+//};
+
+//============================================================================
+// copy of parts of the microsoft assert macro
+
+extern void LevelconAssert(const char *, const char *, unsigned);
+
+#include <pigsys/assert.hp>
+#undef	assert
+#ifdef NDEBUG
+#define assert(exp)	((void)0)
+#else
+//#define assert(exp) (void)( (exp) || (_assert(#exp, __FILE__, __LINE__), 0) )
+#define assert(exp) (void)( (exp) || (LevelconAssert(#exp, __FILE__, __LINE__), 0) )
+#endif	/* NDEBUG */
+
+//============================================================================
+
+#if 0
+#define AssertMessageBox(__cond__, __msg__)\
+	do{\
+		if (!(__cond__))\
+		{\
+			cout << "file " << __FILE__ << ", line " << __LINE__ << ", message = " << __msg__ << endl; \
+		}\
+	} while ( 0 )
+#endif
+
+//#define AssertMsg AssertMessageBox
+#define AssertMessageBox AssertMsg
+
+//============================================================================
+
+typedef int32 TimeValue;
+
+//==============================================================================
+#include "quat.h"
+#include "point3.h"
+#include "matrix3.h"
+//#include "mesh.h"
+
+class Mesh
+{
+public:
+		int			numVerts;
+		int	 		numFaces;
+//		Face *		faces;
+
+		// Geometry
+		Point3 *	verts;		
+
+//		// Texture Coord assignment 
+//		int			numTVerts;
+//		UVVert *	tVerts;
+//		TVFace *	tvFace;  	 
+//		Point3 *	t3DVerts;	// Snap shot of regular vertices before a deformation
+
+//		// Color per vertex
+//		int numCVerts;
+//		VertColor * vertCol;
+//		TVFace *    vcFace;
+
+//		// Material assignment
+//		MtlID		mtlIndex;     // object material
+//		MtlID	* 	faceMtlIndex; // material index per face. 
+	
+};
+
+class INode
+{
+};
+
+// MAX's Point3 class doesn't come with ostream operators...
+std::ostream& operator<<(std::ostream& s, const Point3 &o);
+std::ostream& operator<<(std::ostream& s, const Matrix3 &o);
+
+
+
+
+using namespace std;
+
+#endif
+//============================================================================

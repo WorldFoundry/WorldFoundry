@@ -1,0 +1,33 @@
+bug: @file@+ doesn't work. .I think the parsing doesn't stop on @, only (
+
+
+
+
+*add warning on redefinition of a macro
+
+add line continuation character (like \ in C), maybe use @\
+
+add @error, @warning and @abort
+
+string manipulators, uppercase, lowercase, remove whitespace, etc (maybe use tcl?)
+
+streaming comments( /* and */ )
+
+get rid of # at begin of line, and make all commands work anywhere in the line
+
+allow macros to have () with 0 parameters
+
+handle recursive macros, i.e. #define foo this is a foo
+
+add expression parser
+
+add tcl
+
+error handling:  exceptions?
+
+
+18 Mar 99
+* [cvs] rename todo.txt => todo
+* [cvs] add changelog
+* [cvs] delete strmnull.*
+* [cvs] delete oad.h

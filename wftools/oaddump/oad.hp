@@ -1,0 +1,70 @@
+//============================================================================
+// oad.hp:
+// By Kevin T. Seghetti
+// Copyright (c) 1995-1999, World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+//============================================================================
+
+// use only once insurance
+#ifndef _oAD_HP
+#define _oAD_HP
+
+#include <cstring>
+using namespace std;
+
+//============================================================================
+
+#include <vector>
+
+#include <pigsys/pigsys.hp>
+#pragma pack(1)
+extern "C" {
+#include <oas/oad.h>                     // from the velocity project
+};
+#pragma pack()
+
+//============================================================================
+
+class QObjectAttributeDataEntry
+{
+public:
+	QObjectAttributeDataEntry() { strcpy(entry.string,"Uninitialized"); }
+	bool Load(istream& input, ostream& error);
+	friend ostream& operator<<(ostream& s, QObjectAttributeDataEntry &oad);
+
+private:
+	_typeDescriptor entry;
+};
+
+//============================================================================
+
+class QObjectAttributeData
+{
+public:
+	bool Load(istream& input, ostream& error);
+	bool LoadEntries(istream& input, ostream& error);		// load from a stream which has no header
+	friend ostream& operator<<(ostream& s, QObjectAttributeData &oad);
+
+private:
+	_oadHeader header;
+	vector<QObjectAttributeDataEntry> entries;
+};
+
+//============================================================================
+#endif
+//============================================================================

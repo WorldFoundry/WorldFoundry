@@ -1,0 +1,37 @@
+#ifndef __OADESCIFFBINPARSER_HP
+#define __OADESCIFFBINPARSER_HP
+
+#include <pigsys/pigsys.hp>
+#include <iff/iffread.hp>
+#include "parsetreenode.hp"
+#include <string>
+
+class TypeBase;
+     
+class OADescIffBinParser
+{
+ public:                
+  OADescIffBinParser();
+  ~OADescIffBinParser();
+  void parseBinaryOADescFile(const std::string& filename);
+  void printParseTree(void);
+  INLINE ParseTreeNode *getParseTree();
+  INLINE const ParseTreeNode *getParseTree() const;
+  INLINE void Validate(void);
+  TypeBase* LookupNodeByName(std::string name);
+  TypeBase* LookupNodeByNoSpacesName(std::string name);
+ private:
+  int _parseRecursionLevel;
+  int _structRecursionLevel;
+  ParseTreeNode* _parseTree;
+  void _parseStart(IFFChunkIter* chunkIter);
+  void _recursivePrintParseTree(ParseTreeNode *root);
+  TypeBase* _LookupNodeByName(std::string name, ParseTreeNode* parentNode);
+  TypeBase* _LookupNodeByNoSpacesName(std::string name, ParseTreeNode* parentNode);
+
+  #include "parsefuncdefs.hpi"
+};
+
+#include "oadesciffbinparser.hpi"
+
+#endif

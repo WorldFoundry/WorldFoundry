@@ -1,0 +1,20 @@
+17 Mar 99
+use pigs2/gfxfmt.lib instead of bmp.cc, tga.cc, sgi.cc, et al
+remove profile.cc; use pigs2/ini.lib instead
+move IFF chunk definitions to subdirectories of pigs2/iff
+
+Make stream output for Bitmap classes
+Make stream output for AllocMap
+* Remove palette class entirely -- it's actually no different than Bitmap
+NEW IDEA: maybe make a palette class, but derive it from Bitmap class
+
+*1. RMUV interface (asset id, material # -> x,y,w,h)
+*2. read iff file instead of pf3, vrml
+*3. 24-bit Targa files / 24-bit Windows .bmp files
+4. partition VRAM
+
+*3.5 levelcon update
+*3.9 scarecrows
+
+19 Mar 99
+* rmuv is now in gfx.  textile should use that definition instead of its own local one

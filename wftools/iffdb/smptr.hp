@@ -1,0 +1,82 @@
+//=============================================================================
+// smptr.hp: smart ptr class: Copyright (c) 1996-1999, World Foundry Group  
+// By Kevin T. Seghetti
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+//==============================================================================
+
+template<class T>  class SmartPtr
+{
+public:
+	void Validate() const
+	{
+		assert(ValidPtr(_data));
+	}
+
+	SmartPtr() { _data = NULL; }
+	SmartPtr(const T& other)
+	{
+		_data = new T(other);
+		assert(ValidPtr(_data));
+		Validate();
+	}
+
+	SmartPtr(const SmartPtr& other)
+	{
+		other.Validate();
+		_data = new T(*other._data);
+		assert(ValidPtr(_data));
+		Validate();
+	}
+
+	SmartPtr& operator=(const SmartPtr& other)
+	{
+		Validate();
+		other.Validate();
+		if(this != &other)
+		{
+			if(_data)
+				delete _data;
+			_data = new T(*other._data);
+			assert(ValidPtr(_data));
+		}
+		Validate();
+		return *this;
+	}
+
+	T& operator*()
+	{
+		Validate();
+		return *_data;
+	}
+
+	const T& operator*() const
+	{
+		Validate();
+		return *_data;
+	}
+
+	~SmartPtr()
+	{
+		Validate();
+		delete _data;
+	}
+private:
+	T* _data;
+};
+
+//=============================================================================

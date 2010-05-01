@@ -1,0 +1,253 @@
+//============================================================================
+// oad.hp:
+// Copyright(c) 1995 Cave Logic Studios / PF.Magic
+// By Kevin T. Seghetti
+//============================================================================
+
+// use only once insurance
+#ifndef _oAD_HP
+#define _oAD_HP
+
+//============================================================================
+
+#include "global.hp"
+#include <iff/iffread.hp>
+
+//#include <stl/bstring.h>
+//#include <stl/vector.h>
+#include "asset.hp"
+#pragma pack(1)
+extern "C" {
+#include <oas/oad.h>			// from wfsource
+};
+#pragma pack()
+
+class QLevel;
+class IFFChunkIter;
+
+//============================================================================
+
+const int OAD_STRING_LENGTH = 160;
+
+//============================================================================
+
+class QObjectAttributeDataEntry
+{
+public:
+	bool Valid()
+	{
+        bool valid = true;
+
+		if(_compiledScript || _compiledScriptLength)
+		{
+			if(_compiledScriptLength && _compiledScript)
+				;
+			else
+				valid = false;
+		}
+
+        if(
+		!GetName().length() ||
+		!(GetMin() <= GetMax()) ||
+		!(GetDef() >= GetMin()) ||
+		!(GetDef() <= GetMax())
+          )
+            valid = false;
+		return(valid);
+	}
+
+    void Validate() 
+    {
+        AssertMsg(Valid(),*this);
+    }
+
+	QObjectAttributeDataEntry() { _string = "Uninitialized"; _compiledScript = NULL;	_compiledScriptLength = 0; _scriptText = NULL; _showAs = 0; }
+	~QObjectAttributeDataEntry() { if(_compiledScript) free(_compiledScript); }
+
+	QObjectAttributeDataEntry&
+	operator=(const QObjectAttributeDataEntry& right)
+	{
+		_name = right._name;
+		_type = right._type;				// float, int, fixed, string
+
+		_id = right._id;				// asset ID assigned to this attribute
+		_min =right._min;				// ranged numbers
+		_max =right._max;              // ranged numbers
+		_def = right._def;			// number
+
+		_len= right._len;				// string only
+		_string= right._string;
+
+		_xdata.conversionAction = right._xdata.conversionAction;
+		_xdata.bRequired = right._xdata.bRequired;
+
+// removed 12/16/99 5:47PM, I don't see how it could have ever worked
+//		assert(right._scriptText);
+//		assert(strlen(right._scriptText));
+		_scriptText = right._scriptText;
+		_compiledScriptLength = right._compiledScriptLength;
+
+		if(right._compiledScript)
+		{
+			assert(_compiledScriptLength);
+			if (_compiledScript)
+				free(_compiledScript);
+			_compiledScript = (char*)malloc(_compiledScriptLength);
+			assert(_compiledScript);
+			memcpy(_compiledScript,right._compiledScript,_compiledScriptLength);
+		}
+		else
+			_compiledScript = NULL;
+
+		_showAs = right._showAs;
+		return *this;
+	}
+
+	QObjectAttributeDataEntry(const QObjectAttributeDataEntry& right) {	operator=(right);	}
+
+	bool Load(istream& input, ostream& error);                  // load from binary .oad
+
+    bool LoadIFF(IFFChunkIter& oadIter, ostream& error, vector<QObjectAttributeDataEntry>& entries );    // load from binary .iff
+
+    void LoadIFFEntry(IFFChunkIter& chunkIter, ostream& error);
+
+	size_t SizeOfOnDisk(void) const;									// returns size in bytes of on-disk representation
+
+//	const oadTypeDescriptor& Get(void) const {	return (entry);	}
+
+//	void Set(const oadTypeDescriptor& newEntry)	{ entry = newEntry; }
+
+	friend ostream& operator<<(ostream& s, const QObjectAttributeDataEntry &oad);
+
+	int operator==(const QObjectAttributeDataEntry& left) const;
+
+	buttonType GetType() const { return(_type); }
+	buttonType SetType(buttonType type) { _type = type; return(_type); }
+
+	const string& GetName() const { return(_name); }
+	const string& SetName(const char* name) { _name = string(name); return(_name); }
+	const string& SetName(string& name)  { _name = name; return(_name); }
+
+	packedAssetID GetAssetID() const { return(_id); }
+	packedAssetID SetAssetID(packedAssetID id) { _id = id; return(_id); }
+
+	int32 GetMin() const { return(_min); }
+	int32 SetMin(int32 min)  { _min = min; return(_min); }
+	int32 GetMax() const { return(_max); }
+	int32 SetMax(int32 max)  { _max = max;return(_max); }
+	int32 GetDef() const { return(_def); }
+	int32 SetDef(int32 def)  { _def = def;return(_def); }
+	int32 GetLen() const { return(_len); }
+	int32 SetLen(int32 len)  { _len = len; return _len; }
+
+	visualRepresentation GetShowAs() const { return(_showAs); }
+	visualRepresentation SetShowAs(visualRepresentation showAs)  { _showAs = showAs; return(_showAs); }
+
+	const string& GetString() const { return(_string); }
+	const string& SetString(const string& newString) { _string = newString; return(_string); }
+
+	EConversionAction GetXDataConversionAction() const { return(_xdata.conversionAction); }
+	EConversionAction SetXDataConversionAction(EConversionAction eca) { _xdata.conversionAction = eca; return(_xdata.conversionAction); }
+
+	int32 GetXDataRequired() const { return(_xdata.bRequired); }
+	int32 SetXDataRequired(int32 xdr) { _xdata.bRequired = xdr; return(_xdata.bRequired); }
+	// in memory struct of oad, much smaller than typeDescriptor, can be changed at will
+
+
+	const char* GetCompiledScript() const { return(_compiledScript); }
+	int32 GetCompiledScriptLength() const { return(_compiledScriptLength); }
+	void SetCompiledScript(const char* script, int32 length);
+	const char* GetScriptText() const { return(_scriptText); }
+	void SetScriptText(const char* scriptText) { assert(scriptText); assert(strlen(scriptText)); _scriptText = scriptText; }
+private:
+	string _name;					// label (and structure name)
+	buttonType _type;				// float, int, fixed, string
+
+	packedAssetID _id;				// asset ID assigned to this attribute
+	int32 _min;				// ranged numbers
+	int32 _max;              // ranged numbers
+	int32 _def;			// number
+
+	int16 _len;				// string only
+	string _string;
+
+	struct
+	{
+		EConversionAction conversionAction;
+		int32 bRequired;
+	} _xdata;
+
+	const char* _scriptText;
+	int32 _compiledScriptLength;
+	char* _compiledScript;
+	visualRepresentation _showAs;
+
+private:
+//	oadTypeDescriptor entry;
+};
+
+//============================================================================
+
+class binistream;
+
+class QObjectAttributeData
+{
+public:
+	QObjectAttributeData();
+
+	bool Load(istream& input, ostream& error);              // load binary .oad file
+	bool LoadIFF(binistream& input, ostream& error);           // load binary .iff file
+    
+	bool LoadEntries(istream& input, ostream& error);		// load from a stream which has no header
+	bool SaveStruct(ostream& output, const QLevel& level,
+	                   const char* name, ostream& error);
+	size_t SizeOfOnDisk(void) const;									// returns size in bytes of on-disk representation
+
+//	void Apply(const QObjectAttributeData& overRide);			// override current oad with fields from new oad
+	// returns true if an error occured
+	bool Apply(const char* buffer,int32 length,const char* name);				// override current oad with fields from prj file
+	bool Apply(IFFChunkIter& chunkIter, string objName);
+
+	bool	ContainsButtonType(buttonType type);
+	int32 GetOADFlags(void);
+
+	bool Valid()
+	{
+		for(unsigned int index=0;index < entries.size();index++)
+		{
+			if(!entries[index].Valid())
+				return(0);
+		}
+		return(1);
+	}
+
+    void Validate()
+    {
+
+		for(unsigned int index=0;index < entries.size();index++)
+		{
+			entries[index].Validate();
+		}
+    }
+
+	friend ostream& operator<<(ostream& s, const QObjectAttributeData &oad);
+
+	const QObjectAttributeDataEntry* GetEntryByName(const char* name) const;
+	const QObjectAttributeDataEntry* GetEntryByType(int type) const;  					// returns first instance of an oad which matches the given type
+	int32 GetOADValue(const string& name,ostream& error);
+
+	// these are here to make RW happy
+	int operator==(const QObjectAttributeData& left) const;
+
+	// this data is public, since this isn't really a class, it just has some header information to this list
+	vector<QObjectAttributeDataEntry> entries;			// array of OAD entries
+private:
+	QObjectAttributeDataEntry* _GetEntryByName(const string& name);
+//	int32 GetOADValue(const string& name,ostream& error);
+	void SetFixed32(const string& name,fixed32 value,ostream& error);
+	oadHeader header;
+};
+
+//============================================================================
+#endif
+//============================================================================

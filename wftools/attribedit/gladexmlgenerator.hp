@@ -1,0 +1,21 @@
+#ifndef __GLADEXMLGENERATOR_HP
+#define __GLADEXMLGENERATOR_HP
+
+#include "parsetreenode.hp"
+
+class GladeXMLGenerator
+{
+ public:
+  void generate(ParseTreeNode* root);
+  INLINE void Validate(void) const;
+ private:
+  int _parseRecursionLevel;
+  void _recursiveGenerate(ParseTreeNode* root);
+  int _nodeIsUseful(ParseTreeNode *root) const;
+  int _removeUselessNodes(ParseTreeNode* root, ParseTreeNode* parent);
+};
+
+#include "gladexmlgenerator.hpi"
+
+#endif
+

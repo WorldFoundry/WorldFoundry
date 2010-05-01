@@ -1,0 +1,267 @@
+//==============================================================================
+// oad.hpi
+//==============================================================================
+#include <algorithm>
+    // accessors
+    
+inline const std::string& 
+TypeBase::NameNoSpaces() const
+{
+    return nameNoSpaces;
+}
+    
+inline const std::string& 
+TypeBase::Name() const
+{
+    return name;
+}
+
+inline const std::string& 
+TypeBase::DisplayName() const
+{
+    return displayName;
+}
+
+inline const std::string& 
+TypeBase::Help() const
+{
+    return help;
+}
+
+inline const std::string& 
+TypeBase::EnableExpression() const
+{
+    return enableExpression;
+}
+
+inline TypeBase::ShowAs 
+TypeBase::GetShowAs() const
+{
+    return showAs;
+}
+
+
+
+inline bool 
+TypeBase::Overridden() const
+{
+    return overridden;
+}
+
+
+// modifiers
+inline void 
+TypeBase::Name(const std::string& newName)
+{
+    name = newName;
+    nameNoSpaces = newName;
+
+    nameNoSpaces.erase(
+        remove(nameNoSpaces.begin(),nameNoSpaces.end(),' '),nameNoSpaces.end());
+}
+
+inline void 
+TypeBase::DisplayName(const std::string& newDisplayName)
+{
+    displayName = newDisplayName;
+}
+
+inline void 
+TypeBase::Help(const std::string& newHelp)
+{
+    help = newHelp;
+}
+
+inline void 
+TypeBase::EnableExpression(const std::string& newExpression)
+{
+    enableExpression = newExpression;
+}
+
+inline void 
+TypeBase::SetShowAs(ShowAs newShowAs)
+{
+    showAs = newShowAs;
+}
+
+inline void 
+TypeBase::Overridden(bool newOverridden)
+{
+    overridden = newOverridden;
+}
+
+
+inline
+std::ostream& operator<<(std::ostream& out, const TypeBase& tb)
+{
+    tb.Print(out);
+    return out;
+}
+
+//==============================================================================
+
+inline int32 
+TypeInt32::Min() const
+{
+    return min;
+}
+
+inline int32 
+TypeInt32::Max() const
+{
+    return max;
+}
+
+inline int32 
+TypeInt32::Default() const
+{
+    return def;
+}
+
+inline int32
+TypeInt32::CurrentValue() const
+{
+    if(Overridden())
+        return override;
+    else
+        return Default();
+}
+
+
+inline const std::string& 
+TypeInt32::EnumValues() const
+{
+    return enumValues;
+}
+
+inline void 
+TypeInt32::Min(int32 newMin)
+{
+    min = newMin;
+}
+
+inline void 
+TypeInt32::Max(int32 newMax)
+{
+    max = newMax;
+}
+
+inline void 
+TypeInt32::Default(int32 newDefault)
+{
+    def = newDefault;
+}
+
+inline void
+TypeInt32::CurrentValue(int32 newValue) 
+{
+    Overridden(1);
+    override = newValue;
+}
+
+inline void 
+TypeInt32::EnumValues(const std::string& newEnumValues)
+{
+    enumValues = newEnumValues;
+}
+
+//==============================================================================
+
+inline float 
+TypeFixed32::Min() const
+{
+    return min;
+}
+
+inline float 
+TypeFixed32::Max() const
+{
+    return max;
+}
+
+inline float 
+TypeFixed32::Default() const
+{
+    return def;
+}
+
+inline float 
+TypeFixed32::CurrentValue() const
+{
+    if(Overridden())
+        return override;
+    else
+        return Default();
+}
+
+inline void 
+TypeFixed32::Min(float newMin)
+{
+    min = newMin;
+}
+
+inline void 
+TypeFixed32::Max(float newMax)
+{
+    max = newMax;
+}
+
+inline void 
+TypeFixed32::Default(float newDefault)
+{
+    def = newDefault;
+}
+
+inline void
+TypeFixed32::CurrentValue(float newValue) 
+{
+    Overridden(1);
+    override = newValue;
+}
+
+//==============================================================================
+
+    // accessors
+inline const std::string& 
+TypeString::Default() const
+{
+    return def;
+}
+
+inline const std::string&
+TypeString::CurrentValue() const
+{
+    if(Overridden())
+        return override;
+    else
+        return Default();
+}
+
+inline const std::string& 
+TypeString::Type() const
+{
+    return stringType;
+}
+
+// modifiers
+inline void 
+TypeString::Default(const std::string& newDef)
+{
+    def = newDef;
+}
+
+inline void
+TypeString::CurrentValue(const std::string& newValue) 
+{
+    Overridden(1);
+    override = newValue;
+}
+
+inline void 
+TypeString::Type(const std::string& newType)
+{
+    stringType = newType;
+}
+
+//==============================================================================
+

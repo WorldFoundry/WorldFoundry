@@ -1,0 +1,30 @@
+#ifndef __PARSE_TREE_NODE_HP
+#define __PARSE_TREE_NODE_HP
+
+#include <pigsys/pigsys.hp>
+#include <vector>
+
+typedef struct _Range
+{
+  float min;
+  float max;
+} Range;
+
+class ParseTreeNode;
+class ParseTreeNode
+{
+ public:
+  const std::vector<class ParseTreeNode*>& children() const;
+  std::vector<class ParseTreeNode*>& children();
+  void Validate(void) const;
+  virtual ~ParseTreeNode() {}
+
+ private:
+  std::vector <class ParseTreeNode*> _children;
+  virtual void dummy(void){} // so that we have a virtual func table and can dynamic_cast
+};
+
+#include "parsetreenode.hpi"
+#include "parsenodedefs.hpi"
+
+#endif

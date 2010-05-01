@@ -1,0 +1,86 @@
+//==============================================================================
+// attribedit.hp
+//==============================================================================
+
+#ifndef __ATTRIBEDIT_HP
+#define __ATTRIBEDIT_HP
+
+//==============================================================================
+                
+#include <string>
+#include <vector>
+
+#if defined(USEXML)
+#include <xmlinput.h>
+#define OVERRIDE_FILE_EXTENSION ".xml"
+#else
+#define OVERRIDE_FILE_EXTENSION ".iff"
+#endif
+  
+#include "oadesciffbinparser.hp"
+#include "oad.hp"
+
+//==============================================================================
+                
+class AttributeEditor
+{
+public:
+  AttributeEditor();
+  AttributeEditor(const std::string& overrideName);
+
+  INLINE void Validate() const;
+  const std::string& ClassName() const;
+  void ClassName(const std::string& newName);                // setting the class name causes the oad file to get loaded
+                                                        // (any existing data will be lost)
+  const std::vector<std::string>& ClassList() const;
+  OADescIffBinParser& Parser();
+  void LoadLCFile();
+
+  void LoadOverrideFile(const std::string& filename);
+  void SaveOverrideFile(const std::string& filename, bool binary=false, bool writeAll=false) const;
+
+  const std::string& OutputFileName() const;
+  void OutputFileName(const std::string& newOutputFileName);
+
+  const std::string& WFConfigPath() const;
+
+  void GetAttribEditProfileString(const std::string& section, const std::string& key, std::string& result) const;
+
+#if defined(USEXML)
+  void XMLObjectHandler(XML::Element &elem);
+  void XMLObjectElementHandler(XML::Element &elem);
+#endif
+
+private:
+
+
+    void Construct();                               // used by other constructors
+    void SaveOverrideFileRecurse(OADOutput& iffOut, const ParseTreeNode& root, bool writeAll) const;
+    void LoadOADFile(const std::string& name);
+
+    OADescIffBinParser* parser;
+
+    // list of names of oad class types
+    std::vector<std::string> _oadClassList;
+
+  std::string _className;
+  std::string _outputFileName;
+
+  std::string _wfConfigPath;
+  std::string _iniFilename;
+};                                            
+
+
+
+// kts this is a kludge, design a better way
+extern AttributeEditor* pGlobalEditor;
+class AttributeEditorGUI;
+extern AttributeEditorGUI* pGlobalEditorGUI;
+void GlobalUpdateButtonEnables();                   
+
+//==============================================================================
+#include "attribedit.hpi"
+//==============================================================================
+#endif
+//==============================================================================
+

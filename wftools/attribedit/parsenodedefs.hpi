@@ -1,0 +1,109 @@
+class NonterminalTypeNode : public ParseTreeNode
+{
+};
+class NonterminalStructNode : public ParseTreeNode
+{
+};
+class NonterminalAnyFieldNode : public ParseTreeNode
+{
+};
+class NonterminalF32FieldNode : public ParseTreeNode
+{
+};
+class NonterminalI32FieldNode : public ParseTreeNode
+{
+};
+class NonterminalStringFieldNode : public ParseTreeNode
+{
+};
+class TerminalNameNode : public ParseTreeNode
+{
+ public:
+  TerminalNameNode(const char* name) { assert(name); strncpy(_value,name,256);};
+  char* value() { return _value; }
+ private:
+  char _value [256];
+};
+class TerminalFlagNode : public ParseTreeNode
+{
+ public:
+  TerminalFlagNode(const char* text) { assert(text); strncpy(_value,text,256);};
+  char* value() { return _value; }
+ private:
+  char _value [256];
+};
+class TerminalOpenNode : public ParseTreeNode
+{
+ public:
+  int value() { return _value; }
+ private:
+  int _value ;
+};
+class TerminalFieldNameNode : public ParseTreeNode
+{
+ public:
+  char* value() { return _value; }
+ private:
+  char _value [256];
+};
+class TerminalDisplayNameNode : public ParseTreeNode
+{
+ public:
+  char* value() { return _value; }
+ private:
+  char _value [256];
+};
+class TerminalRangeNode : public ParseTreeNode
+{
+ public:
+  Range value() { return _value; }
+ private:
+  Range _value ;
+};
+class TerminalDataNode : public ParseTreeNode
+{
+};
+class TerminalDisplayTypeNode : public ParseTreeNode
+{
+ public:
+  int value() { return _value; }
+ private:
+  int _value ;
+};
+class TerminalHelpNode : public ParseTreeNode
+{
+ public:
+  char* value() { return _value; }
+ private:
+  char _value [256];
+};
+class TerminalHintNode : public ParseTreeNode
+{
+ public:
+  TerminalHintNode(const char* text) { assert(text); strncpy(_value,text,256);};
+  char* value() { return _value; }
+ private:
+  char _value [256];
+};
+class TerminalEnabledNode : public ParseTreeNode
+{
+ public:
+  int value() { return _value; }
+ private:
+  int _value ;
+};
+class TerminalChoiceListNode : public ParseTreeNode
+{
+ public:
+  char* value() { return _value; }
+ private:
+  char _value [512];
+};
+class NonterminalBoolFieldNode : public ParseTreeNode
+{
+};
+class TerminalDefNode : public ParseTreeNode
+{
+};
+
+

@@ -1,0 +1,95 @@
+//==============================================================================
+// global.hp: Copyright (c) 1996-1999, World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+//==============================================================================
+
+#ifndef GLOBAL_HP
+#define GLOBAL_HP
+
+#if defined(__LINUX__)
+#include <unistd.h>
+#endif
+#include <string>
+#include <vector>
+#include <iostream>
+#if !defined(__LINUX__)
+#include <ostream>
+#include <istream>
+#endif
+using namespace std;
+
+#if !defined(__WIN__)
+
+#define stricmp strcasecmp
+#define strnicmp strncasecmp
+
+#define _MAX_DRIVE 2
+#define _MAX_EXT 10
+#define _MAX_DIR PATH_MAX
+#define _MAX_FNAME PATH_MAX
+
+inline 
+int filelength(int file) 
+{
+    int curPos = lseek(file,0,SEEK_CUR);
+    int length = lseek(file,0,SEEK_END);
+    lseek(file,curPos,SEEK_SET);
+    return length;
+}
+
+#endif
+
+#if defined(__WIN__)
+#define PATH_MAX _MAX_PATH
+#endif
+
+#if 0
+#error
+
+#	define AssertMsg( exp, str )\
+ 		do\
+		{\
+ 			if( !( exp ) )\
+ 			{\
+				cerr << "旼 ASSERTION MESSAGE 컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴커\n"; \
+ 				cerr << "AssertMsg:" << str << endl;\
+ 				assert( exp );\
+ 			}\
+ 		} while( 0 )
+
+
+
+#	define RangeCheck( value, min, max) \
+		AssertMsg((value) >= (min), #min " = " << (min) << ", " << #value " = " << (value) ); \
+		AssertMsg((value) < (max), #value " = " << (value) << ", " #max " = " << (max) );
+
+
+#	define RangeCheckInclusive( value, min, max) \
+		AssertMsg((value) >= (min), #min " = " << (min) << ", " << #value " = " << (value) ); \
+		AssertMsg((value) <= (max), #value " = " << (value) << ", " #max " = " << (max) );
+
+#	define RangeCheckExclusive( value, min, max) \
+		AssertMsg((value) > (min), #min " = " << (min) << ", " << #value " = " << (value) ); \
+		AssertMsg((value) < (max), #value " = " << (value) << ", " << #max " = " << (max) );
+#endif
+
+
+//==============================================================================
+#endif          // GLOBAL_HP
+//==============================================================================
+

@@ -1,0 +1,127 @@
+//==============================================================================
+// grammer.hp: Copyright (c) 1996-1999, World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+//==============================================================================
+
+#ifndef GRAMMAR_HP
+#define GRAMMAR_HP
+
+#include <pigsys/pigsys.hp>
+#include <iffwrite/iffwrite.hp>
+
+#include <cstdlib>
+#include <vector>
+#include <iostream>
+#include <fstream>
+
+#include <malloc.h>
+
+#include "symbol.hp"
+#include "strtable.hp"
+#include "function.hp"
+
+class Backpatch
+{
+public:
+	Backpatch( Function* );
+//	Backpatch( int nLine, int nOffset );
+	Backpatch();
+	~Backpatch();
+	void doBackpatch( Function* );
+//	void backpatch( int nEndLine, int nEndOffset );
+
+//	int _nLine;
+	Function* _fn;
+	int _nOffset;
+};
+
+
+class aiGrammar
+{
+public:
+	aiGrammar( const char* _szInputFile, istream* input );
+	aiGrammar( const char* _szInputFile );
+	~aiGrammar();
+
+	Function* function();
+//	const Function& function() const;
+	vector <Function*> _tblFunction;
+
+//	void next_line() { function()->next_line(); }
+	void out_int32( int32 val ) { function()->out_int32( val ); }
+	void out_opcode( int32 opcode, const char* szOpcodeName = "" ) { function()->out_opcode( opcode, szOpcodeName ); }
+	void end_opcode() { function()->end_opcode(); }
+	void out_class( int32 class_name ) { function()->out_class( class_name ); }
+	void out_actor( const char* szActorName ) { function()->out_actor( szActorName ); }
+	void out_number( Scalar _number, const char* szNumberName = NULL ) { function()->out_number( _number, szNumberName ); }
+	void out_string( const char* szString ) { function()->out_string( szString ); }
+
+
+	void def_lambda( const char* szDef, const char* szLambda );
+	void closure();
+
+	void Error( const char* fmt, ... );
+	void Warning( const char* fmt, ... );
+
+	Symbol* find_symbol( const char* szSymbolName );
+	void add_symbol( const char* szSymbolName, Scalar nSymbolValue );
+	Symbol* find_mailbox( const char* szSymbolName );
+	void add_mailbox( const char* szMailboxName, Scalar nSymbolValue );
+
+	const char* filename() const	{ return _filename; }
+
+	void yyparse();
+
+protected:
+	vector< Function* > _program;
+
+public:
+	StringTable _stringTable;
+
+	vector <Backpatch> _tblBackpatch;
+
+	enum { _MAX_SYMBOLS = 2000 };
+	Symbol tblSymbols[ _MAX_SYMBOLS ];
+	int nSymbols;
+
+	enum { _MAX_MAILBOXES = 700 };
+	Symbol tblMailboxes[ _MAX_MAILBOXES ];
+	int nMailboxes;
+
+	ofstream& parseLog() const		{ assert( _parseLog ); return *_parseLog; }
+
+#pragma message( "Need better name" )
+	void commit( Function* );
+
+protected:
+	void _construct( const char* _szInputFile );
+	void printIncludeList() const;
+
+	char _filename[ _MAX_PATH ];
+
+	char szErrorFile[ _MAX_PATH ];
+	ofstream* error;
+	char szOutputFile[ _MAX_PATH ];
+
+	ofstream* binout;
+
+	ofstream* _parseLog;
+};
+extern aiGrammar* theGrammar;
+
+#endif	// GRAMMAR_HP

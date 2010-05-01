@@ -1,0 +1,13 @@
+This program was started in 1995, and grew and evolved with the game engine.
+It started as a DOS/4G program which read 3DSR4 project files, in 1997 it was 
+port to 3DSStudio Max as a plugin, then in late 1999 it was ported back
+to a command line program (win32 this time) that reads .lev files (iff format)
+exported from Max. This was done to separate the level conversion code from the
+level editing package in preperation for porting to linux and some other
+3d program.
+Needless to say, the code base is a mess. A lot of cruft has accumulated, and
+it really needs a re-write. However, the game engine is a bit persnickity
+about its level format, so this is not a small task, and therefore this tool
+remains.
+
+

@@ -1,0 +1,50 @@
+//==============================================================================
+// textile.hp: Copyright (c) 1996-1999, World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+//==============================================================================
+
+#ifndef TEXTILE_HP
+#define TEXTILE_HP
+
+#include <fstream>
+using namespace std;
+
+inline const char*
+error()
+{
+	return "TEXTILE error: ";
+}
+
+
+inline const char*
+warning()
+{
+	return "TEXTILE warning: ";
+}
+
+
+#define BR_COLOUR_RGB_555( r, g, b ) \
+	( ((uint16)(r) & 0xF8) << (10-3) | \
+	((uint16)(g) & 0xF8) << (5-3) | \
+	((uint16)(b) & 0xF8) >> 3 )
+
+
+class HTML_ofstream;
+extern ofstream* log;
+
+#endif

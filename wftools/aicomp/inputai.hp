@@ -1,0 +1,133 @@
+//==============================================================================
+// inputai.hp: Copyright (c) 1996-1999, World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+//==============================================================================
+
+#ifndef INPUTAI_HP
+#define INPUTAI_HP
+
+#include "airun.hp"
+
+#if defined( __GAME__ )
+#include "global.hp"
+#include "actor.hp"
+#include "oas/ai.ht"
+#else
+
+#include <math/scalar.hp>
+#include <math/vector.hp>
+
+typedef unsigned long joystickButtonsF;
+
+class Input
+{
+public:
+	Input()						{ }
+	virtual ~Input()			{ }
+
+	virtual joystickButtonsF read() = 0;
+	virtual joystickButtonsF readRaw() = 0;
+	virtual void setButtons( joystickButtonsF ) = 0;
+};
+
+class Actor
+	{
+	};
+
+struct AISCRIPT
+	{
+	};
+
+struct _AI
+	{
+	};
+
+#endif
+
+class InputAI : public Input
+	{
+public:
+//	InputAI( Actor* );
+	InputAI( const Actor*, const AISCRIPT*, const _AI* );
+	virtual ~InputAI()			{ }
+
+	virtual void reset();
+
+	virtual joystickButtonsF read();
+	virtual joystickButtonsF readRaw();
+	virtual void setButtons( joystickButtonsF );
+	bool timer( int ) const;
+	bool timerNotExpired( int ) const;
+	void setTimer( int, Scalar );
+	void setTimerFromNow( int, Scalar );
+//	Scalar distance() const;
+//	bool los() const;
+	void sleep( Scalar );
+	void collidedWith( const Actor::EActorKind, const ESide side );
+	ESide collidedWithSide() const;
+	Actor::EActorKind collidedWith() const;
+
+protected:
+	joystickButtonsF chase( const Scalar x, const Scalar y );
+	joystickButtonsF chase( const Actor* );
+	joystickButtonsF patrol( const Actor* );
+	joystickButtonsF runAwayFrom( const Actor* );
+
+	virtual joystickButtonsF runto( const Vector3& v );
+	virtual joystickButtonsF runto( const Actor* a );
+
+	Actor* _me;
+	int32 _action;
+//	Actor* _pTarget;
+//	Scalar _distanceToTarget;
+	joystickButtonsF _buttons;
+	enum { NUM_TIMERS = 4 };
+	Scalar _timer[ NUM_TIMERS ];
+	Scalar _sleepUntil;
+	Actor::EActorKind _collidedWith;
+	ESide _collidedWithSide;
+
+	AISCRIPT* _pAiScript;
+//	AISCRIPT* _pAiScriptStart;
+	joystickButtonsF airun();
+
+private:
+	_AI* _dogData;
+	bool _turnRight;
+	Vector3 _lastPos;
+	// Add new timer equates here
+	enum
+		{
+		timerJump,
+		timerHoldJump,
+		timerReverse,
+		timerEvade,
+
+		NUM_DOG_TIMERS,
+		} TimerTypeEnum;
+	// double check /** WARNING - THIS CHECK DOES NOT SEEM TO WORK! **/
+	#if NUM_DOG_TIMERS > NUM_TIMERS
+		#error too many timers created for dog AI (need to increase NUM_TIMERS)
+	#endif
+
+	INLINE Scalar pop();
+	Scalar eval_expression();
+	bool execute_program();
+	};
+
+#endif
