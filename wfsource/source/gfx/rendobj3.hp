@@ -1,0 +1,144 @@
+//=============================================================================
+// RenderObject3D.hp: 3D renderable object
+// Copyright ( c ) 1997,1998,1999,2000,2001,2002 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description:
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+#ifndef _RenderObject3D_H
+#define _RenderObject3D_H
+
+//============================================================================
+// Includes
+//============================================================================
+
+#include <pigsys/pigsys.hp>
+#include <math/vector3.hp>
+#include <math/matrix34.hp>
+#include <memory/memory.hp>
+#include <iff/iffread.hp>
+#include <gfx/prim.hp>
+#include <gfx/face.hp>
+#include <gfx/display.hp>
+#include <gfx/viewport.hp>
+#include <gfx/vertex.hp>
+#include <gfx/math.hp>
+#include <gfx/handle.hp>
+#include <gfx/material.hp>
+#include <gfx/renderer.hp>
+#include <gfx/callbacks.hp>
+
+//============================================================================
+// Class and Structure Prototypes
+//============================================================================
+// deal only in tri's
+
+class RenderObject3D
+{
+public:
+	RenderObject3D( Memory& memory, binistream& input, int32 userData, const GfxCallbacks& callbacks );                 // userData is passed back to LookupTexture
+	RenderObject3D(Memory& memory, int vertexCount, Vertex3D* vertexList, int faceCount, TriFace* faceList, const Material* materialList );
+	RenderObject3D( Memory& memory, const RenderObject3D& );
+	~RenderObject3D();
+	void ApplyMaterials( const Material* materialList );
+	void Render(ViewPort& vp,const Matrix34& position);
+
+	Vertex3D* GetWrittableVertexList();	// should only be used by the animation system
+	int GetVertexCount() const;	// should only be used by the animation system
+	INLINE bool GetHandle(const HandleID thisHandle, Vector3& position) const;
+
+	inline void Validate() const;
+private:
+	// used by constructors
+	void Construct( Memory& memory, int vertexCount,Vertex3D* vertexList, int faceCount, TriFace* faceList, const Material* materialList );
+
+#if defined(RENDERER_PIPELINE_SOFTWARE)
+#	include <gfx/softwarepipeline/renderer.inc>
+#elif defined(RENDERER_PIPELINE_PSX)
+#	include <gfx/psx/renderer.inc>
+#elif defined( RENDERER_PIPELINE_GL)
+#	include <gfx/glpipeline/renderer.inc>
+#elif defined( RENDERER_PIPELINE_DIRECTX)
+#	include <gfx/directxpipeline/renderer.inc>
+#else
+#	error Undefined platform for renderer pipeline
+#endif
+	enum { MAX_RENDERERS = 8 };
+	Primitive*	_primList[ORDER_TABLES];				// array of primitives, same # as face list
+	const Material*	_materialList;
+
+	int			_handleCount;		// number of handles in this object
+	Handle*		_handleList;		// array of [HandleID, vertexIndex] pairs
+
+	friend class Material;
+
+	int			_vertexCount;
+	Vertex3D*	_vertexList;
+	int			_faceCount;
+	TriFace*	_faceList;
+
+	// constructor common code/helper functions
+	void _InitPrimList( Memory& );
+
+	// not to be called
+	RenderObject3D( const RenderObject3D& );
+};
+
+//============================================================================
+
+struct Vertex3DOnDisk
+{
+	fixed32 u,v;					        // UV coordinates for this vertex in the texture page, if textured
+	Color color;						// vertex color, if shaded
+   fixed32 x,y,z;
+//	Vector3 position;					// position, in local coordinates
+};
+
+//============================================================================
+
+struct RotatedVector
+{
+	Vector3_PS _originalVector;
+	Vector3_PS _resultingVector;
+	int32 _ir0;
+	int32 _xy;
+	int32 _flags;
+	int32 _z;
+};
+
+
+#if defined(RENDERER_PIPELINE_SOFTWARE)
+#	include <gfx/softwarepipeline/rendobj3.hp>
+#elif defined(RENDERER_PIPELINE_PSX)
+#	include <gfx/psx/rendobj3.hp>
+#elif defined(RENDERER_PIPELINE_GL)
+#		include <gfx/glpipeline/rendobj3.hp>
+#elif defined(RENDERER_PIPELINE_DIRECTX)
+#		include <gfx/directxpipeline/rendobj3.hp>
+#else
+#		error platform not defined
+#endif
+
+//============================================================================
+#include <gfx/rendobj3.hpi>		// include all inline definitions as appropriate
+//=============================================================================
+#endif
+//=============================================================================

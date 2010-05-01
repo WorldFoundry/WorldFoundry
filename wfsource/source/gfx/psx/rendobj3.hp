@@ -1,0 +1,94 @@
+//=============================================================================
+// psx/RenderObject3D.hp: 3D renderable object
+// Copyright ( c ) 1997,99 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description: psx specific data structures, etc.
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+#ifndef _PsxRenderObject3D_H
+#define _PsxRenderObject3D_H
+
+//=============================================================================
+
+// store ir0 from gte
+#define gte_stir0( r0 ) __asm__ volatile (			\
+	"swc2	$8, 0( %0 )"					\
+	:							\
+	: "r"( r0 )						\
+	: "memory" )
+
+
+// load ir0 into gte
+#define gte_ldir0( r0 ) __asm__ volatile (			\
+	"lwc2	$8, 0( %0 )"					\
+	:							\
+	: "r"( r0 ) )
+
+// load screen xy into gte from prim
+#define gte_ldsxy3_f3( r0 ) __asm__ volatile (			\
+	"lwc2	$12, 8( %0 );"					\
+	"lwc2	$13, 12( %0 );"					\
+	"lwc2	$14, 16( %0 )"					\
+	:							\
+	: "r"( r0 ) )
+
+#define gte_ldsxy3_g3( r0 ) __asm__ volatile (			\
+	"lwc2	$12, 8( %0 );"					\
+	"lwc2	$13, 16( %0 );"					\
+	"lwc2	$14, 24( %0 )"					\
+	:							\
+	: "r"( r0 ) )
+
+#define gte_ldsxy3_ft3( r0 ) __asm__ volatile (			\
+	"lwc2	$12, 8( %0 );"					\
+	"lwc2	$13, 16( %0 );"					\
+	"lwc2	$14, 24( %0 )"					\
+	:							\
+	: "r"( r0 ) )
+
+#define gte_ldsxy3_gt3( r0 ) __asm__ volatile (			\
+	"lwc2	$12, 8( %0 );"					\
+	"lwc2	$13, 20( %0 );"					\
+	"lwc2	$14, 32( %0 )"					\
+	:							\
+	: "r"( r0 ) )
+
+//-----------------------------------------------------------------------------
+
+struct RendererVariables
+{
+	ViewPort* viewPort;
+	long flags;
+	long zflag;
+	long sz[3];
+	long ir0[3];
+ 	POLYVECT tempVect;
+	const TriFace* currentRenderFace;
+	const Material* currentRenderMaterial;
+	const RotatedVector* rotatedVectorList;
+	const Vertex3D* vertexList;
+	Vector3_PS gteVect[3];
+	int facesLeft;
+};
+
+//=============================================================================
+#endif
+//=============================================================================

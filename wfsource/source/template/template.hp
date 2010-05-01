@@ -1,0 +1,12 @@
+// template.hp
+
+#ifndef TEMPLATE_TEMPLATE_HP
+#define TEMPLATE_TEMPLATE_HP
+
+#include <pigsys/pigsys.hp>
+#include <template/symbol.hp>
+#include <vector>
+
+std::string _template( std::string szTemplate, std::vector<Symbol> tblSymbols );
+
+#endif	// TEMPLATE_TEMPLATE_HP

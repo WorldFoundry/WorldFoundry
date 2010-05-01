@@ -1,0 +1,29 @@
+#ifndef BUTTONS_CHECKBOX_HP
+#define BUTTONS_CHECKBOX_HP
+
+#include <attrib/oaddlg.hp>
+#include <attrib/buttons/button.hp>
+
+class CheckBox : public uiDialog
+{
+public:
+	CheckBox::CheckBox( typeDescriptor* td );
+	virtual CheckBox::~CheckBox();
+
+	virtual void show_hide( int msgCode );
+	dataValidation copy_to_xdata( byte* & saveData );
+	int make_dialog_gadgets( HWND );
+	void reset( byte* & );
+
+	int storedDataSize() const;
+	//virtual void activate( HWND );
+	virtual bool enable( bool );
+	virtual double eval() const;
+
+protected:
+	virtual void reset();
+	void reset( int );
+	HWND hwndCheckbox;
+};
+
+#endif	// BUTTONS_CHECKBOX_HP

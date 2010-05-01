@@ -1,0 +1,35 @@
+#ifndef BUTTONS_FILENAME_HP
+#define BUTTONS_FILENAME_HP
+
+#include <attrib/oaddlg.hp>
+#include <attrib/buttons/button.hp>
+
+class Filename : public uiDialog
+{
+public:
+	Filename::Filename( typeDescriptor* td );
+	virtual Filename::~Filename();
+
+	virtual void show_hide( int msgCode );
+	dataValidation copy_to_xdata( byte* & saveData );
+	int make_dialog_gadgets( HWND );
+	void reset( byte* & );
+
+	virtual void activate( HWND );
+
+	int storedDataSize() const;
+
+	virtual bool enable( bool bEnabled );
+	virtual double eval() const;
+
+protected:
+	bool validReference( const char* szFilename ) const;
+
+	virtual void reset();
+	void reset( char* );
+	HWND hwndEdit;
+//	ICustEdit* _edit;
+	HWND hwndBrowseButton;
+};
+
+#endif	// BUTTONS_FILENAME_HP

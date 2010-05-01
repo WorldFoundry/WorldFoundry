@@ -1,0 +1,100 @@
+//=============================================================================
+// gfx/face.hpi: graphics face inlines
+// Copyright ( c ) 1997,1998,1999,2000,2001 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description:
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+#pragma message ("KTS " __FILE__ ": move this into the math directory")
+inline Vector3
+CalculateNormal( const Vector3& v0, const Vector3& v1, const Vector3& v2 )
+{
+//	cout << "Calculate Normal:" << std::endl;
+	Vector3 fn;
+	Vector3 a,b;
+
+   // kts reversed 12/3/2001 02:30:35 for our handedness
+	a = v2 - v0;
+	b = v1 - v0;
+	fn = a.CrossProduct(b);
+//	cout << "cross product = " << fn << std::endl;
+	fn.Normalize();
+
+//	cout << "v0 = " << v0 << ", v1 = " << v1 << ", v2 =" << v2 << std::endl;
+//	cout << "v1-v0 = " << a << std::endl;
+//	cout << "v2-v0 = " << b << std::endl;
+//	cout << "result = " << fn << std::endl;
+
+//	Scalar d =	fn.DotProduct(v0);
+	return(fn);
+}
+
+//============================================================================
+
+inline
+TriFace::TriFace( int16 v0, int16 v1, int16 v2, int16 mi )		// For 2D faces only
+{
+	v1Index = v0;
+	v2Index = v1;
+	v3Index = v2;
+	materialIndex = mi;
+}
+
+//============================================================================
+
+inline
+TriFace::TriFace( int16 v0, int16 v1, int16 v2, int16 mi, Vertex3D* vertexList )		// For 3D faces only
+{
+//		cout << "TriFace constructed at address " << this << std::endl;
+	v1Index = v0;
+	v2Index = v1;
+	v3Index = v2;
+	materialIndex = mi;
+	normal = Vector3ToPS12( CalculateNormal(
+			PSToVector3(vertexList[v0].position),
+			PSToVector3(vertexList[v1].position),
+			PSToVector3(vertexList[v2].position) ) );
+#ifdef __WIN__
+	assert((normal.Length()) > Scalar::zero);
+#endif
+//		cout << *this << std::endl;
+}
+
+//============================================================================
+
+#if DO_IOSTREAMS
+
+inline std::ostream&
+operator << ( std::ostream& s, const TriFace& tf )
+{
+	s << "TriFace: Vertex Indices : " << tf.v1Index << "," << tf.v2Index << "," << tf.v3Index << std::endl;
+	s << "  Material Index: " << tf.materialIndex << std::endl;
+	s << "  Normal: ";
+#if defined(RENDERER_PIPELINE_PSX)
+	tf.normal.PrintAs412(s) << std::endl;
+#else
+	s << tf.normal << std::endl;
+#endif
+	return s;
+}
+
+#endif // DO_IOSTREAMS
+//==============================================================================

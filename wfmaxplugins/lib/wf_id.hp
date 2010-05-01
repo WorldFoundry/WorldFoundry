@@ -1,0 +1,144 @@
+// wf_id.hp
+
+#pragma once
+
+#ifndef WF_ID_HP
+#define WF_ID_HP
+
+#include <memory>
+
+class Options
+{
+public:
+	Options()	{ memset( this, 0, sizeof( *this ) ); }
+	bool bVerbose;
+};
+
+// Use for category (at least), probably other things, too
+#define WORLD_FOUNDRY			"World Foundry"
+
+// Registry
+#define szRegWorldFoundryGDK	"Software\\World Foundry\\GDK"
+
+#define DEFAULT_CLASS "disabled"
+
+// MAX2LVL
+#define MAX2LVL_PlugIn	"max2lvl.dle"
+//typedef int (*EXPORT_LEVEL_PROC)();
+typedef int (*EXPORT_LEVEL_PROC)( const char* );
+
+// TERRAIN
+#define Terrain_ClassID	Class_ID(0x1e640759, 0x66bc0ec0)
+#define Terrain_ClassName	_T( "Terrain" )
+#define PB_SEED			0
+#define PB_SCALE		1
+#define PB_FRACTAL		2
+#define PB_ROUGH		3
+#define PB_ITERATIONS	4
+#define PB_ANIMATE		5
+#define PB_FREQ			6
+#define PB_PHASE		7
+#define PB_STRENGTH		8
+#define PB_IMAGE_FILENAME	9
+
+// HANDLE
+#define Handle_ClassID	Class_ID( 0x303c159d, 0x8f07803 )
+#define Handle_ClassName	_T( "Handle" )
+#define PB_INDEX_ID					0
+#define PB_INDEX_SELECTED_VERTEX	1
+
+// TOOLBAR
+#define Toolbar_ClassID	Class_ID( 0x24a66ce7, 0x2f712160 )
+#define Toolbar_ClassName	_T( "Toolbar" )
+
+// ATTRIBUTES
+#define Attrib_ClassID	Class_ID( 0x20df45a9, 0x774a2457 )
+#if !defined( __ATTRIB__ )
+class Attributes
+{
+public:
+	enum
+	{
+		SLOT_CLASS,
+		SLOT_OAD
+	};
+};
+#endif
+#define Attrib_ClassName_Clipboard	"c:/class.clp"
+#define Attrib_OAD_Clipboard		"c:/oad.clp"
+
+
+// COLOUR
+#define Colour_ClassID	Class_ID( 0x767c720a, 0x5a217505 )
+
+#include "sizespec.hp"
+// MAX2IFF
+#define Max2Iff_ClassID	Class_ID( 0x39a24f5d, 0x31a4349b )
+class INode;
+class _IffWriter;
+class max2iffOptions : public Options
+{
+public:
+	bool bOutputBinary;
+	bool bOutputGeometry;
+	bool bOutputAnimation;
+	bool bOutputHandles;
+	bool bOutputMaterials;
+	bool bOutputEvents;
+	bool bOutputGlobalPosition;
+	bool bOutputGlobalRotation;
+	bool bOutputGlobalScale;
+	double geometryScale;
+	size_specifier sizeReal;
+	size_specifier sizeQuaternion;
+
+	max2iffOptions()
+	{
+		bOutputBinary = bOutputGeometry = bOutputAnimation = bOutputHandles =
+		bOutputMaterials = bOutputEvents = bOutputGlobalPosition =
+		bOutputGlobalRotation = bOutputGlobalScale = false;
+		geometryScale = 1.0;
+		sizeReal = sizeQuaternion = fp_1_15_16;
+	}
+};
+typedef bool (*EXPORT_MESH_QUERY_PROC)( INode*, const char* szOutputFilename );
+extern "C" bool max2iff_Query( INode* pNode, const char* szOutputFilename );
+typedef bool (*EXPORT_MESH_PROC)( INode*, _IffWriter*, const max2iffOptions* );
+extern "C" bool max2iff( INode* pNode, _IffWriter*, const max2iffOptions* );
+#define MAX2IFF_PlugIn	"max2iff.dle"
+
+// RESTORE
+#define Restore_ClassID	Class_ID( 0x92e51e2, 0x1ddb3ee3 )
+#define Restore_ClassName	_T( "Restore" )
+
+// SLOPE
+#define Slope_ClassID	Class_ID( 0x15ff783d, 0x4ff2567a )
+#define Slope_ClassName		_T( "Slope" )
+
+// TXT2OAD
+#define Txt2Oad_ClassID	Class_ID( 0x798c22c5, 0x133e3c92 )
+#define Txt2Oad_ClassName	_T( "txt2oad" )
+
+// OAD2TXT
+#define Oad2Txt_ClassID	Class_ID( 0x10b911b4, 0x7e9a1158 )
+#define Oad2Txt_ClassName	_T( "oad2txt" )
+
+// MAX2IFFLVL
+#define Max2IffLvl_ClassID	Class_ID(0x4fc73d53, 0x49d76c04)
+#define Max2IffLvl_ClassName	_T( "max2ifflvl" )
+class max2ifflvlOptions : public Options
+{
+public:
+	max2iffOptions max2iffOptions;
+	bool bOutputAttributes;
+	bool bOutputPaths;
+	bool bOutputModels;
+	size_specifier sizeQuaternion;
+
+	max2ifflvlOptions()
+	{
+		bOutputAttributes = bOutputPaths = bOutputModels = true;
+		sizeQuaternion = fp_1_15_16;
+	}
+};
+#endif

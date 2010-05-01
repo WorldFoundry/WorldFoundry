@@ -1,0 +1,36 @@
+// oad.hp
+
+#include <pigsys/pigsys.hp>
+#include <pigsys/assert.hp>
+#include <oas/oad.h>
+#include <string>
+using namespace std;
+
+class Oad
+{
+public:
+	Oad( const char* );
+	~Oad();
+
+#if 0
+	//TODO
+	1. constructor to take stream
+	2. static Find() which locates in OAD_DIR
+#endif
+
+	typeDescriptor* startOfTypeDescriptors() const;
+	int len() const;
+
+	const std::string& className() const;
+	const std::string& fileName() const;
+
+protected:
+	oadFile* _oadFileChunk;
+	int32 _len;
+	typeDescriptor* _td;
+
+	std::string _szFileName;
+	std::string _szClassName;
+};
+
+

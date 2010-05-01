@@ -1,0 +1,27 @@
+#!/bin/sh
+
+# buildlvl
+# Copyright 2001 World Foundry group
+# By Kevin T. Seghetti
+
+pwd >files.lst
+find `pwd`/*.i3d -print >>files.lst
+find `pwd`/*.max -print >>files.lst
+../../bin/prep ../unixassetdir.prp assetdir
+chmod a+x assetdir
+./assetdir
+#rem dir /S /B *.i3d >>files.lst
+#rem dir /S /B *.iff >>files.lst
+#rem dir /S /B *.map >>files.lst
+#rem dir /S /B *.wav >>files.lst
+
+if [ -z $WF_TARGET ]; then
+WF_TARGET=linux
+fi
+
+if [ -z $1 ]; then
+perl ../unixmakelvl.pl $WF_TARGET <files.lst
+else
+perl ../unixmakelvl.pl $1 <files.lst
+fi
+

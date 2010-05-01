@@ -1,0 +1,134 @@
+//============================================================================
+// room.hpi:
+// Copyright (c) 1996,1997,1999,2000,2002,2003 World Foundry Group 
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description: The Room class encapsulates data and behavior for a room
+//              in the game.
+// Original Author: Kevin T. Seghetti
+// ===========================================================================
+
+#include <physics/colbox.hp>
+
+//============================================================================
+
+INLINE void
+Room::Validate() const
+{
+#if DO_VALIDATION
+	//RangeCheck(0,_roomIndex,theLevel->GetLevelRooms().NumberOfRooms());
+//	_physicalAttributes.Validate();
+
+#if DO_VALIDATION > 1
+	for(int index=0;index< MAX_ACTIVE_ROOMS; index++)
+	{
+		if(adjacentRooms[index])
+		{
+			ValidatePtr(adjacentRooms[index]);
+
+			// cannot validate adjacentRooms since will cause a loop
+//			adjacentRooms[index]->Validate();
+		}
+	}
+#endif
+   for(int listIndex=0;listIndex<_checkListEntries;listIndex++)
+   {
+      _objectLists[listIndex].Validate();
+   }
+#endif
+
+   assert(ValidPtr(_roomCallbacks));
+   _roomCallbacks->Validate();
+   assert(ValidPtr(_masterObjectList));
+   _masterObjectList->Validate();
+}
+
+//============================================================================
+
+#if SW_DBSTREAM > 0
+INLINE std::ostream& operator << ( std::ostream& s, const Room& r )
+{
+	r.Validate();
+	s << "Room #: " << r._roomIndex << std::endl;
+   for(int listIndex=0;listIndex<r._checkListEntries;listIndex++)
+   {
+      s << "	objectList[" << listIndex << "]: " << r._objectLists[listIndex] << std::endl;
+   }
+	return s;
+}
+#endif
+
+//==============================================================================
+
+INLINE BaseObjectIteratorWrapper
+Room::ListIter(int index) const
+{
+   RangeCheck(0,index,_checkListEntries);
+	Validate();
+   _objectLists[index].Validate();
+
+   BaseObjectIteratorFromInt16List iter(_objectLists[index],*_masterObjectList);
+   return BaseObjectIteratorWrapper(iter);
+}
+
+//============================================================================
+
+INLINE Room*
+Room::GetAdjacentRoom(int index) const
+{
+	Validate();
+	assert( index <MAX_ACTIVE_ROOMS);
+	return(adjacentRooms[index]);
+}
+
+//==============================================================================
+// kts probably want this, but haven't used it yet
+// INLINE bool
+// Room::CheckCollision(const PhysicalAttributes& pa) const
+// {
+//    Validate();
+//    return ( _physicalAttributes.CheckCoarseCollision(pa );
+// }
+
+//============================================================================
+
+INLINE bool
+Room::CheckCollision(const PhysicalObject& object) const
+{
+	Validate();
+	return ( _physicalAttributes.CheckCoarseCollision(object.GetPhysicalAttributes()) );
+}
+
+INLINE bool
+Room::CheckCollision(const ColSpace& object, const Vector3& objpos) const
+{
+	Validate();
+	return ( _physicalAttributes.GetColSpace().CheckCollision(_physicalAttributes.Position(), object, objpos));
+}
+
+//============================================================================
+
+INLINE int
+Room::GetRoomIndex() const
+{
+	Validate();
+	return(_roomIndex);
+}
+
+//=============================================================================

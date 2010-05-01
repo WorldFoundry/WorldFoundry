@@ -1,0 +1,68 @@
+//=============================================================================
+// Primitive.hp: Primitive hardware abstraction class
+// Copyright ( c ) 1997,1999,2000,2001 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description: The Primitive class encapsulates data and behavior for a single
+//	 polygon
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+#ifndef _Primitive_H
+#define _Primitive_H
+
+//============================================================================
+// Includes
+//============================================================================
+
+#include <pigsys/pigsys.hp>
+#include <gfx/renderer.hp>
+
+//============================================================================
+// Class and Structure Prototypes
+//============================================================================
+
+class Primitive
+{
+public:
+	union
+	{
+		struct
+		{
+			P_TAG* addr;
+			uint8 r0, g0, b0, code;
+       	}
+//#if defined( __GNUC__ )
+		base
+//#endif
+		;
+		POLY_F3 f3;
+		POLY_G3 g3;
+		POLY_FT3 ft3;
+		POLY_GT3 gt3;
+		SPRT_16 sp16;
+#if defined(__PSX__)
+		DR_MODE dm;
+#endif
+	};
+};
+
+//=============================================================================
+#endif		// _Primitive_H
+//=============================================================================

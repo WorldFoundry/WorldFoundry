@@ -1,0 +1,86 @@
+# wfsource/source/GNUMakefile.print
+
+.PHONY : print
+print : 
+	@echo +----------------------------------------------------------------------------+
+	@echo + Platform ------------------------------------------------------------------+
+	@echo WF_TARGET        = $(WF_TARGET)
+ifeq ($(WF_TARGET),win)
+	@echo +----------------------------------------------------------------------------+
+	@echo + Windows -------------------------------------------------------------------+
+	@echo SUBSYSTEM        = $(SUBSYSTEM)
+	@echo MULTITHREADED  = $(MULTITHREADED)
+endif
+ifeq ($(WF_TARGET),psx)
+	@echo +----------------------------------------------------------------------------+
+	@echo + Sony Playstation ----------------------------------------------------------+
+	@echo PSX_DIR                           = $(PSX_DIR)
+endif
+	@echo +----------------------------------------------------------------------------+
+	@echo + Debugging -----------------------------------------------------------------+
+	@echo MEMORY_TRACKING        = $(MEMORY_TRACKING)
+	@echo +----------------------------------------------------------------------------+
+	@echo + Switches ------------------------------------------------------------------+
+	@echo BUILDMODE                  = $(BUILDMODE)
+	@echo BUILDMODELETTERS           = $(BUILDMODE_LETTERS)
+	@echo SCALAR_TYPE                = $(SCALAR_TYPE)
+	@echo BUILD_DO_DEBUGGING_INFO    = $(BUILD_DO_DEBUGGING_INFO)
+	@echo BUILD_DO_ASSERTIONS        = $(BUILD_DO_ASSERTIONS)
+	@echo BUILD_DO_VALIDATION        = $(BUILD_DO_VALIDATION)
+	@echo BUILD_DO_DEBUG_VARIABLES   = $(BUILD_DO_DEBUG_VARIABLES)
+	@echo BUILD_DO_TEST_CODE         = $(BUILD_DO_TEST_CODE)
+	@echo BUILD_DO_DEBUG_FILE_SYSTEM = $(BUILD_DO_DEBUG_FILE_SYSTEM)
+	@echo BUILD_DO_OPTIMIZATIONS     = $(BUILD_DO_OPTIMIZATIONS)
+	@echo BUILD_DO_IOSTREAMS         = $(BUILD_DO_IOSTREAMS)
+	@echo BUILD_DBSTREAM             = $(BUILD_DBSTREAM)
+	@echo RENDERER                   = $(RENDERER)
+	@echo RENDERER_PIPELINE          = $(RENDERER_PIPELINE)
+	@echo RENDERER_DIR               = $(RENDERER_DIR)
+	@echo RENDERER_PIPELINE_DIR      = $(RENDERER_PIPELINE_DIR)
+	@echo
+	@echo +----------------------------------------------------------------------------+
+	@echo + Library -------------------------------------------------------------------+
+	@echo LIB_NAME       = $(LIB_NAME)
+	@echo PIGS_OBJS_DIR  = $(PIGS_OBJS_DIR)
+	@echo PIGS_OBJ_DIR   = $(PIGS_OBJ_DIR)
+	@echo OBJ_DIR        = $(OBJ_DIR)
+	@echo PIGS_LIB_DIR   = $(PIGS_LIB_DIR)
+	@echo PIGS_LIB       = $(PIGS_LIB)
+	@echo LIB_OBJS       = [$(LIB_OBJS)]
+	@echo TEST_PROG      = $(TEST_PROG)
+	@echo +----------------------------------------------------------------------------+
+	@echo + Other libraries -----------------------------------------------------------+
+	@echo LIBS = $(LIBS)
+	@echo TEST_LIBS = $(TESTLIBS)
+	@echo +----------------------------------------------------------------------------+
+	@echo + Compilation ---------------------------------------------------------------+
+	@echo CCC            = $(CCC)
+	@echo CCCARGS        = $(CCCARGS)
+	@echo INCLUDE        = $(INCLUDE)
+	@echo PIGSYS = $(PIGSYS)
+
+################################################################################
+
+.PHONY : print_short
+print_short : .PHONY
+	@echo ===============================================================================
+	@echo WF_TARGET = $(WF_TARGET)
+	@echo BUILDMODE = $(BUILDMODE)
+
+################################################################################
+
+.PHONY : dir_obj
+dir_obj : 
+	@echo $(PIGS_LIB_DIR)
+	@echo ===============================================================================
+	@dir /K /H $(PIGS_LIB_DIR)*.*
+
+################################################################################
+
+.PHONY : lib
+lib :  
+	@echo Modules in $(PIGS_LIB)
+	@echo ===============================================================================
+	@lib /nologo /list $(PIGS_LIB)
+
+################################################################################

@@ -1,0 +1,111 @@
+//=============================================================================
+// ViewPort.hp: ViewPort hardware abstraction class
+// Copyright ( c ) 1997,1998,1999,2000 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description: The ViewPort class encapsulates data and behavior for a single
+//	 hardware screen
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+#ifndef _viewport_H
+#define _viewport_H
+
+//============================================================================
+// Includes
+//============================================================================
+
+#include <pigsys/pigsys.hp>
+#include <math/scalar.hp>
+#include <gfx/prim.hp>
+#include <gfx/otable.hp>
+#include <gfx/display.hp>
+#include <gfx/prim.hp>
+#include <memory/memory.hp>
+#include <memory/lmalloc.hp>
+
+#if defined ( __PSX__)
+#	include <libetc.h>
+#	include <libgte.h>
+#	include <libgpu.h>
+#endif
+
+//============================================================================
+// Class and Structure Prototypes
+//============================================================================
+
+class ViewPort
+{
+public:
+	ViewPort(Display& display,int orderTableDepth,Scalar xSize,Scalar ySize,Memory& memory, int subdividePrimitiveCount = 500);
+	~ViewPort();
+#if defined(USE_ORDER_TABLES)
+	void AddOrderTable(OrderTable& orderTable, int depth);
+#endif
+#if defined(USE_ORDER_TABLES)
+	void AddPrimitive(Primitive& prim,int depth);
+	inline OrderTable& GetConstructionOrderTable();
+	inline int GetConstructionOrderTableIndex();
+#endif
+	void Clear();   					// clear order table
+
+	void RenderBegin();
+	void RenderEnd();
+
+	// note: Render is more like Flush, call it AFTER RenderEnd
+	void Render();						// kts: rename this to flush
+#if 0
+	int GetDrawPageIndex();						// returns whch page is available for drawing
+#endif
+	Scalar XSize() const;
+	Scalar YSize() const;
+	Scalar HalfXSize() const;
+	Scalar HalfYSize() const;
+
+	void Validate() const;					// test integrity of class instance
+
+	// returns a ptr to an array of [count[ Primitives containing copies of [original], note these are only valid until the next page flip
+#if defined(USE_ORDER_TABLES)
+	Primitive* DuplicatePrimitive(const Primitive& original,int count);
+#endif
+	ViewPort();
+private:
+	Display& _display;
+	Memory& _memory;
+#if defined(USE_ORDER_TABLES)
+	int _orderTableDepth;
+	OrderTable* _orderTable[ORDER_TABLES];
+#endif
+	Scalar _xSize;
+	Scalar _halfXSize;
+	Scalar _ySize;
+	Scalar _halfYSize;
+#if defined(USE_ORDER_TABLES)
+	LMalloc* _primitives;			// kts: dammit, I wish this was LMalloc _primitves[ORDER_TABLES]
+	char __primitives[sizeof(LMalloc)*ORDER_TABLES];
+//	LMalloc __primitives1;			// but you can't construct an array of objects unless they have
+//	LMalloc __primitives2;			// default constructors, which sux!
+#endif
+};
+
+//============================================================================
+#include "viewport.hpi"		// include all inline definitions as appropriate
+//=============================================================================
+#endif
+//=============================================================================

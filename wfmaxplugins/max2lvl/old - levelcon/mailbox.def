@@ -1,0 +1,85 @@
+
+
+
+
+
+
+
+
+; "===================================================================="
+; " mailbox.inc:                                                       "
+; "this is included by mailbox.hp
+; "====================================================================="
+
+	( define GLOBAL_USER_COUNT 101 )
+
+	( define GLOBAL_USER_START 0 )
+	( define FALSE 0 )			; "always 0
+	( define TRUE 1 )			; "always 1
+	( define GOLD_MULTIPLIER 90 )
+
+	( define GLOBAL_USER_MAX 101 )
+	; " the game actually allocates this array at run time based on a field in the level object
+
+	( define GLOBAL_SYSTEM_START 1000 )
+	( define CAMSHOT 1000 )				; " 1000 "
+	( define END_OF_GAME 1001 )
+	( define MIDI 1002 )
+	( define FRAMERATE 1003 )
+	( define CAMROLL 1004 )
+	( define END_OF_LEVEL 1005 )
+	( define TIME 1006 )
+	( define DELTA_TIME 1007 )
+	( define HARDWARE_JOYSTICK1 1008 )			; "will read from actual joystick (read only) "
+	( define HARDWARE_JOYSTICK1_RAW 1009 )		; "will read from actual joystick (read only) "
+	( define HARDWARE_JOYSTICK1_RAW_JUSTPRESSED 1010 ) 	; "will read from actual joystick (read only) "
+	( define HARDWARE_JOYSTICK2 1011 )			; "will read from actual joystick (read only) "
+	( define HARDWARE_JOYSTICK2_RAW 1012 )		; "will read from actual joystick (read only) "
+	( define HARDWARE_JOYSTICK2_RAW_JUSTPRESSED 1013 ) 	; "will read from actual joystick (read only) "
+	( define HARDWARE_JOYSTICK3 1014 )			; "will read from actual joystick (read only) "
+	( define HARDWARE_JOYSTICK3_RAW 1015 )		; "will read from actual joystick (read only) "
+	( define HARDWARE_JOYSTICK3_RAW_JUSTPRESSED 1016 ) 	; "will read from actual joystick (read only) "
+	( define HARDWARE_JOYSTICK4 1017 )			; "will read from actual joystick (read only) "
+	( define HARDWARE_JOYSTICK4_RAW 1018 )		; "will read from actual joystick (read only) "
+	( define HARDWARE_JOYSTICK4_RAW_JUSTPRESSED 1019 ) 	; "will read from actual joystick (read only) "
+	( define GLOBAL_SYSTEM_MAX 1020 )
+
+
+	( define LOCAL_START 2000 )			; " any mailbox 2000 or greater is local" 
+	( define LOCAL_USER_START 2000 )
+	( define LOCAL_USER_MAX 2999 )
+
+	( define LOCAL_SYSTEM_START 3000 )
+	( define HITPOINTS 3000 )
+	( define GOLD 3001 )
+	( define SHIELD 3002 )
+	( define LOCAL_MIDI 3003 )				; " for object specific sounds "
+	( define ALIVE 3004 )				; " if cleared object will kill self "
+	( define ACTOR_INDEX 3005 )
+	( define JOYSTICK_ARE_PRESSED 3006 )
+	( define JOYSTICK_JUST_PRESSED 3007 )
+	( define JOYSTICK_JUST_RELEASED 3008 )
+	( define X_POS 3009 )
+	( define Y_POS 3010 )
+	( define Z_POS 3011 )
+	( define ROTATION_A 3012 )
+	( define ROTATION_B 3013 )
+	( define ROTATION_C 3014 )
+	( define KEYFRAME 3015 )
+	( define ROOM 3016 )
+	( define SOUND 3017 )
+	( define XSPEED 3018 )
+	( define YSPEED 3019 )
+	( define ZSPEED 3020 )
+
+	( define INPUT 3024 )				; "whatever you write here is used by the physics system etc. (write only)")
+		 				  			; " and can then be read from are pressed etc above")
+	( define GENERATOR 3025 )				; "only valid if this object was generated"
+	( define LOCAL_SYSTEM_MAX 3026 )
+	( define LOCAL_MAX 3026 )
+
+; "================================================================================="
+
+
+
+

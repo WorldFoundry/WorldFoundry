@@ -1,0 +1,23 @@
+#ifndef TOOLNGUN_HP
+#define TOOLNGUN_HP
+
+class ToolNeedleGun : public Tool
+	{
+public:
+	ToolNeedleGun( const SObjectStartupData* startupData );
+	~ToolNeedleGun()			{ }
+
+	virtual void activate();
+
+	Angle getRelativeAngle(Actor *target);	// uses current face angle
+	Angle getRelativeAngle(Actor *target, Angle baseAngle); // takes angle
+	Angle getIdealAngle();
+protected:
+
+	};
+
+// maximum number of active guards
+#define MAX_GUARDS 40
+
+#endif
+

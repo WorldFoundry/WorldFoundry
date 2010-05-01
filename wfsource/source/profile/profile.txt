@@ -1,0 +1,21 @@
+#if defined( __PSX__ )
+#	include <profile/sampprof.hp>
+
+void
+delay()
+	{
+	}
+#endif
+
+
+
+#if defined( __PSX__ )
+	profileSample sampler;
+	sampler.start();
+
+	for ( int i=0; i<1000000; ++i )
+		delay();
+
+	sampler.stop();
+	sampler.save( "haltest.smp" );
+#endif

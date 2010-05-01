@@ -1,0 +1,23 @@
+@*============================================================================
+@* actboxor.oas: activation box object reference, used for camera control
+@*============================================================================
+
+@*============================================================================
+@* activation box object reference type definition
+
+@define DEFAULT_VISIBILITY	0
+@define DEFAULT_MODEL_TYPE	3
+@define DEFAULT_MASS 0.0
+
+TYPEHEADER(Activation Box Object Reference,ActBoxOR)
+	@include actor.inc
+
+	PROPERTY_SHEET_HEADER(ActBoxOR,1)
+@*	---------------------------------
+	TYPEENTRYINT32(MailBox,, 2, 3999, 100, "", SHOW_AS_NUMBER)		// mailbox to set when activated
+	TYPEENTRYOBJREFERENCE(Object,Camshot Object)
+	LEVELCONFLAGCOMMONBLOCK(activate)
+	PROPERTY_SHEET_FOOTER
+TYPEFOOTER
+
+@*============================================================================

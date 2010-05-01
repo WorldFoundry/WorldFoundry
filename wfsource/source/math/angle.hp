@@ -1,0 +1,116 @@
+//==============================================================================
+// angle.hp:
+// Copyright (c) 1996,97,98,99 World Foundry Group   
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//==============================================================================
+// Original Author: Kevin T. Seghetti
+//==============================================================================
+
+#ifndef _ANGLE_HP
+#define _ANGLE_HP
+
+//==============================================================================
+
+#include <pigsys/pigsys.hp>
+#include <streams/binstrm.hp>
+
+// ------------------------------------------------------------------------
+// Macros
+// ------------------------------------------------------------------------
+
+class Scalar;
+
+class Angle
+{
+  public:
+	// public static helpers for unit conversion/angle factories
+	static Angle Revolution( const Scalar& );	// native format
+	static Angle Radian( const Scalar& );
+	static Angle Degree( const Scalar& );
+
+	// Constructors
+	INLINE Angle();
+    explicit INLINE Angle( const uint16 value );
+	INLINE Angle( const Angle& );
+		// copy constructor
+
+	// Explicit Conversion Methods
+	INLINE uint16			AsUInt16() const;
+	//INLINE Scalar			AsScalar() const;       // use AsRevolution instead
+	INLINE Scalar			AsDegree() const;
+	INLINE Scalar			AsRadian() const;
+	INLINE Scalar			AsRevolution() const;
+
+   void Validate() const;
+	// Assignment Operator
+	INLINE Angle& operator = ( const Angle& );
+
+	// Numerical Methods
+	INLINE Angle     operator -  () const;
+	INLINE Angle     operator +  ( const Angle ) const;
+    INLINE Angle     operator -  ( const Angle ) const;
+    INLINE Angle     operator *  ( const Scalar& ) const;
+    INLINE Angle     operator /  ( const Scalar& ) const;
+	INLINE Angle&    operator += ( const Angle );
+    INLINE Angle&    operator -= ( const Angle );
+    INLINE Angle&    operator *= ( const Scalar& );
+    INLINE Angle&    operator /= ( const Scalar& );
+
+	// Comparison Methods
+    INLINE int         operator >=	( const Angle ) const;
+    INLINE int         operator <=	( const Angle ) const;
+    INLINE int         operator !=	( const Angle ) const;
+    INLINE int         operator ==	( const Angle ) const;
+    INLINE int         operator <	( const Angle ) const;
+    INLINE int         operator >	( const Angle ) const;
+
+	// Trigonometric Methods
+    INLINE Scalar     Sin() const;
+    INLINE Scalar     Cos() const;
+
+	// IOSteam support
+#if DO_IOSTREAMS
+	friend std::ostream& operator << ( std::ostream& s, const Angle& q );
+#endif
+
+	// binary iostream support
+	friend binistream& operator >> ( binistream&, Angle& );
+#if defined( WRITER )
+	friend binostream& operator << ( binostream&, const Angle );
+#endif
+
+	// static members
+	static const Angle zero;
+	static const Angle one;
+	static const Angle onequarter;
+	static const Angle half;
+	static const Angle threequarters;
+
+  protected:
+	INLINE Angle( const Scalar& );	// use Revolution, Radian, or Degree to get this
+
+	// Storage
+	uint16 _value;
+};
+
+// ------------------------------------------------------------------------
+#include <math/angle.hpi>	// include all inline definitions as appropriate
+// ------------------------------------------------------------------------
+#endif  // !_Angle_HP
+// ------------------------------------------------------------------------

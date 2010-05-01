@@ -1,0 +1,280 @@
+// ------------------------------------------------------------------------
+// scalar.hpi
+// Copyright (c) 1997, World Foundry Group   
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ------------------------------------------------------------------------
+
+//* use 20.12 fixed point
+#define USE_TWENTY_TWELVE	0
+
+// ------------------------------------------------------------------------
+
+#define Multiply64(__a, __b, __m1, __m0)				\
+	({								\
+	    	/* result : m1:m0 = a*b	*/				\
+									\
+		asm (							\
+			"mult	%2,%3\n"				\
+			"mflo	%1\n"					\
+			"mfhi	%0\n"					\
+									\
+		: "=r" (__m1), "=r" (__m0)				\
+		: "r" (__a), "r" (__b)					\
+		);							\
+	})
+
+//-----------------------------------------------------------------------------
+
+#define MultiplyAndNop64(__a, __b, __m1, __m0)				\
+	({								\
+	    	/* result : m1:m0 = a*b	*/				\
+									\
+		asm (							\
+			"mult	%2,%3\n"				\
+			"mflo	%1\n"					\
+			"mfhi	%0\n"	/* PS! */			\
+			"nop\n"		/* if next op is mult,	*/	\
+			"nop\n"		/* 2 cycles needed to finish */	\
+					/* mfhi and mflo ops */		\
+									\
+		: "=r" (__m1), "=r" (__m0)				\
+		: "r" (__a), "r" (__b)					\
+		);							\
+	})
+
+//-----------------------------------------------------------------------------
+
+#if USE_TWENTY_TWELVE
+#define JoinHiLo(__a, __b)						\
+	({								\
+		register long __out;					\
+		register long __tmp;					\
+									\
+		/* result = (a << 12) | (b >> 20) */			\
+									\
+		asm (							\
+			"sll	%0,%2,12\n"				\
+	    	"srl	%3,%1,20\n"				\
+			"or		%0,%3\n"				\
+									\
+		: "=&r" (__out)						\
+		: "r" (__b), "r" (__a), "r" (__tmp)			\
+		);							\
+		__out;							\
+	})
+#else
+#define JoinHiLo(__a, __b)						\
+	({								\
+		register long __out;					\
+		register long __tmp;					\
+									\
+		/* result = (a << 16) | (b >> 16) */			\
+									\
+		asm (							\
+			"sll	%0,%3,16\n"				\
+	    	"srl	%1,%2,16\n"				\
+			"or		%0,%1\n"				\
+									\
+		: "=&r" (__out), "=&r" (__tmp)	\
+		: "r" (__b), "r" (__a)		\
+		);							\
+		__out;							\
+	})
+#endif
+
+//-----------------------------------------------------------------------------
+
+#define ShiftRightArithmetic(__sra1,__sra0,__sran)			\
+	({								\
+	    	asm (							\
+			"sra	%0,%1,%2\n"				\
+									\
+		: "=r" (__sra1)						\
+		: "r" (__sra0), "r" (__sran)				\
+		);							\
+	})
+
+//-----------------------------------------------------------------------------
+
+#define AddCarry64(__a1, __a0, __b1, __b0)				\
+	({								\
+		register long __ac1;					\
+		register long __ac0;					\
+	    								\
+		/* result a1:a0 = a1:a0 + b1:b0 */			\
+									\
+		asm (							\
+			"addu	%1,%3,%5\n"				\
+			"sltu	%0,%1,%3\n"				\
+			"addu	%0,%2\n"				\
+			"addu	%0,%4\n"				\
+									\
+		: "=&r" (__ac1), "=&r" (__ac0)				\
+		: "r" (__a1), "r" (__a0), "r" (__b1), "r" (__b0)	\
+		);							\
+									\
+		__a1 = __ac1;						\
+		__a0 = __ac0;						\
+	})
+
+//-----------------------------------------------------------------------------
+
+#define ShiftRightLogical(__srl1,__srl0,__srln)				\
+	({								\
+	    	asm (							\
+			"srl	%0,%1,%2\n"				\
+									\
+		: "=r" (__srl1)						\
+		: "r" (__srl0), "i" (__srln)				\
+		);							\
+	})
+
+//-----------------------------------------------------------------------------
+
+#define ShiftRightLogicalVar(__srlv1,__srlv0,__srlvn)			\
+	({								\
+	    	asm (							\
+			"srlv	%0,%1,%2\n"				\
+									\
+		: "=r" (__srlv1)					\
+		: "r" (__srlv0), "r" (__srlvn)				\
+		);							\
+	})
+
+//=============================================================================
+
+INLINE Scalar&
+Scalar::operator *= ( const Scalar& b )
+{
+   	register long out0;
+	register long out1;
+
+	// result = a*b
+	Multiply64(_value,b._value,out1,out0);
+	_value = JoinHiLo(out1,out0);
+	return *this;
+}
+
+//-----------------------------------------------------------------------------
+
+//INLINE Scalar
+//Scalar::Sqrt( void ) const
+//{
+//	return Scalar( BR_SQRT( _value ) );
+//}
+
+//=============================================================================
+
+INLINE
+void ShiftRight64(unsigned long& __a1,unsigned long& __a0,int __shift)
+{
+	register long __tmp0;
+	register long __tmp1;
+	register long __tmp2;
+
+	// result a1:a0 = a1:a0 >> shift
+
+	__tmp1 = __shift;
+	__tmp0 = __tmp1 << 26;
+
+	if(__tmp0 < 0)
+	{
+		ShiftRightLogicalVar(__a0,__a1,__tmp1);
+		__a1 = 0;
+	}
+	else
+	{
+		ShiftRightLogicalVar(__a0,__a0,__tmp1);
+
+		if(__tmp0 != 0)
+		{
+			__tmp2 = - __tmp1;
+			__tmp2 = __a1 << __tmp2;
+			__a0 |= __tmp2;
+		}
+		ShiftRightLogicalVar(__a1,__a1,__tmp1);
+	}
+}
+
+INLINE
+void ShiftRight64(long& __a1,long& __a0,int __shift)
+{
+	register long __tmp0;
+	register long __tmp1;
+	register long __tmp2;
+
+	// result a1:a0 = a1:a0 >> shift
+
+	__tmp1 = __shift;
+	__tmp0 = __tmp1 << 26;
+
+	if(__tmp0 < 0)
+	{
+		ShiftRightLogicalVar(__a0,__a1,__tmp1);
+		__a1 = 0;
+	}
+	else
+	{
+		ShiftRightLogicalVar(__a0,__a0,__tmp1);
+
+		if(__tmp0 != 0)
+		{
+			__tmp2 = - __tmp1;
+			__tmp2 = __a1 << __tmp2;
+			__a0 |= __tmp2;
+		}
+		ShiftRightLogicalVar(__a1,__a1,__tmp1);
+	}
+}
+
+//=============================================================================
+
+INLINE
+void ShiftLeft64(unsigned long& __a1,unsigned long& __a0,int __shift)
+{
+	register long __tmp0;
+	register unsigned long __tmp1;
+	register unsigned long __tmp2;
+
+	// result a1:a0 = a1:a0 << shift
+
+	__tmp1 = __shift;
+	__tmp0 = __tmp1 << 26;
+
+	if(__tmp0 < 0)
+	{
+		__a1 = __a0 << __tmp1;
+		__a0 = 0;
+	}
+	else
+	{
+		__a1 = __a1 << __tmp1;
+		if(__tmp0 != 0)
+		{
+		    __tmp2 = - __tmp1;
+
+			ShiftRightLogicalVar(__tmp2,__a0,__tmp2);
+
+			__a1 |= __tmp2;
+		}
+		__a0 <<= __tmp1;
+	}
+}
+
+//=============================================================================

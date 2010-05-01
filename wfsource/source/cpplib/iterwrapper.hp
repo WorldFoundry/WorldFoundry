@@ -1,0 +1,135 @@
+//==============================================================================
+// iterwrapper.hp:
+// Copyright ( c ) 2003 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//=============================================================================
+// Description: The IterWrapper template is designed to allow derived iterator classes
+// to be copied without slicing (by wrapping a pointer to the iterator)
+// Original Author: Kevin T. Seghetti 
+//==============================================================================
+
+#ifndef _ITERWRAPPER_HP
+#define _ITERWRAPPER_HP
+
+//==============================================================================
+         
+// currently asserts if someone constructs an empty one and then tries to read from it
+
+//==============================================================================
+
+template<class Obj, class ObjIter> class IteratorWrapper
+{
+public:
+   IteratorWrapper();
+   IteratorWrapper(const ObjIter& iter);
+   ~IteratorWrapper();
+   IteratorWrapper(const IteratorWrapper& other);
+   Obj& operator*();
+   IteratorWrapper& operator=(const IteratorWrapper& other);
+   IteratorWrapper& operator++();
+   IteratorWrapper& operator+=(int offset);              // will do it the slow way by default
+   bool Empty() const;
+   void Validate() const;
+private:
+   ObjIter* _iter;
+};
+
+
+template<class Obj, class ObjIter> IteratorWrapper<Obj,ObjIter>::IteratorWrapper()
+{
+   _iter = NULL;
+}
+
+template<class Obj, class ObjIter> IteratorWrapper<Obj,ObjIter>::IteratorWrapper(const ObjIter& iter)
+{
+   _iter = iter.Copy();
+   assert(ValidPtr(_iter));
+}
+
+template<class Obj, class ObjIter> IteratorWrapper<Obj,ObjIter>::~IteratorWrapper()
+{
+   if(_iter)
+      Validate();
+   delete _iter;
+}
+
+
+template<class Obj, class ObjIter> void IteratorWrapper<Obj,ObjIter>::Validate() const
+{
+   assert(ValidPtr(_iter));
+   _iter->Validate();
+}
+
+template<class Obj, class ObjIter> IteratorWrapper<Obj,ObjIter>::IteratorWrapper(const IteratorWrapper& other)
+{
+   other.Validate();
+   _iter = other._iter->Copy();
+   Validate();
+}
+
+template<class Obj, class ObjIter> Obj& IteratorWrapper<Obj,ObjIter>::operator*()
+{
+   Validate();
+   assert(ValidPtr(_iter));
+   _iter->Validate();
+   ObjIter& objIter = *_iter;
+   Obj& obj = *objIter;
+   return obj;
+}
+
+template<class Obj, class ObjIter> IteratorWrapper<Obj,ObjIter>& IteratorWrapper<Obj,ObjIter>::operator=(const IteratorWrapper& other)
+{
+   if(_iter)
+      Validate();
+   delete _iter;
+   if(other._iter)
+   {
+      other.Validate();
+      _iter = other._iter->Copy();
+      Validate();
+   }
+   else
+      _iter = NULL;
+   return *this;
+}
+
+template<class Obj, class ObjIter> IteratorWrapper<Obj,ObjIter>& IteratorWrapper<Obj,ObjIter>::operator++()
+{
+   Validate();
+   ++(*_iter);
+   return *this;
+}
+
+template<class Obj, class ObjIter> IteratorWrapper<Obj,ObjIter>& IteratorWrapper<Obj,ObjIter>::operator+=(int offset)
+{
+   Validate();
+   (*_iter) += offset;
+   return *this;
+}
+
+template<class Obj, class ObjIter> bool IteratorWrapper<Obj,ObjIter>::Empty() const
+{
+   Validate();
+   return _iter->Empty();
+}
+
+//==============================================================================
+#endif
+//==============================================================================
+

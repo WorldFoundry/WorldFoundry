@@ -1,0 +1,136 @@
+//=============================================================================
+// matrix34.hp:
+// Copyright (c) 1996,1997,1998,1999,2000,2002 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//=============================================================================
+
+#ifndef _MATRIX34_HP
+#define _MATRIX34_HP
+
+//-----------------------------------------------------------------------------
+
+#include <math/scalar.hp>
+#include <math/vector3.hp>
+
+// ------------------------------------------------------------------------
+// 3 x 4 Matrix Class
+// ------------------------------------------------------------------------
+
+class Angle;
+class Euler;
+
+class binistream;
+#if defined( WRITER )
+class binostream;
+#endif
+
+// ------------------------------------------------------------------------
+
+class Matrix34
+{
+public:
+//	struct RotateX { };
+//	struct RotateY { };
+//	struct RotateZ { };
+
+	// construct/destruct
+	INLINE Matrix34();									// identity matrix
+	INLINE Matrix34( const Vector3& translation );		// translation matrix
+	INLINE Matrix34( const Vector3& scale, const Vector3& translation );	// scale matrix
+	INLINE Matrix34( const Euler& euler, const Vector3& translation );		// euler rotation matrix
+	INLINE Matrix34
+	(
+		const Vector3& row0,
+		const Vector3& row1,
+		const Vector3& row2,
+		const Vector3& row3
+	);
+	INLINE Matrix34( const Matrix34& );
+
+	// copy
+	INLINE Matrix34& operator = ( const Matrix34& );
+
+	// row access, note that m[3] is the translation portion of the matrix
+	INLINE Vector3& operator [] ( int idxRow );					// read/write access to row data, i = 0..3
+	INLINE const Vector3& operator [] ( int idxRow ) const;     // read-only access to row data, i = 0..3
+
+	// initialization methods
+	void Construct
+	(
+		const Vector3& row1,
+		const Vector3& row2,
+		const Vector3& row3,
+		const Vector3& row4
+	);
+	INLINE void ConstructIdentity();
+	void ConstructTranslation( const Vector3& );
+//	void ConstructScale( const Vector3& s, const Vector3& translation );
+	void ConstructEuler( const Euler& euler, const Vector3& translation=Vector3::zero );
+
+   Euler AsEuler() const;
+
+#if defined(SCALAR_TYPE_FIXED)
+#elif defined(SCALAR_TYPE_FLOAT) || defined(SCALAR_TYPE_DOUBLE)
+   const FLOAT_TYPE* AsFLoatArray() const;
+#else
+#error SCALAR TYPE not defined
+#endif
+
+	// inverse
+	Scalar Inverse(const Matrix34& source);				// returns the determinant of the matrix
+	void InverseDetOne(const Matrix34& source);  // invert a matrix with a determainant of one
+
+	// multiply
+	INLINE Matrix34 operator * ( const Matrix34& ) const;
+	INLINE const Matrix34& operator *= ( const Matrix34& );
+
+	// ostream support
+#if DO_IOSTREAMS
+	friend std::ostream& operator << ( std::ostream&, const Matrix34& );
+#endif
+
+	// global functions
+        friend Vector3  operator* (const Vector3& v,const Matrix34& matrix);
+        friend Vector3& operator*= (Vector3& v,const Matrix34& matrix);
+
+	// binary io stream support
+	friend binistream& operator >> ( binistream& is, Matrix34& );
+#if defined( WRITER )
+	friend binostream& operator << ( binostream& os, const Matrix34& );
+#endif
+private:
+	Scalar _matrix[4][3];
+};
+
+// ------------------------------------------------------------------------
+
+// WARNING: these multiply the vector down the matrix, not across
+// (see the code in matrix34.cc)
+
+//Vector3& operator*= (Vector3& v,const Matrix34& matrix);
+//Vector3 operator* (const Vector3& v,const Matrix34& matrix);
+
+Vector3& MultiplyEqualAcross (Vector3& v,const Matrix34& matrix);
+Vector3 MultiplyAcross(const Vector3& v,const Matrix34& matrix);
+
+// ------------------------------------------------------------------------
+#include <math/matrix34.hpi>	// include all inline definitions as appropriate
+// ------------------------------------------------------------------------
+#endif // _MATRIX34_HP
+// ------------------------------------------------------------------------

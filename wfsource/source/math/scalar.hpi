@@ -1,0 +1,686 @@
+// ------------------------------------------------------------------------
+// Copyright (c) 1996,1997,1999,2000,2001,2002 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ------------------------------------------------------------------------
+
+#if defined(SCALAR_TYPE_FIXED)
+#if defined ( __PSX__ )
+#include <math/psx/scalar.hpi>
+#elif defined ( __WIN__ )
+#include <math/win/scalar.hpi>
+#elif defined ( __LINUX__ )
+#include <math/linux/scalar.hpi>
+#else
+#error no scalar.hpi file for this platform!
+#endif
+#elif defined(SCALAR_TYPE_FLOAT) || defined(SCALAR_TYPE_DOUBLE)
+#include <math/floatscalar.hpi>
+#else
+#error SCALAR TYPE not defined
+#endif
+
+// ------------------------------------------------------------------------
+// Constructors
+// ------------------------------------------------------------------------
+
+inline
+Scalar::Scalar() { }
+
+// ------------------------------------------------------------------------
+
+#if defined(SCALAR_TYPE_FIXED) 
+inline
+Scalar::Scalar( long value )
+{
+#if defined(SCALAR_TYPE_FIXED)
+	_value = value;
+#elif defined(SCALAR_TYPE_FLOAT) || defined(SCALAR_TYPE_DOUBLE)
+   _value /= SCALAR_ONE_LS;
+#else
+#error SCALAR TYPE not defined
+#endif
+}
+#endif
+
+// ------------------------------------------------------------------------
+
+#if defined(SCALAR_TYPE_FLOAT) 
+inline 
+Scalar::Scalar( float value )
+{
+   _value = value;
+}
+#endif
+
+#if defined(SCALAR_TYPE_FLOAT) || defined(SCALAR_TYPE_DOUBLE) 
+inline 
+Scalar::Scalar( double value )
+{
+   _value = value;
+}
+#endif
+
+
+// ------------------------------------------------------------------------
+
+inline
+Scalar::Scalar( int16 integer, uint16 frac )
+{
+#if defined(SCALAR_TYPE_FIXED)
+	_value = ( integer << 16 ) + frac;
+#elif defined(SCALAR_TYPE_FLOAT) || defined(SCALAR_TYPE_DOUBLE)
+   _value = integer;
+   FLOAT_TYPE temp = frac;
+   temp /= SCALAR_ONE_LS;
+   _value += temp;
+#else
+#error SCALAR TYPE not defined
+#endif
+}
+
+// ------------------------------------------------------------------------
+
+inline
+Scalar::Scalar( const Scalar& b)
+{
+	_value = b._value;
+}
+
+// ------------------------------------------------------------------------
+
+inline Scalar
+Scalar::FromFixed32(fixed32 value)
+{
+   Scalar result;
+#if defined(SCALAR_TYPE_FIXED)
+	result._value = value;
+#elif defined(SCALAR_TYPE_FLOAT) || defined(SCALAR_TYPE_DOUBLE)
+   result._value = value;
+   result._value /= SCALAR_ONE_LS;
+#else
+#error SCALAR TYPE not defined
+#endif
+   return result;
+}
+
+// ------------------------------------------------------------------------
+
+inline Scalar
+Scalar::FromFloat(float value)
+{
+   Scalar result;
+#if defined(SCALAR_TYPE_FIXED)
+	result._value = long(value*SCALAR_ONE_LS);
+#elif defined(SCALAR_TYPE_FLOAT) || defined(SCALAR_TYPE_DOUBLE)
+   result._value = value;
+#else
+#error SCALAR TYPE not defined
+#endif
+   return result;
+}
+
+
+inline Scalar
+Scalar::FromDouble(double value)
+{
+   Scalar result;
+#if defined(SCALAR_TYPE_FIXED)
+	result._value = long(value*SCALAR_ONE_LS);
+#elif defined(SCALAR_TYPE_FLOAT) || defined(SCALAR_TYPE_DOUBLE)
+   result._value = value;
+#else
+#error SCALAR TYPE not defined
+#endif
+   return result;
+}
+
+//==============================================================================
+
+inline void 
+Scalar::Validate() const
+{
+#if defined(SCALAR_TYPE_FLOAT) || defined(SCALAR_TYPE_DOUBLE)
+   assert(!isnan(_value));    
+#endif
+}
+
+// ------------------------------------------------------------------------
+// Assignment Method
+// ------------------------------------------------------------------------
+
+inline Scalar
+Scalar::operator = ( const Scalar& b )
+{
+   b.Validate();
+	_value = b._value;
+	return *this;
+}
+
+// ------------------------------------------------------------------------
+// Conversion Methods
+// ------------------------------------------------------------------------
+
+#if 0
+inline
+Scalar::operator bool() const
+{
+   Validate();
+	return _value != 0;
+}
+#endif
+
+// ------------------------------------------------------------------------
+// Comparison Methods
+// ------------------------------------------------------------------------
+
+inline int
+Scalar::operator >= ( const Scalar& b ) const
+{
+   Validate();
+   b.Validate();
+	return ( _value >= b._value );
+}
+
+// ------------------------------------------------------------------------
+
+inline int
+Scalar::operator <= ( const Scalar& b ) const
+{
+   Validate();
+   b.Validate();
+	return ( _value <= b._value );
+}
+
+// ------------------------------------------------------------------------
+
+inline int
+Scalar::operator != ( const Scalar& b ) const
+{
+   Validate();
+   b.Validate();
+	return ( _value != b._value );
+}
+
+// ------------------------------------------------------------------------
+
+inline int
+Scalar::operator == ( const Scalar& b ) const
+{
+   Validate();
+   b.Validate();
+
+#if defined(SCALAR_TYPE_FIXED)
+	return ( _value == b._value );
+#elif defined(SCALAR_TYPE_FLOAT) || defined(SCALAR_TYPE_DOUBLE)
+   return(fabs(_value - b._value) < 0.0000002);
+#else
+#error SCALAR TYPE not defined
+#endif
+
+}
+
+// ------------------------------------------------------------------------
+
+inline int
+Scalar::operator > ( const Scalar& b ) const
+{
+   Validate();
+   b.Validate();
+	return ( _value > b._value );
+}
+
+// ------------------------------------------------------------------------
+
+inline int
+Scalar::operator < ( const Scalar& b ) const
+{
+   Validate();
+   b.Validate();
+	return ( _value < b._value );
+}
+
+// ------------------------------------------------------------------------
+// Numerical Methods
+// ------------------------------------------------------------------------
+
+inline Scalar
+Scalar::operator - () const
+{
+   Validate();
+	return Scalar( -_value );
+}
+
+// ------------------------------------------------------------------------
+
+inline Scalar
+Scalar::operator + ( const Scalar& b ) const
+{
+   Validate();
+   b.Validate();
+	return Scalar( _value + b._value );
+}
+
+// ------------------------------------------------------------------------
+
+inline Scalar
+Scalar::operator - ( const Scalar& b ) const
+{
+   Validate();
+   b.Validate();
+	return Scalar( _value-b._value );
+}
+
+// ------------------------------------------------------------------------
+
+inline Scalar&
+Scalar::operator += ( const Scalar& b )
+{
+   Validate();
+   b.Validate();
+	_value +=  b._value;
+	return *this;
+}
+
+// ------------------------------------------------------------------------
+
+inline Scalar&
+Scalar::operator -= ( const Scalar& b )
+{
+   Validate();
+   b.Validate();
+	_value -= b._value;
+	return *this;
+}
+
+
+// ------------------------------------------------------------------------
+
+inline Scalar
+Scalar::operator * ( const int& b ) const
+{
+   Validate();
+	return Scalar( _value *  b );
+}
+
+// ------------------------------------------------------------------------
+
+inline Scalar
+Scalar::operator / ( const int& b ) const
+{
+   Validate();
+	return Scalar( _value /  b );
+}
+
+// ------------------------------------------------------------------------
+
+//inline Scalar
+//Scalar::Square() const
+//{
+//	return Scalar( BR_SQR( _value ) );
+//}
+
+// ------------------------------------------------------------------------
+
+inline Scalar
+Scalar::Abs() const
+{
+   Validate();
+	return Scalar(_value >= 0 ? _value : -_value);
+}
+
+// ------------------------------------------------------------------------
+
+inline Scalar
+Scalar::Min( const Scalar& b ) const
+{
+   Validate();
+   b.Validate();
+	if ( *this > b ) return b;
+	else return *this;
+}
+
+// ------------------------------------------------------------------------
+
+inline Scalar
+Scalar::Max( const Scalar& b ) const
+{
+   Validate();
+   b.Validate();
+	if ( *this < b ) return b;
+	else return *this;
+}
+
+// ------------------------------------------------------------------------
+
+inline Scalar
+Scalar::Swap( Scalar& b )
+{
+// kts this is probably faster than the cool way
+// the scholarly way
+   Validate();
+   b.Validate();
+	Scalar temp( *this );
+	*this = b;
+	b = temp;
+
+// the cool way!
+//	_value ^= b._value ^= _value ^= b._value;
+	return *this;
+}
+
+// ------------------------------------------------------------------------
+// Conversion Methods
+// ------------------------------------------------------------------------
+
+inline
+Scalar::operator bool() const
+{
+   Validate();
+	return bool( _value );
+}
+
+// ------------------------------------------------------------------------
+// Explicit Conversion Methods
+// ------------------------------------------------------------------------
+
+#if defined(SCALAR_TYPE_FIXED) 
+   // kts this should eventually go away, is currently only used by vector class to do 64 bit math
+   // If I make a 64 bit Scalar class then direct access will no longer be needed
+inline long
+Scalar::AsLong() const
+{
+   Validate();
+	return _value;
+}
+#endif
+
+// ------------------------------------------------------------------------
+
+inline float
+Scalar::AsFloat() const
+{
+   Validate();
+#if defined(SCALAR_TYPE_FIXED)
+	return float(_value)/65536.0;
+#elif defined(SCALAR_TYPE_FLOAT) || defined(SCALAR_TYPE_DOUBLE)
+   return _value;
+#else
+#error SCALAR TYPE not defined
+#endif
+}
+
+// ------------------------------------------------------------------------
+
+inline bool
+Scalar::AsBool() const
+{
+   Validate();
+	return bool( _value );
+}
+
+// ------------------------------------------------------------------------
+
+#if 0
+inline int16
+Scalar::AsGTEScalar() const
+{
+   Validate();
+	return int16( _value >> 4 );
+}
+#endif
+
+// ------------------------------------------------------------------------
+
+inline uint16
+Scalar::AsUnsignedFraction() const
+{
+   Validate();
+#if defined(SCALAR_TYPE_FIXED)
+	return uint16( _value );
+#elif defined(SCALAR_TYPE_FLOAT) || defined(SCALAR_TYPE_DOUBLE)
+   FLOAT_TYPE temp = _value;
+   temp -= int(_value);                // remove whole part
+   return uint16(temp*SCALAR_ONE_LS);
+#else
+#error SCALAR TYPE not defined
+#endif
+
+}
+
+// ------------------------------------------------------------------------
+
+//#define ScalarToInt(s)	((s)/(int)QS_ONE_LS)
+
+#if defined(SCALAR_TYPE_FIXED)
+#define ScalarToInt(s)	((s)>>16)
+#elif defined(SCALAR_TYPE_FLOAT) || defined(SCALAR_TYPE_DOUBLE)
+#define ScalarToInt(s)	(s<0?int(s-1.0):int(s))
+#else
+#error SCALAR TYPE not defined
+#endif
+
+inline int
+Scalar::WholePart() const
+{
+   Validate();
+	return ScalarToInt( _value );
+}
+
+
+inline Scalar
+Scalar::Trunc() const
+{
+   Validate();
+#if defined(SCALAR_TYPE_FIXED)
+   Scalar result;
+   result._value = _value&0xffff0000;
+   return result;
+#elif defined(SCALAR_TYPE_FLOAT) || defined(SCALAR_TYPE_DOUBLE)
+   return Scalar(trunc(_value));   
+#else
+#error SCALAR TYPE not defined
+#endif
+}
+
+// ------------------------------------------------------------------------
+
+inline Scalar
+Scalar::Round() const
+{
+   Validate();
+#if defined(SCALAR_TYPE_FIXED)
+	if( (*this) >= Scalar::zero )
+	{
+		return Scalar( (*this) + SCALAR_CONSTANT( 0.5 ) );
+	}
+	else
+	{
+		return Scalar( (*this) - SCALAR_CONSTANT( 0.5 ) );
+	}
+#elif defined(SCALAR_TYPE_FLOAT) || defined(SCALAR_TYPE_DOUBLE)
+   return Scalar(round(_value));
+#else
+#error SCALAR TYPE not defined
+#endif
+}
+
+// ------------------------------------------------------------------------
+
+inline Scalar
+Scalar::Ceiling() const
+{
+   Validate();
+#if defined(SCALAR_TYPE_FIXED)
+	if( (*this) < Scalar::zero )
+	{
+      return Trunc();
+	}
+	else
+	{
+      return Trunc() + SCALAR_CONSTANT(1);
+	}
+#elif defined(SCALAR_TYPE_FLOAT) || defined(SCALAR_TYPE_DOUBLE)
+   return Scalar(ceil(_value));
+#else
+#error SCALAR TYPE not defined
+#endif
+
+}
+
+// ------------------------------------------------------------------------
+
+inline Scalar
+Scalar::Floor() const
+{
+   Validate();
+#if defined(SCALAR_TYPE_FIXED)
+	if( (*this) > Scalar::zero )
+	{
+		return Trunc();
+	}
+	else
+	{
+		return Trunc() - SCALAR_CONSTANT(1);
+	}
+#elif defined(SCALAR_TYPE_FLOAT) || defined(SCALAR_TYPE_DOUBLE)
+   return Scalar(floor(_value));
+#else
+#error SCALAR TYPE not defined
+#endif
+
+}
+
+// ------------------------------------------------------------------------
+// Friendly Functions
+// ------------------------------------------------------------------------
+
+
+inline Scalar
+Mac2(Scalar a, Scalar b, Scalar c, Scalar d)
+{
+   a.Validate();
+   b.Validate();
+   c.Validate();
+   d.Validate();
+
+#if defined(SCALAR_TYPE_FIXED)
+	register unsigned long out0;
+	register long out1;
+	register unsigned long out2;
+	register long out3;
+
+	// result = a*b + c*d
+	MultiplyAndNop64(a._value,b._value,out1,out0);
+
+	Multiply64(c._value,d._value,out3,out2);
+
+	AddCarry64(out1,out0,out3,out2);
+
+	return Scalar(JoinHiLo(out1,out0));
+#elif defined(SCALAR_TYPE_FLOAT) || defined(SCALAR_TYPE_DOUBLE)
+   return (a*b) + (c*d);
+#else
+#error SCALAR TYPE not defined
+#endif
+}
+
+// ------------------------------------------------------------------------
+
+inline Scalar
+Mac3(Scalar a1, Scalar b1, Scalar a2, Scalar b2, Scalar a3, Scalar b3)
+{
+   a1.Validate();
+   a2.Validate();
+   a3.Validate();
+   b1.Validate();
+   b2.Validate();
+   b3.Validate();
+
+
+#if defined(SCALAR_TYPE_FIXED)
+   unsigned long out0;
+	register long out1;
+	register unsigned long out2;
+	register long out3;
+
+	// result = a1*b1 + a2*b2 + a3*b3
+	MultiplyAndNop64(a1._value,b1._value,out1,out0);
+
+	Multiply64(a2._value,b2._value,out3,out2);
+
+	AddCarry64(out1,out0,out3,out2);
+
+	Multiply64(a3._value,b3._value,out3,out2);
+
+	AddCarry64(out1,out0,out3,out2);
+
+	return Scalar(JoinHiLo(out1,out0));
+#elif defined(SCALAR_TYPE_FLOAT) || defined(SCALAR_TYPE_DOUBLE)
+   return (a1*b1) + (a2*b2) + (a3*b3);
+#else
+#error SCALAR TYPE not defined
+#endif
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Scalar
+Scalar::operator * ( const Scalar& other ) const
+{
+   Validate();
+   other.Validate();
+	Scalar result( *this );
+	result *= other;
+	return(result);
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Scalar
+Scalar::operator / ( const Scalar& other ) const
+{
+   Validate();
+   other.Validate();
+	Scalar result( *this );
+	result /= other;
+	return result;
+}
+
+// ------------------------------------------------------------------------
+
+#if defined(SCALAR_TYPE_FLOAT) || defined(SCALAR_TYPE_DOUBLE)
+inline Scalar
+Scalar::Sqrt() const
+{
+   Validate();
+   return Scalar(sqrt(_value));
+}
+
+inline Scalar
+Scalar::FastSqrt() const
+{
+   assert(0);
+   Validate();
+   return Scalar(sqrt(_value));
+}
+
+#endif
+
+//==============================================================================
+

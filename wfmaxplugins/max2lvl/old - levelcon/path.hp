@@ -1,0 +1,64 @@
+//============================================================================
+// path.hp:
+// Copyright(c) 1995 Cave Logic Studios / PF.Magic
+//============================================================================
+/* Documentation:
+
+	Abstract:
+			in memory representation of an object path
+	History:
+			Created	06-14-95 05:05pm Kevin T. Seghetti
+
+	Class Hierarchy:
+			none
+
+	Dependancies:
+		PIGS, BRender, STDIO
+	Restrictions:
+
+	Example:
+*/
+//============================================================================
+// use only once insurance
+
+#ifndef _path_HP
+#define _path_HP
+
+//============================================================================
+
+#include "global.hp"
+
+#include <brender.h>
+#include <stl/vector.h>
+#include "point.hp"
+
+//============================================================================
+// in memory representation of a 3D path
+
+class QPath
+{
+public:
+	QPath();
+	QPath(br_scalar x, br_scalar y, br_scalar z);	// relative path
+	~QPath();
+	Save(FILE* fp);
+	size_t SizeOfOnDisk(void);			// returns size in bytes of on-disk representation
+
+	void Add(const QPoint& newPoint, int32 time);
+	int32 GetTimeIndex(int32 time) const;
+	void SetPoint(const QPoint& newPoint, int32 index);
+	const QPoint& GetPoint(int32 index) const;
+
+	const int Size(void) const;		// Returns number of keyframes in this path
+	// Printing
+	friend ostream& operator<<(ostream& s, const QPath &o);
+	operator==(const QPath& left) const { return(0); }
+private:
+	struct { br_scalar x, y, z; } base;	// base XYZ for (relative) path
+	vector<int32> keyFrameTimes;		// array of time offsets
+	vector<QPoint> keyFramePoints;		// array of 3d points
+};
+
+//============================================================================
+#endif
+//============================================================================

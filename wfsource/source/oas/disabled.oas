@@ -1,0 +1,15 @@
+@*============================================================================
+@* disabled.oas
+@*============================================================================
+
+TYPEHEADER(Disabled)
+@*	LEVELCONFLAGCOMMONBLOCK(common)
+
+@*	PROPERTY_SHEET_HEADER(Disabled,1)
+@*	---------------------------------
+	LEVELCONFLAGNOINSTANCES
+@*	PROPERTY_SHEET_FOOTER
+
+TYPEFOOTER
+
+@*============================================================================

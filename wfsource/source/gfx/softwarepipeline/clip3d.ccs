@@ -1,0 +1,341 @@
+
+//=============================================================================
+// gfx/software/clip3d.ccs: 3d poly clipping to view plane, software version, included by render.ccs
+// Copyright ( c ) 1997,98,99 World Foundry Group
+//
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+//===========================================================================
+// Original Author: Kevin T. Seghetti
+//============================================================================
+// poly crosses clip plane, so clip it
+
+#define COLOR_STROBE 1
+#define CLIP_PRINT 0
+
+#if FLAG_TEXTURE
+// these structs are used to get from uv0 to uv1 & uv2 on either flat or gouraud polys
+
+typedef struct 
+{
+	uint8 u, v;	
+	uint16 pad1;
+	int16 x, y;
+} POINT_FT3;				// single point entry in a Flat Textured Triangle
+
+
+typedef struct 
+{
+	uint8	u, v;
+	uint16	pad1;
+	uint8 r, g, b, p;
+	int16	x,	y;
+} POINT_GT3;				// single point entry in a Gouraud Textured Triangle
+#endif
+
+
+// debug chop hither
+//#define CHOP_HITHER 10
+#define CHOP_HITHER 0.4
+//const Scalar chopHither = (SCALAR_CONSTANT(CHOP_HITHER));		// in meters
+@*#if defined(RENDERER_PIPELINE_SOFTWARE)
+//#define CHFUDGE 256
+#define CHFUDGE 655
+@*#else
+@*#define CHFUDGE 20
+@*#endif
+
+const Scalar chopHitherScalar = (SCALAR_CONSTANT(CHOP_HITHER));		// in meters
+const Scalar chopHitherScalarFudge = chopHitherScalar+Scalar((long)CHFUDGE);
+
+const Scalar_PS chopHitherSCALAR = PS_SCALAR_CONSTANT( CHOP_HITHER );
+//const Scalar_PS chopHitherSCALARFudge = chopHitherSCALAR + CHFUDGE;
+
+
+// there are 2 cases:
+
+// case 1: v1 and v2 too close, need to create a new poly v0 v02 v02
+// 		  	  v0						|
+//		 	  /\                        |
+//	 		 /  \                       |
+//	        /    \                      |
+//	  (v02)/      \(v01)                |
+// _______*________*_______________     |
+//	     /          \                   |
+//	    /            \                  |
+//	   /              \                 |
+//	  /                \                |
+//	 /__________________\               |
+//	v2	                v1              |
+
+// case 2: v0 too close, need to create two new polys v2 v02 v1 & v02 v01 v1
+// 		  	  v0
+//		 	  /\                        |
+//	 		 /  \                       |
+//	        /    \                      |
+//	  (v02)/      \(v01)                |
+// _______*________*_______________     |
+//	     / \\\      \                   |
+//	    /     \\\ p1 \                  |
+//	   /         \\\  \                 |
+//	  /     p0      \\\\                |
+//	 /__________________\               |
+//	v2	                v1              |
+
+void
+RenderObject3D::Clip3D@+RENDER_TYPE(ViewPort& vp, POLYVECT& gteVect,POLYVECT& xformedVect,Primitive& primitive)
+{
+#define poly ((POLY_@+POLY_TYPE*)&primitive)
+#if CLIP_PRINT
+@*	FntPrint("ClipPoly\n");
+@*	cscreen << "clipping" << endl;
+	cout << "------ RenderObject3D::Clip3D@+RENDER_TYPE: ------" << endl;
+	cout << "Clipping polygon: " << gteVect[0] << "; " << gteVect[1] << "; " << gteVect[2] << endl;
+	cout << "chopHitherScalar = " << chopHitherScalar << endl;
+	cout << "chopHitherScalarFudge = " << chopHitherScalarFudge << endl;
+	cout << "chopHitherSCALAR = " << chopHitherSCALAR << endl;
+	cout << " xformedVect[0] = " << xformedVect[0] << endl;
+	cout << " xformedVect[1] = " << xformedVect[1] << endl;
+	cout << " xformedVect[2] = " << xformedVect[2] << endl;
+#endif
+	static int recursionCount = 0;
+	assert(recursionCount == 0);
+	if(recursionCount)
+		return;
+	recursionCount++;
+	int clipVectIndex[2];
+	int okVectIndex[2];
+	int clipVectCount = 0;
+	int okVectCount = 0;
+
+#if DO_ASSERTIONS
+	clipVectIndex[0] = -1;
+	clipVectIndex[1] = -1;
+	okVectIndex[0] = -1;
+	okVectIndex[1] = -1;
+#endif
+
+	// first determine which points are too close
+	if(xformedVect[0].Z() < chopHitherSCALAR)
+	{
+		clipVectIndex[clipVectCount] = 0;
+		clipVectCount++;
+	}
+	else
+	{
+		okVectIndex[okVectCount] = 0;
+		okVectCount++;
+	}
+
+	if(xformedVect[1].Z() < chopHitherSCALAR)
+	{
+		clipVectIndex[clipVectCount] = 1;
+		clipVectCount++;
+	}
+	else
+	{
+		okVectIndex[okVectCount] = 1;
+		okVectCount++;
+	}
+
+	if(xformedVect[2].Z() < chopHitherSCALAR)
+	{
+		clipVectIndex[clipVectCount] = 2;
+		clipVectCount++;
+	}
+	else
+	{
+		okVectIndex[okVectCount] = 2;
+		okVectCount++;
+	}
+
+#if CLIP_PRINT
+	cout << "clipVectCount = " << clipVectCount << ", okVectCount = " << okVectCount << endl;
+#endif
+	RangeCheckExclusive(0,clipVectCount,3);
+	RangeCheckExclusive(0,okVectCount,3);
+	assert(clipVectCount + okVectCount == 3);
+
+	if(clipVectCount == 2)				// case 1: simple, just modify the poly in place
+	{
+#if CLIP_PRINT
+		cout << "---------------- case 1: -----------------" << endl;
+		cout << "okVectIndex[0] = " << okVectIndex[0] << endl;
+		cout << "clipVectIndex[0] = " << clipVectIndex[0] << endl;
+		cout << "clipVectIndex[1] = " << clipVectIndex[1] << endl;
+		cout << "xformedVect[okVectIndex[0]]: " << xformedVect[okVectIndex[0]] << endl;
+		cout << "xformedVect[clipVectIndex[0]]:" << xformedVect[clipVectIndex[0]] << endl;
+		cout << "xformedVect[clipVectIndex[1]]:" << xformedVect[clipVectIndex[1]] << endl;
+#endif
+		// calc % along line chopHither is
+		assert(clipVectIndex[0] != -1);
+		assert(clipVectIndex[1] != -1);
+		assert(okVectIndex[0] != -1);
+		Scalar zDelta01 = S16ToS32( xformedVect[okVectIndex[0]].Z()) - S16ToS32(xformedVect[clipVectIndex[0]].Z());
+		Scalar zPercentage01 =  (chopHitherScalarFudge-S16ToS32(xformedVect[clipVectIndex[0]].Z())) / zDelta01;
+		Scalar zDelta02 = S16ToS32( xformedVect[okVectIndex[0]].Z()) - S16ToS32(xformedVect[clipVectIndex[1]].Z());
+		Scalar zPercentage02 =  (chopHitherScalarFudge-S16ToS32(xformedVect[clipVectIndex[1]].Z())) / zDelta02;
+#if CLIP_PRINT
+		cout << "ok:" << xformedVect[okVectIndex[0]].Z() << endl;
+		cout << "cl:" << xformedVect[clipVectIndex[0]].Z() << endl;
+
+@*		cout << "sub " << xformedVect[okVectIndex[0]].Z() - xformedVect[clipVectIndex[0]].Z() << endl;
+@*		cout << "s16to32 " << S16ToS32( xformedVect[okVectIndex[0]].Z() - xformedVect[clipVectIndex[0]].Z()) << endl;
+		cout << "zdelta01 = " << zDelta01 << endl;
+		cout << "ch-cvi0=" << chopHitherScalarFudge-S16ToS32(xformedVect[clipVectIndex[0]].Z()) << endl;
+		cout << "zPercentage01 = " << zPercentage01 << endl;
+		cout << "zdelta02 = " << zDelta02 << endl;
+		cout << "zPercentage02 = " << zPercentage02 << endl;
+#endif
+		assert(zDelta01 > Scalar::zero);
+		assert(zPercentage01 >= Scalar::zero);
+		assert(zDelta02 > Scalar::zero);
+		assert(zPercentage02 >= Scalar::zero);
+
+		// now clip the original poly, and run it through again
+		gteVect[clipVectIndex[0]].SetX( gteVect[clipVectIndex[0]].X() + S32ToS16((S16ToS32(gteVect[okVectIndex[0]].X() - gteVect[clipVectIndex[0]].X())) * zPercentage01));
+		gteVect[clipVectIndex[0]].SetY( gteVect[clipVectIndex[0]].Y() + S32ToS16((S16ToS32(gteVect[okVectIndex[0]].Y() - gteVect[clipVectIndex[0]].Y())) * zPercentage01));
+		gteVect[clipVectIndex[0]].SetZ( gteVect[clipVectIndex[0]].Z() + S32ToS16((S16ToS32(gteVect[okVectIndex[0]].Z() - gteVect[clipVectIndex[0]].Z())) * zPercentage01));
+
+		gteVect[clipVectIndex[1]].SetX( gteVect[clipVectIndex[1]].X() + S32ToS16((S16ToS32(gteVect[okVectIndex[0]].X()) - S16ToS32(gteVect[clipVectIndex[1]].X())) * zPercentage02));
+		gteVect[clipVectIndex[1]].SetY( gteVect[clipVectIndex[1]].Y() + S32ToS16((S16ToS32(gteVect[okVectIndex[0]].Y()) - S16ToS32(gteVect[clipVectIndex[1]].Y())) * zPercentage02));
+		gteVect[clipVectIndex[1]].SetZ( gteVect[clipVectIndex[1]].Z() + S32ToS16((S16ToS32(gteVect[okVectIndex[0]].Z()) - S16ToS32(gteVect[clipVectIndex[1]].Z())) * zPercentage02));
+
+#if COLOR_STROBE
+		static int color = 0;
+		color += 50;
+		setRGB0(poly, color,10,10);
+#endif
+
+#if FLAG_TEXTURE
+		Primitive* prim = vp.DuplicatePrimitive(primitive,1);
+		assert(ValidPtr(prim));
+		if(prim)
+		{
+			POINT_@+POLY_TYPE* points = (POINT_@+POLY_TYPE*) &((POLY_@+POLY_TYPE*)prim)->u0;
+			points[clipVectIndex[0]].u = (unsigned char) (((unsigned int)points[clipVectIndex[0]].u) + ((unsigned int)(Scalar(points[okVectIndex[0]].u - points[clipVectIndex[0]].u,0) * zPercentage01).WholePart()));
+			points[clipVectIndex[0]].v = (unsigned char) (((unsigned int)points[clipVectIndex[0]].v) + ((unsigned int)(Scalar(points[okVectIndex[0]].v - points[clipVectIndex[0]].v,0) * zPercentage01).WholePart()));
+			points[clipVectIndex[1]].u = (unsigned char) (((unsigned int)points[clipVectIndex[1]].u) + ((unsigned int)(Scalar(points[okVectIndex[0]].u - points[clipVectIndex[1]].u,0) * zPercentage02).WholePart()));
+			points[clipVectIndex[1]].v = (unsigned char) (((unsigned int)points[clipVectIndex[1]].v) + ((unsigned int)(Scalar(points[okVectIndex[0]].v - points[clipVectIndex[1]].v,0) * zPercentage02).WholePart()));
+			RenderPoly3D@+RENDER_TYPE(gteVect,*prim);
+		}
+#else
+		RenderPoly3D@+RENDER_TYPE(gteVect,primitive);
+#endif
+	}
+	else								// case 2
+	{
+		assert(okVectCount == 2);
+		assert(clipVectCount == 1);
+		assert(clipVectIndex[0] != -1);
+		assert(okVectIndex[0] != -1);
+		assert(okVectIndex[1] != -1);
+
+#if CLIP_PRINT
+		cout << "---------------- case 2: -----------------" << endl;
+		cout << "okVectIndex[0] = " << okVectIndex[0] << endl;
+		cout << "okVectIndex[1] = " << okVectIndex[1] << endl;
+		cout << "clipVectIndex[0] = " << clipVectIndex[0] << endl;
+		cout << "xformedVect[okVectIndex[0]]: " << xformedVect[okVectIndex[0]] << ", xformedVect[clipVectIndex[0]]:" << xformedVect[clipVectIndex[0]] << endl;
+#endif
+		Scalar zDelta = S16ToS32( xformedVect[okVectIndex[0]].Z()) - S16ToS32(xformedVect[clipVectIndex[0]].Z());
+		Scalar zPercentage01 =  (chopHitherScalarFudge-S16ToS32(xformedVect[clipVectIndex[0]].Z())) / zDelta;
+#if CLIP_PRINT
+		cout << "xformedVect[okVectIndex[0]] = " <<  xformedVect[okVectIndex[0]] << endl;
+		cout << "xformedVect[okVectIndex[0]].Z() = " <<  xformedVect[okVectIndex[0]].Z() << endl;
+		cout << "xformedVect[clipVectIndex[0]].Z() = " <<  xformedVect[clipVectIndex[0]].Z() << endl;
+		cout << "S16ToS32(xformedVect[clipVectIndex[0]].Z()) = " <<  S16ToS32(xformedVect[clipVectIndex[0]].Z()) << endl;
+		cout << "chopHitherScalarFudge-S16ToS32(xformedVect[clipVectIndex[0]].Z()) = " <<  chopHitherScalarFudge-S16ToS32(xformedVect[clipVectIndex[0]].Z()) << endl;
+		cout << "zDelta01 = " << zDelta << endl;
+		cout << "zPercentage01 = " << zPercentage01 << endl;
+#endif
+		assert(zDelta > Scalar::zero);
+		assert(zPercentage01 >= Scalar::zero);
+
+		zDelta = S16ToS32( xformedVect[okVectIndex[1]].Z()) - S16ToS32(xformedVect[clipVectIndex[0]].Z());
+		Scalar zPercentage02 =  (chopHitherScalarFudge-S16ToS32(xformedVect[clipVectIndex[0]].Z())) / zDelta;
+#if CLIP_PRINT
+		cout << "zDelta02 = " << zDelta << endl;
+		cout << "zPercentage02 = " << zPercentage02 << endl;
+#endif
+		assert(zDelta > Scalar::zero);
+		assert(zPercentage02 >= Scalar::zero);
+
+		Primitive* prims = vp.DuplicatePrimitive(primitive,2);
+		assert(ValidPtr(prims));
+		if(prims)
+		{
+
+#if COLOR_STROBE
+			static int color = 0;
+			color += 50;
+			setRGB0(poly, 10,color,10);
+#endif
+
+			POLYVECT tempVect;
+			tempVect[0] = gteVect[0];
+			tempVect[1] = gteVect[1];
+			tempVect[2] = gteVect[2];
+
+			// now create v2, v02, v01
+			tempVect[okVectIndex[0]].SetX(tempVect[clipVectIndex[0]].X() + S32ToS16((S16ToS32(gteVect[okVectIndex[0]].X() - gteVect[clipVectIndex[0]].X())) * zPercentage01));
+			tempVect[okVectIndex[0]].SetY(tempVect[clipVectIndex[0]].Y() + S32ToS16((S16ToS32(gteVect[okVectIndex[0]].Y() - gteVect[clipVectIndex[0]].Y())) * zPercentage01));
+			tempVect[okVectIndex[0]].SetZ(tempVect[clipVectIndex[0]].Z() + S32ToS16((S16ToS32(gteVect[okVectIndex[0]].Z() - gteVect[clipVectIndex[0]].Z())) * zPercentage01));
+
+			tempVect[clipVectIndex[0]].SetX( tempVect[clipVectIndex[0]].X() + S32ToS16((S16ToS32(gteVect[okVectIndex[1]].X()) - S16ToS32(gteVect[clipVectIndex[0]].X())) * zPercentage02));
+			tempVect[clipVectIndex[0]].SetY( tempVect[clipVectIndex[0]].Y() + S32ToS16((S16ToS32(gteVect[okVectIndex[1]].Y()) - S16ToS32(gteVect[clipVectIndex[0]].Y())) * zPercentage02));
+			tempVect[clipVectIndex[0]].SetZ( tempVect[clipVectIndex[0]].Z() + S32ToS16((S16ToS32(gteVect[okVectIndex[1]].Z()) - S16ToS32(gteVect[clipVectIndex[0]].Z())) * zPercentage02));
+
+#if COLOR_STROBE
+			setRGB0(((POLY_@+POLY_TYPE*)&prims[1]), 10,10,color);
+#endif
+#if FLAG_TEXTURE
+			{
+			POINT_@+POLY_TYPE* points = (POINT_@+POLY_TYPE*) &((POLY_@+POLY_TYPE*)&prims[0])->u0;
+			points[okVectIndex[0]].u = (unsigned char) (((unsigned int)points[clipVectIndex[0]].u) + ((unsigned int)(Scalar(points[okVectIndex[0]].u - points[clipVectIndex[0]].u,0) * zPercentage01).WholePart()));
+			points[okVectIndex[0]].v = (unsigned char) (((unsigned int)points[clipVectIndex[0]].v) + ((unsigned int)(Scalar(points[okVectIndex[0]].v - points[clipVectIndex[0]].v,0) * zPercentage01).WholePart()));
+
+			points[clipVectIndex[0]].u = (unsigned char) (((unsigned int)points[clipVectIndex[0]].u) + ((unsigned int)(Scalar(points[okVectIndex[1]].u - points[clipVectIndex[0]].u,0) * zPercentage02).WholePart()));
+			points[clipVectIndex[0]].v = (unsigned char) (((unsigned int)points[clipVectIndex[0]].v) + ((unsigned int)(Scalar(points[okVectIndex[1]].v - points[clipVectIndex[0]].v,0) * zPercentage02).WholePart()));
+			}
+#endif
+#if CLIP_PRINT
+			cout << "created poly with vect of \n" << tempVect[0] << '\n' << tempVect[1] << '\n' << tempVect[2] << endl;
+#endif
+		//	RenderPoly3D@+RENDER_TYPE(tempVect,prims[0]);
+
+			// now create v1,v2,v01
+			gteVect[clipVectIndex[0]].SetX( gteVect[clipVectIndex[0]].X() + S32ToS16((S16ToS32(gteVect[okVectIndex[0]].X() - gteVect[clipVectIndex[0]].X())) * zPercentage01));
+			gteVect[clipVectIndex[0]].SetY( gteVect[clipVectIndex[0]].Y() + S32ToS16((S16ToS32(gteVect[okVectIndex[0]].Y() - gteVect[clipVectIndex[0]].Y())) * zPercentage01));
+			gteVect[clipVectIndex[0]].SetZ( gteVect[clipVectIndex[0]].Z() + S32ToS16((S16ToS32(gteVect[okVectIndex[0]].Z() - gteVect[clipVectIndex[0]].Z())) * zPercentage01));
+
+#if FLAG_TEXTURE
+			{
+			POINT_@+POLY_TYPE* points = (POINT_@+POLY_TYPE*) &((POLY_@+POLY_TYPE*)&prims[1])->u0;
+			points[clipVectIndex[0]].u = (unsigned char) (((unsigned int)points[clipVectIndex[0]].u) + ((unsigned int)(Scalar(points[okVectIndex[0]].u - points[clipVectIndex[0]].u,0) * zPercentage01).WholePart()));
+			points[clipVectIndex[0]].v = (unsigned char) (((unsigned int)points[clipVectIndex[0]].v) + ((unsigned int)(Scalar(points[okVectIndex[0]].v - points[clipVectIndex[0]].v,0) * zPercentage01).WholePart()));
+			}
+#endif
+			RenderPoly3D@+RENDER_TYPE(gteVect,prims[1]);
+			RenderPoly3D@+RENDER_TYPE(tempVect,prims[0]);
+		}
+	}
+	recursionCount--;
+#undef poly
+}
+
+//============================================================================

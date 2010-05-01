@@ -1,0 +1,13 @@
+@*============================================================================
+@* asslst.prp: prep file used to generate asset.lst, uses asset.inc from levelcon
+@*============================================================================
+
+@define FILE_HEADER(levelName,roomCount, levelconVersion) @define LEVELNAME levelName@t//============================================================================@n// asset.lst: asset list created by prep(asset.prp) from asset.inc@n// for level levelName DO NOT MODIFY@n//============================================================================@n
+
+
+@define ROOM_START(name,id) name:
+@define ROOM_END
+@define ROOM_ENTRY( name, value ) name value
+@define FILE_FOOTER
+
+#include asset.inc

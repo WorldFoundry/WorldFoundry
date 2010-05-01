@@ -1,0 +1,88 @@
+//==============================================================================
+// camera.hp:
+// Copyright (c) 1994,1995,1996,1997,1999,2000 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//==============================================================================
+// Description: Camera represents a camera in the world, and uses camera movement handlers
+//
+//==============================================================================
+
+#ifndef _Camera_HP
+#define _Camera_HP
+
+#include <renderassets/rendacto.hp>
+#include <gfx/camera.hp>
+
+#include "actor.hp"
+#include "oas/camshot.ht"
+#include "oas/camera.ht"
+#include "movecam.hp"
+
+
+//==============================================================================
+
+class Camera : public Actor
+{
+public:
+	Camera(const SObjectStartupData* startupData);
+	virtual ~Camera() { }
+
+	// accessor functions
+	virtual EActorKind kind() const;
+	virtual bool CanRender() const;
+	virtual bool CanUpdate() const;
+
+	void setHither( const Scalar& );
+	void setYon( const Scalar& );
+
+	INLINE const Vector3& GetLookAt() const;
+
+	const PhysicalObject* GetWatchObject() const;
+	const bool ValidView() const;
+
+	// update functions
+	virtual void update();
+
+	cameraPosition	cameraPos;
+
+		// kts I wish I could call this RenderActor, but gnu won't allow a function to have the same name as a class!
+	INLINE void Render(Actor& actor, const Clock& currentTime);				// render this Actor into this camera's viewport
+	INLINE void SetCameraMatrix(const Matrix34& _matrix);
+	INLINE void RenderBegin();
+	INLINE void RenderEnd();
+	INLINE RenderCamera& GetRenderCamera();
+
+private:
+	INLINE const _Camera* getOad() const		{ return (const _Camera*)_oadData; }
+	RenderCamera _renderCamera;
+//	Matrix34 _cameraMatrix;
+};
+
+//==============================================================================
+
+Actor*
+OadCamera(const SObjectStartupData* startupData);
+
+//==============================================================================
+#if		USE_INLINE_DEFS || defined(_CAMERA_CC)
+#include "camera.hpi"	// include all inline definitions as appropriate
+#endif
+//==============================================================================
+#endif // !_Camera_HP
+//==============================================================================

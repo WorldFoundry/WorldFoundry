@@ -1,0 +1,42 @@
+//============================================================================
+// movefoll.hp:
+//============================================================================
+
+#ifndef _MOVEFOLL_HP
+#define _MOVEFOLL_HP
+
+#include <movement/movement.hp>
+#include <physics/physical.hp>
+#include <input/inputdig.hp>
+
+//===========================================================================
+
+class Actor;
+class MsgPort;
+class Path;
+
+class FollowHandler : public MovementHandler
+{
+	struct FollowHandlerData
+    {
+    	int32	_idxOwner;
+    };
+
+public:
+    virtual void init(MovementManager& movementManager, MovementObject& movementObject);
+    virtual bool check();
+    virtual bool update(MovementManager& movementManager, MovementObject& movementObject, const BaseObjectList& baseObjectList );
+    virtual void predictPosition(MovementManager& movementManager, MovementObject& movementObject, const Clock& clock, const BaseObjectList& baseObjectList );
+
+	void SetTrackedObject(MovementObject* movementObject, int32 idxActor );
+};
+
+//==============================================================================
+
+#if		USE_INLINE_DEFS || defined(_MOVEFOLL_CC)
+#include "movefoll.hpi"	// include all inline definitions as appropriate
+#endif
+
+//==============================================================================
+#endif	// _MOVEFOLL_HP
+//==============================================================================

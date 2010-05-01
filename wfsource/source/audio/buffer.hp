@@ -1,0 +1,27 @@
+#ifndef AUDIO_BUFFER_HP
+#define AUDIO_BUFFER_HP
+
+#include <streams/binstrm.hp>
+#if defined( __WIN__ )
+#include <dsound.h>
+#endif
+
+class SoundBuffer
+{
+public:
+#if defined( __WIN__ )
+	SoundBuffer( LPDIRECTSOUND&, binistream& );
+#else
+	SoundBuffer( binistream& );
+#endif
+	~SoundBuffer();
+	void play() const;
+
+protected:
+	binistream& _binis;
+#if defined( __WIN__ )
+    LPDIRECTSOUNDBUFFER lplpDsb;
+#endif
+};
+
+#endif	// SOUND_BUFFER_HP

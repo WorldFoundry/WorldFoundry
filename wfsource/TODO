@@ -1,0 +1,39 @@
+    // kts figure out why Scalar has a ostream operator<< when DO_IOSTREAMS is 0
+
+//==============================================================================
+
+write a few flipcode tip of the days:
+use preprocessor to allow one data file to generate multiple different outputs (like the renderer enum)
+
+redirectable strings
+
+AssertMsg 
+
+//==============================================================================
+
+General:
+
+Linux specific:
+
+Engine:
+
+Implement div0 / int overflow hander: WF expects integer overflows to just
+return the largest possible integer. Same for divide by 0. 
+
+implement joystick interface (currently only keyboard)
+
+Investigate Crystal Space as a renderer (does it have immediate mode
+style behaviour?). Look at other toolkits (I would rather leverage some
+other GPL'ed renderer than continue to write our own).
+
+
+Pathway:
+
+Implement all functionality we have in 3dsmax:
+	attributes multipaste
+	select objects by attributes
+	project build toolbar
+	geometry exporter (to iff)
+	
+make some cool levels to show off what we can do!
+

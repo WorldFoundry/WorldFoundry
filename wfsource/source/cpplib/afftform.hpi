@@ -1,0 +1,255 @@
+//=============================================================================
+// Copyright (c) 1997-1999, World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ------------------------------------------------------------------------
+
+#ifndef AFFTFORM_HPI
+#define AFFTFORM_HPI
+
+// ------------------------------------------------------------------------
+
+
+inline void
+AffineTransform::Validate( const char * file, const int line ) const
+{
+#if DO_ASSERTIONS
+	switch( GetType() )
+	{
+		case AffineTransform::IDENTITY:
+		case AffineTransform::TRANSLATION:
+		case AffineTransform::EULER:
+//		case AffineTransform::QUATERNION:
+		case AffineTransform::MATRIX34:
+#if defined( __PSX__ )
+		case AffineTransform::MATRIX3T:
+#endif
+		break;
+
+
+		default:
+			Fail( "AffineTransform failed validation.  Invalid type : " << GetType() );
+	}
+#endif
+}
+
+// ------------------------------------------------------------------------
+// initialization methods
+// ------------------------------------------------------------------------
+
+INLINE void
+AffineTransform::ConstructIdentity()
+{
+	SetType( AffineTransform::IDENTITY );
+	ValidateObject( *this );
+}
+
+
+// ------------------------------------------------------------------------
+
+INLINE AffineTransform::AffineTransform()
+{
+	ConstructIdentity();
+}
+
+// ------------------------------------------------------------------------
+
+INLINE AffineTransform::AffineTransform( const Vector3& translation )
+{
+	ConstructTranslation( translation );
+}
+
+// ------------------------------------------------------------------------
+
+INLINE AffineTransform::AffineTransform( const Euler& euler, const Vector3& translation )
+{
+	ConstructEuler( euler, translation );
+}
+
+// ------------------------------------------------------------------------
+
+//INLINE AffineTransform::AffineTransform( const Quaternion& quaternion, const Vector3& translation )
+//{
+//	ConstructQuaternion( quaternion, translation );
+//}
+
+// ------------------------------------------------------------------------
+
+INLINE AffineTransform::AffineTransform( const Matrix34& matrix34 )
+{
+	ConstructMatrix34( matrix34 );
+}
+
+// ------------------------------------------------------------------------
+
+#if defined( __PSX__ )
+
+INLINE AffineTransform::AffineTransform( const Matrix3t& matrix3t )
+{
+	ConstructMatrix3t( matrix3t );
+}
+
+#endif
+
+
+// ------------------------------------------------------------------------
+// type query/set
+// ------------------------------------------------------------------------
+
+INLINE AffineTransform::Type
+AffineTransform::GetType() const
+{
+	ValidateObject( *this );
+	return AffineTransform::Type( _t.type );
+}
+
+// ------------------------------------------------------------------------
+
+INLINE void
+AffineTransform::SetType( AffineTransform::Type type )
+{
+	_t.type = uint16( type );
+	ValidateObject( *this );
+}
+
+
+// ------------------------------------------------------------------------
+// helpers functions
+// ------------------------------------------------------------------------
+
+INLINE const Vector3&
+AffineTransform::AsTranslate() const
+{
+	return *( (const Vector3 *)&_t.t.translate.t );
+}
+
+// ------------------------------------------------------------------------
+
+//INLINE const Vector3&
+//AffineTransform::AsQuaternionTranslate() const
+//{
+//	return *( (const Vector3 *)&_t.t.quat.t );
+//}
+
+// ------------------------------------------------------------------------
+
+INLINE const Vector3&
+AffineTransform::AsEulerTranslate() const
+{
+	return *( (const Vector3 *)&_t.t.euler.t );
+}
+
+// ------------------------------------------------------------------------
+
+INLINE const Euler&
+AffineTransform::AsEuler() const
+{
+	return *( (const Euler *)&_t.t.euler.e );
+}
+
+// ------------------------------------------------------------------------
+
+//INLINE const Quaternion&
+//AffineTransform::AsQuaternion() const
+//{
+//	return *( (const Quaternion *)&_t.t.quat.q );
+//}
+
+// ------------------------------------------------------------------------
+
+INLINE const Matrix34&
+AffineTransform::AsMatrix34() const
+{
+	return *( (const Matrix34 *)&_t.t.mat );
+}
+
+// ------------------------------------------------------------------------
+
+#if defined( __PSX__ )
+
+INLINE const Matrix3t&
+AffineTransform::AsMatrix3t() const
+{
+	return *( (const Matrix3t *)&_t.t.mat3t.mat );
+}
+
+#endif
+
+// ------------------------------------------------------------------------
+
+INLINE Vector3&
+AffineTransform::AsTranslate()
+{
+	return *( (Vector3 *)&_t.t.translate.t );
+}
+
+// ------------------------------------------------------------------------
+
+//INLINE Vector3&
+//AffineTransform::AsQuaternionTranslate()
+//{
+//	return *( (Vector3 *)&_t.t.quat.t );
+//}
+
+// ------------------------------------------------------------------------
+
+INLINE Vector3&
+AffineTransform::AsEulerTranslate()
+{
+	return *( (Vector3 *)&_t.t.euler.t );
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Euler&
+AffineTransform::AsEuler()
+{
+	return *( (Euler *)&_t.t.euler.e );
+}
+
+// ------------------------------------------------------------------------
+
+//INLINE Quaternion&
+//AffineTransform::AsQuaternion()
+//{
+//	return *( (Quaternion *)&_t.t.quat.q );
+//}
+
+// ------------------------------------------------------------------------
+
+INLINE Matrix34&
+AffineTransform::AsMatrix34()
+{
+	return *( (Matrix34 *)&_t.t.mat );
+}
+
+// ------------------------------------------------------------------------
+
+#if defined( __PSX__ )
+
+INLINE Matrix3t&
+AffineTransform::AsMatrix3t()
+{
+	return *( (Matrix3t *)&_t.t.mat3t.mat );
+}
+
+#endif
+
+//=============================================================================
+#endif	// AFFTFORM_HPI
+//=============================================================================

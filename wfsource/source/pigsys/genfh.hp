@@ -1,0 +1,172 @@
+// ------------------------------------------------------------------------
+// Copyright(c) 1996,97,98,99 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ------------------------------------------------------------------------
+
+#ifndef _GENFH_HP
+#define _GENFH_HP
+
+// ------------------------------------------------------------------------
+// Read/Write Support Code
+// ------------------------------------------------------------------------
+
+#include <pigsys/pigsys.hp>
+//#include <streams/str_type.hp>
+
+extern "C"
+{
+#if !defined(OLD_IOSTREAMS)
+#   include <cstdlib>
+#   include <cstdio>
+#else
+#   include <stdlib.h>
+#   include <stdio.h>
+#endif
+
+#if defined( __WIN__ )
+#	include <io.h>
+#	include <fcntl.h>
+#	include <sys/stat.h>
+#elif defined( __PSX__ )
+#	include <libsn.h>
+#elif defined( __LINUX__ )
+#	include <fcntl.h>
+#	include <unistd.h>
+#else
+#error system not defined!
+#endif
+};
+
+// ------------------------------------------------------------------------
+
+#ifndef _MAX_PATH
+#define _MAX_PATH	260
+#endif
+
+#ifndef _MAX_FNAME
+#define _MAX_FNAME	256
+#endif
+
+#ifndef _MAX_EXT
+#define _MAX_EXT	256
+#endif
+
+// ------------------------------------------------------------------------
+// Macros
+// ------------------------------------------------------------------------
+
+#if defined( __WIN__ )
+	#define FHINITOK					1
+	#define FHINIT						FHINITOK
+	#define FHOPENRD( fname ) \
+		open( fname, O_RDONLY | O_BINARY )
+	#define FHOPENWR( fname ) \
+		open( fname, O_WRONLY | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE )
+	#define FHOPENRDWR( fname ) \
+		open( fname, O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE )
+	#define FHCLOSE( fh ) \
+		close( fh )
+	#define FHSEEKABS( fh, offset ) \
+		lseek( fh, offset, SEEK_SET )
+	#define FHSEEKREL( fh, offset ) \
+		lseek( fh, offset, SEEK_CUR )
+	#define FHSEEKEND( fh, offset ) \
+		lseek( fh, offset, SEEK_END )
+	#define FHTELL( fh ) \
+		tell( fh )
+	#define FHREAD( fh, buff, len ) \
+		read( fh, buff, len )
+	#define FHWRITE( fh, buff, len ) \
+		write( fh, buff, len )
+	#define FHEOF( fh ) \
+		eof( fh )
+
+#elif defined( __PSX__ )
+
+//	#if ( IS_STREAM() )
+	#if 0
+
+		#define FHINITOK					error
+		#define FHINIT 						error
+		#define FHOPENRD( fname ) 			error
+		#define FHOPENWR( fname ) 			error
+		#define FHOPENRDWR( fname ) 		error
+		#define FHCLOSE( fh ) 				error
+		#define FHSEEKABS( fh, offset ) 	error
+		#define FHSEEKREL( fh, offset ) 	error
+		#define FHSEEKEND( fh, offset ) 	error
+		#define FHTELL( fh ) 				error
+		#define FHREAD( fh, buff, len ) 	error
+		#define FHWRITE( fh, buff, len ) 	error
+//		#define FHEOF( fh ) 				error
+
+	#else
+
+		#define FHINITOK					0
+		#define FHINIT 						PCinit()
+		#define FHOPENRD( fname ) 			PCopen( (char *)fname, 0, 0 )
+		#define FHOPENWR( fname ) 			PCcreat( (char *)fname, 0 )
+		#define FHOPENRDWR( fname ) 		PCopen( (char *)fname, 2, 0 )
+		#define FHCLOSE( fh ) 				PCclose( fh )
+		#define FHSEEKABS( fh, offset ) 	PClseek( fh, offset, 0 )
+		#define FHSEEKREL( fh, offset ) 	PClseek( fh, offset, 1 )
+		#define FHSEEKEND( fh, offset ) 	PClseek( fh, offset, 2 )
+		#define FHTELL( fh ) 				PClseek( fh, 0, 1 )
+		#define FHREAD( fh, buff, len ) 	PCread( fh, (char *)buff, len )
+		#define FHWRITE( fh, buff, len ) 	PCwrite( fh, (char *)buff, len )
+//		#define FHEOF( fh ) 				error
+
+	#endif
+
+#elif defined( __LINUX__ )
+
+	#define FHINITOK					1
+	#define FHINIT						FHINITOK
+	#define FHOPENRD( fname ) \
+		open( fname, O_RDONLY )
+	#define FHOPENWR( fname ) \
+		open( fname, O_WRONLY  O_CREAT | O_TRUNC, S_IREAD | S_IWRITE )
+	#define FHOPENRDWR( fname ) \
+		open( fname, O_RDWR | O_CREAT, S_IREAD | S_IWRITE )
+	#define FHCLOSE( fh ) \
+		close( fh )
+	#define FHSEEKABS( fh, offset ) \
+		lseek( fh, offset, SEEK_SET )
+	#define FHSEEKREL( fh, offset ) \
+		lseek( fh, offset, SEEK_CUR )
+	#define FHSEEKEND( fh, offset ) \
+		lseek( fh, offset, SEEK_END )
+	#define FHTELL( fh ) \
+		lseek(fh, 0, SEEK_CUR)
+	#define FHREAD( fh, buff, len ) \
+		read( fh, buff, len )
+	#define FHWRITE( fh, buff, len ) \
+		write( fh, buff, len )
+	#define FHEOF( fh ) \
+		eof( fh )
+
+#else
+
+#	error System not defined!
+
+#endif
+
+//=============================================================================
+#endif // _GENFH_HP
+//=============================================================================

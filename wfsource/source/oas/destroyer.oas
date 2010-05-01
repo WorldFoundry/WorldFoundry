@@ -1,0 +1,19 @@
+@*============================================================================
+@* destroy.oas
+@*============================================================================
+
+@*============================================================================
+@* object destroyer type definition
+
+TYPEHEADER(Destroyer,Destroyer)
+    @include actor.inc
+
+	PROPERTY_SHEET_HEADER(Destroyer,1)
+@*	----------------------------------
+	TYPEENTRYINT32(Activation MailBox,,0, 3999, 1, "", SHOW_AS_NUMBER)		// mailbox to activate this
+	LEVELCONFLAGCOMMONBLOCK(activate)
+	PROPERTY_SHEET_FOOTER
+
+TYPEFOOTER
+
+@*============================================================================

@@ -1,0 +1,68 @@
+//============================================================================
+// ColBox.hp:
+// Copyright(c) 1995 Cave Logic Studios / PF.Magic
+//============================================================================
+/* Documentation:
+
+	Abstract:
+			in memory representation of level ColBoxs
+	History:
+			Created	06-14-95 05:05pm Kevin T. Seghetti
+
+	Class Hierarchy:
+			none
+
+	Dependancies:
+		PIGS, BRender, STDIO
+	Restrictions:
+
+	Example:
+*/
+//============================================================================
+// use only once insurance
+
+#ifndef _ColBox_HP
+#define _ColBox_HP
+
+//============================================================================
+
+#include "global.hpp"
+#include "point.hpp"
+
+#include <game/levelcon.h>		
+
+#include <stdio.h>
+
+//============================================================================
+// in memory representation of a 3D ColBox
+
+class QColBox
+{
+public:
+	QColBox();
+	QColBox(Point3 min, Point3 max);
+	~QColBox();
+	void Bound(const Mesh& mesh, Matrix3& rotMatrix, Point3& objOffsetPos);	// read from array of 3d points, and create a bounding box
+	bool InsideCheck(const Point3 point) const;
+	void Write(_CollisionRectOnDisk* destBuffer) const;
+	size_t SizeOfOnDisk() const;			// returns size in bytes of on-disk representation
+	Point3 GetMin() const { return _min; }
+	Point3 GetMax()	const { return _max; }
+	Point3 SetMin(Point3 newMin)	{ _min = newMin; return _min; }
+	Point3 SetMax(Point3 newMax)	{ _max = newMax; return _max; }
+
+	double GetVolume() const;					// approximatly
+	void Rotate(float angle, Point3& axis);
+
+	// Printing
+	friend ostream& operator<<(ostream& s, const QColBox &o);
+	operator==(const QColBox& left) const;
+	QColBox& operator+=(const Point3& offset);							// add offset to all points in colbox
+private:
+	Point3 _min;
+	Point3 _max;
+};
+
+//============================================================================
+#endif
+//============================================================================

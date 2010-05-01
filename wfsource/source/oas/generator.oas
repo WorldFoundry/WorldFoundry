@@ -1,0 +1,35 @@
+@*============================================================================
+@* generato.oas
+@*============================================================================
+
+@*============================================================================
+@* object generator type definition
+
+@define DEFAULT_MASS 0
+
+TYPEHEADER(Generator)
+    @include actor.inc
+
+        PROPERTY_SHEET_HEADER(Generator,1)
+@*      ----------------------------------
+        TYPEENTRYINT32(Activation MailBox,, 0, 3999, 1, "", SHOW_AS_NUMBER)               // mailbox to activate this
+        TYPEENTRYOBJREFERENCE(Object To Throw)
+        TYPEENTRYFIXED32(Generation Rate,Generation Frequency,FIXED32(0.001),FIXED32(10.0),FIXED32(1.0))             // how long to wait between generating objects, in seconds */
+
+@*      FIX - change to vector
+	GROUP_START(Object Velocity,250)
+        TYPEENTRYFIXED32(Object X Velocity,X,FIXED32(-100.0),FIXED32(100.0),FIXED32(0.0))
+        TYPEENTRYFIXED32(Object Y Velocity,Y,FIXED32(-100.0),FIXED32(100.0),FIXED32(1.0))
+        TYPEENTRYFIXED32(Object Z Velocity,Z,FIXED32(-100.0),FIXED32(100.0),FIXED32(0.0))
+	GROUP_STOP()
+
+	GROUP_START(Random Displacement,250)
+        TYPEENTRYFIXED32(Random X Range,X Range,FIXED32(-100.0),FIXED32(100.0),FIXED32(0.0))
+        TYPEENTRYFIXED32(Random Y Range,Y Range,FIXED32(-100.0),FIXED32(100.0),FIXED32(0.0))
+        TYPEENTRYFIXED32(Random Z Range,Z Range,FIXED32(-100.0),FIXED32(100.0),FIXED32(0.0))
+	GROUP_STOP()
+	PROPERTY_SHEET_FOOTER
+
+TYPEFOOTER
+
+@*============================================================================

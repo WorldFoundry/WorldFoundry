@@ -1,0 +1,18 @@
+make room object references refer to output object master list, not levelcon master list
+make room object reference list not contain template or noinstance objects
+make one large .oad chunk, and have each object point into it
+*establish some way to find all of the .oad files (looks in dir with .LC file)
+design room format
+*design system for centering 3ds meshes
+implement handles for objects
+*new xdata format
+read camera information
+read lighting information
+*read path/keyframer information
+add platform specific output
+insure all data types are padded correctly for each platform (strings)
+change colbox code to get it from the .3ds file instead of the level
+
+assert keyframe data doesn't have repeated points
+
+assert that oad's only contain one of each name

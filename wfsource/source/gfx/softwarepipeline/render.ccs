@@ -1,0 +1,531 @@
+@*=============================================================================
+@* gfx/software/render.ccs: 3D renderable object, software version, prep source to generate a renderer
+//==============================================================================
+// FILENAME@+.cc: Renderer for RENDER_TYPE
+// Automatically generated from render.ccs DO NOT MODOFIY
+// Copyright ( c ) 1997,98,99 World Foundry Group  
+//
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description:
+//
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+#define PRINT_EVERYTHING 0
+
+#include <gfx/display.hp>				// kts just to get switches
+#include <gfx/rendobj3.hp>
+#include <gfx/material.hp>
+#include <math/vector3p.hp>
+#include <gfx/renderer.hp>
+#include <gfx/psx/gteflags.h>
+#include <math/scalar.hp>
+#include <math/scalarps.hp>
+#include <math/vector3.hp>
+#include <math/vector3p.hp>
+
+@*#include <math/matrix3t.hp>
+#include <cpplib/libstrm.hp>
+#include <gfx/prim.hp>
+
+#define FLAG_TEXTURE TEXTURE_FLAG
+#define FLAG_GOURAUD GOURAUD_FLAG
+#define FLAG_LIGHTING LIGHTING_FLAG
+
+//============================================================================
+
+#if defined( __PSX__ )
+#define abs(val) ((val)<0?-(val):(val))
+#endif
+
+#define ADDPRIM_SHIFT_VALUE 1
+
+// these globals are defined in rendobj3.cc
+extern RendererVariables globalRendererVariables;
+//extern const TriFace* currentRenderFace;
+//extern const Material* currentRenderMaterial;
+
+// these globals are defined in camera.cc
+extern int32 gte_DQA;
+extern int32 gte_DQB;
+extern Color gte_lcm[3];
+extern Color gte_farColor;
+extern Color gte_ambientColor;
+extern Matrix34 gte_llm;
+
+
+//============================================================================
+
+#if DO_IOSTREAMS
+INLINE std::ostream&
+operator<<(std::ostream& out, const SVECTOR& vect)
+{
+	out << vect.vx << "," << vect.vy << "," << vect.vz;
+	return(out);
+}
+#endif
+
+@include sub2d.ccs
+
+@include sub3d.ccs
+
+@include clip3d.ccs
+
+//============================================================================
+
+#define Clip(value,lower,upper) \
+	{\
+		if(value < lower) \
+			value = lower; \
+		if(value > upper) \
+			value = upper; \
+	}
+
+//==============================================================================
+
+inline Vector3 ColorToV3(const Color& in)
+{
+	return Vector3(Scalar(long(in.Red())<<8),Scalar(long(in.Green())<<8),Scalar(long(in.Blue())<<8));
+}
+
+inline Color V3ToColor(const Vector3& in)
+{
+   long r,g,b;
+   r = in[0].AsLong();
+   g = in[1].AsLong();
+   b = in[2].AsLong();
+
+   Clip(r,0,65535);
+   Clip(g,0,65535);
+   Clip(b,0,65535);
+
+	return Color(uint8(r>>8),uint8(g>>8),uint8(b>>8));
+}
+
+inline Vector3
+MultVect3(const Vector3& left, const Vector3& right)
+{
+	Vector3 result;
+	result[0] = left[0] * right[0];
+	result[1] = left[1] * right[1];
+	result[2] = left[2] * right[2];
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+// recursive, called by Clip3D
+
+void
+RenderObject3D::RenderPoly3D@+RENDER_TYPE(POLYVECT& gteVect,Primitive& primitive)
+{
+	globalRendererVariables.gteVect[0] = gteVect[0];
+	globalRendererVariables.gteVect[1] = gteVect[1];
+	globalRendererVariables.gteVect[2] = gteVect[2];
+	RenderObject3D::RenderPoly3D@+RENDER_TYPE(&primitive);
+}
+
+//-----------------------------------------------------------------------------
+
+int
+RenderObject3D::RenderPoly3D@+RENDER_TYPE(Primitive* primitive)
+{
+#if PRINT_EVERYTHING
+	cout << "Software: New Poly: RenderPoly3D@+RENDER_TYPE" << std::endl;
+	cout << "POLYVECT = " << globalRendererVariables.gteVect[0] << "; " << globalRendererVariables.gteVect[1] << "; " << globalRendererVariables.gteVect[2] << std::endl;
+#endif
+	int flags = 0;
+	Vector3_PS vect[3];
+	vect[0] = globalRendererVariables.gteVect[0];
+	vect[1] = globalRendererVariables.gteVect[1];
+	vect[2] = globalRendererVariables.gteVect[2];
+
+	vect[0] *= globalRendererVariables.GTEMatrix;
+	vect[1] *= globalRendererVariables.GTEMatrix;
+	vect[2] *= globalRendererVariables.GTEMatrix;
+
+#define ClipSetFlag(value,limiter,lower,upper) \
+	{\
+		if(value < lower) \
+		{\
+			value = lower; \
+			/*flags |= limiter;*/\
+		}\
+		if(value > upper) \
+		{\
+			value = upper; \
+			/*flags |= limiter;*/\
+		}\
+	}
+
+	// now project
+	int x0,y0;
+	Scalar hsz;
+	Scalar tempZ;
+
+	tempZ = vect[0].Z();
+	Clip(tempZ,Scalar::zero,SCALAR_CONSTANT(127));
+	hsz = SCALAR_CONSTANT(110)/tempZ;
+	Clip(hsz,SCALAR_CONSTANT(-512),SCALAR_CONSTANT(511));
+	x0 = (vect[0].X()*hsz).WholePart();
+	y0 = (vect[0].Y()*hsz).WholePart();
+	int x1,y1;
+	tempZ = vect[1].Z();
+	Clip(tempZ,Scalar::zero,SCALAR_CONSTANT(127));
+	hsz = SCALAR_CONSTANT(110)/tempZ;
+	Clip(hsz,SCALAR_CONSTANT(-512),SCALAR_CONSTANT(511));
+	x1 = (vect[1].X()*hsz).WholePart();
+	y1 = (vect[1].Y()*hsz).WholePart();
+	int x2,y2;
+	tempZ = vect[2].Z();
+	Clip(tempZ,Scalar::zero,SCALAR_CONSTANT(127));
+	hsz = SCALAR_CONSTANT(110)/tempZ;
+	Clip(hsz,SCALAR_CONSTANT(-512),SCALAR_CONSTANT(511));
+	x2 = (vect[2].X()*hsz).WholePart();
+	y2 = (vect[2].Y()*hsz).WholePart();
+
+@*	cout << "xy before clip: " <<
+@*	x0 << "," << y0 << ";" <<
+@*	x1 << "," << y1 << ";" <<
+@*	x2 << "," << y2 << ";" << std::endl;
+@*	cout << "resulting vect after 3d clip: " << vect[0] << ", " << vect[1] << ", " << vect[2] << std::endl;
+#if FLAG_LIGHTING
+    Scalar IR0 = Scalar(gte_DQB)/SCALAR_CONSTANT(256) + (Scalar(gte_DQA)*hsz);
+	Clip(IR0,Scalar::zero,Scalar::one);
+#if PRINT_EVERYTHING
+	cout << "gte_DQA = " << gte_DQA << ", gte_DQB = " << gte_DQB << std::endl;
+	cout << "hsz = " << hsz << std::endl;
+#endif		// print everything
+#endif		// FLAG_LIGHTING
+
+	ClipSetFlag(x0,GTE_FLAGF_LIMD1_OUTOFRANGE,-1024,1023);
+	ClipSetFlag(y0,GTE_FLAGF_LIMD2_OUTOFRANGE,-1024,1023);
+	ClipSetFlag(x1,GTE_FLAGF_LIMD1_OUTOFRANGE,-1024,1023);
+	ClipSetFlag(y1,GTE_FLAGF_LIMD2_OUTOFRANGE,-1024,1023);
+	ClipSetFlag(x2,GTE_FLAGF_LIMD1_OUTOFRANGE,-1024,1023);
+	ClipSetFlag(y2,GTE_FLAGF_LIMD2_OUTOFRANGE,-1024,1023);
+
+	assert(x0 >= -1024);
+	assert(x0 <   1024);
+	assert(x1 >= -1024);
+	assert(x1 <   1024);
+	assert(x2 >= -1024);
+	assert(x2 <   1024);
+
+	assert(y0 >= -1024);
+	assert(y0 <   1024);
+	assert(y1 >= -1024);
+	assert(y1 <   1024);
+	assert(y2 >= -1024);
+	assert(y2 <   1024);
+
+	if(vect[0].Z() < Scalar::zero || vect[1].Z() < Scalar::zero || vect[2].Z() < Scalar::zero)
+	{
+		flags |= GTE_FLAGF_LIMC_OUTOFRANGE;
+	}
+
+	int zflag = (x0*y1 + x1*y2 + x2*y0 - (x0*y2 + x1*y0 + x2*y1) );
+@*	cscreen <<
+@*	cout << "xy after clip: " <<
+@*	x0 << "," << y0 << ";" <<
+@*	x1 << "," << y1 << ";" <<
+@*	x2 << "," << y2 << ";" << zflag << std::endl;
+
+	if( zflag > 0 )                         // if zFlag is 0 or less the polygon is facing away from the camera (back face culling)
+	{
+#if PRINT_EVERYTHING
+@*		cscreen << "zflag > 0" << std::endl;
+	cout << "sz[0] = " << vect[0].Z() << ", sz[1] = " << vect[1].Z() << ", sz[2] = " << vect[2].Z() << std::endl;
+#endif
+	POLY_@+POLY_TYPE@+& poly = (*(POLY_@+POLY_TYPE@+*)primitive);
+
+#	if DO_ASSERTIONS
+		static int clipCount=0;
+#	endif
+@*#if PRINT_EVERYTHING
+@*		cout << "vect[x] = " << vect[0] << "; " << vect[1] << "; " << vect[2] << std::endl;
+@*#endif
+		if((vect[0].Z() < chopHitherScalar || vect[1].Z() < chopHitherScalar || vect[2].Z() < chopHitherScalar))
+		{
+			if(vect[0].Z() > chopHitherScalar || vect[1].Z() > chopHitherScalar || vect[2].Z() > chopHitherScalar)
+			{
+#if CLIP_PRINT
+				cout << "prev vect " << vect[0] << '\n' << vect[1] << '\n' << vect[2] << std::endl;
+#endif
+				Vector3_PS vect[3];
+				vect[0] = globalRendererVariables.gteVect[0];
+				vect[1] = globalRendererVariables.gteVect[1];
+				vect[2] = globalRendererVariables.gteVect[2];
+
+				vect[0] *= globalRendererVariables.GTEMatrix;
+				vect[1] *= globalRendererVariables.GTEMatrix;
+				vect[2] *= globalRendererVariables.GTEMatrix;
+#if CLIP_PRINT
+				cout << "vect " << vect[0] << '\n' << vect[1] << '\n' << vect[2] << std::endl;
+#endif
+				assert(clipCount == 0);
+#	if DO_ASSERTIONS
+				clipCount++;
+#	endif
+				Clip3D@+RENDER_TYPE(*globalRendererVariables.viewPort,globalRendererVariables.gteVect,vect,*primitive);
+#	if DO_ASSERTIONS
+				clipCount--;
+#	endif
+			}
+#	if SW_DBSTREAM
+			else
+				cdebug << "chopHither clipped" << std::endl;
+#	endif
+		}
+		else
+		if (flags == 0)
+		{
+			poly.x0 = x0;
+			poly.y0 = y0;
+			poly.x1 = x1;
+			poly.y1 = y1;
+			poly.x2 = x2;
+			poly.y2 = y2;
+#if defined(GFX_ZBUFFER)
+            poly.point0.x = vect[0].X().AsLong();
+            poly.point0.y = vect[0].Y().AsLong();
+            poly.point0.z = vect[0].Z().AsLong();
+
+            poly.point1.x = vect[1].X().AsLong();
+            poly.point1.y = vect[1].Y().AsLong();
+            poly.point1.z = vect[1].Z().AsLong();
+
+            poly.point2.x = vect[2].X().AsLong();
+            poly.point2.y = vect[2].Y().AsLong();
+            poly.point2.z = vect[2].Z().AsLong();
+#endif /* GFX_ZBUFFER */
+
+			// get fog near/far data and calculate IR0
+#if FLAG_LIGHTING
+#if FLAG_GOURAUD == 0
+			assert(0);
+			Vector3_PS normal = MultiplyAcross(globalRendererVariables.currentRenderFace->normal,gte_llm);
+			if(normal[0] < Scalar::zero)
+				normal[0] = Scalar::zero;
+			if(normal[1] < Scalar::zero)
+				normal[1] = Scalar::zero;
+			if(normal[2] < Scalar::zero)
+				normal[2] = Scalar::zero;
+
+			Color LT = gte_ambientColor +
+				(gte_lcm[0]*normal[0]) +
+				(gte_lcm[1]*normal[1]) +
+				(gte_lcm[2]*normal[2]);
+
+			const Color& polyColor = globalRendererVariables.currentRenderMaterial->_color;
+			Color iResult = polyColor*LT;
+			Color result = iResult + ((gte_farColor-iResult) * IR0);
+			setRGB0(&poly, result.Red(),result.Green(),result.Blue());
+
+@*			if(IR0 < Scalar::one)
+@*			{
+@*				cout << "normal " << normal << std::endl;
+@*				cout << "gte_lcm[0] = " << gte_lcm[0] << std::endl;
+@*				cout << "gte_lcm[1] = " << gte_lcm[1] << std::endl;
+@*				cout << "gte_lcm[2] = " << gte_lcm[2] << std::endl;
+@*				cout << "gte_ambientcolor = " << gte_ambientColor << std::endl;
+@*				cout << "IR0 = " << IR0 << ", LT = " << LT << ", polyColor = " << polyColor << ", gte_farColor = " << gte_farColor << std::endl;
+@*				cout << "result = " << result << std::endl;
+@*			}
+#else
+			assert(globalRendererVariables.currentRenderFace->normal.Length() > Scalar::zero);
+#if PRINT_EVERYTHING
+			cout << "lighting inputs: " << std::endl;
+			cout << "&globalRendererVariables.currentRenderFace = " << globalRendererVariables.currentRenderFace <<std::endl;
+			cout << "globalRendererVariables.currentRenderFace = " << *globalRendererVariables.currentRenderFace <<std::endl;
+#endif
+//			cout << "  gte_llm: " << gte_llm << std::endl;
+			Vector3_PS normal = MultiplyAcross(globalRendererVariables.currentRenderFace->normal,gte_llm);
+
+#if PRINT_EVERYTHING
+			cout << "  current face normal: " << globalRendererVariables.currentRenderFace->normal << std::endl;
+			cout << "  gte_llm: " << gte_llm << std::endl;
+			cout << "  normal before clipping: " << normal << std::endl;
+#endif
+
+            // clip to 0 so that can't get darker than black
+			if(normal[0] < Scalar::zero)
+				normal[0] = Scalar::zero;
+			if(normal[1] < Scalar::zero)
+				normal[1] = Scalar::zero;
+			if(normal[2] < Scalar::zero)
+				normal[2] = Scalar::zero;
+
+#if PRINT_EVERYTHING
+			cout << "  resulting clipped normal: " << normal << std::endl;
+			cout << "   gte_ambientColor = " << gte_ambientColor << std::endl;
+			cout << "   gte_lcm[0] = " << gte_lcm[0] << std::endl;
+			cout << "   gte_lcm[1] = " << gte_lcm[1] << std::endl;
+			cout << "   gte_lcm[2] = " << gte_lcm[2] << std::endl;
+
+			cout << "   ColorToV3(gte_ambientColor = " << ColorToV3(gte_ambientColor) << std::endl;
+			cout << "   ColorToV3(gte_lcm[0] = " << ColorToV3(gte_lcm[0]) << std::endl;
+			cout << "   ColorToV3(gte_lcm[1] = " << ColorToV3(gte_lcm[1]) << std::endl;
+			cout << "   ColorToV3(gte_lcm[2] = " << ColorToV3(gte_lcm[2]) << std::endl;
+#endif
+
+			Vector3_PS LT = ColorToV3(gte_ambientColor) +
+				(ColorToV3(gte_lcm[0])*normal[0]) +
+				(ColorToV3(gte_lcm[1])*normal[1]) +
+				(ColorToV3(gte_lcm[2])*normal[2]);
+
+			const Color& polyColor = globalRendererVariables.currentRenderMaterial->_color;
+
+			Vector3_PS iResult = MultVect3(ColorToV3(polyColor),LT);
+			
+			Color result = V3ToColor(iResult + ((ColorToV3(gte_farColor)-iResult) * IR0));
+#if PRINT_EVERYTHING
+			cout << "result2 = " << result << std::endl;
+#endif
+			setRGB2(&poly, result.Red(),result.Green(),result.Blue());
+
+#if PRINT_EVERYTHING
+			cout << "LT = " << LT << std::endl;
+			cout << "pColor = " << ColorToV3(polyColor) << std::endl;
+			cout << "iResult = " << iResult << std::endl;
+			cout << "IR0 = " << IR0 << std::endl;
+			cout << "polyColor2 = " << polyColor << std::endl;
+			cout << "ColorToV3.polyColor2 = " << ColorToV3(polyColor) << std::endl;
+			cout << "result = " << result << std::endl;
+#endif
+			tempZ = vect[0].Z();
+			Clip(tempZ,Scalar::zero,SCALAR_CONSTANT(127));
+			hsz = SCALAR_CONSTANT(110)/tempZ;
+			Clip(hsz,SCALAR_CONSTANT(-512),SCALAR_CONSTANT(511));
+            IR0 = Scalar(gte_DQB)/SCALAR_CONSTANT(256) + (Scalar(gte_DQA)*hsz);
+			Clip(IR0,Scalar::zero,Scalar::one);
+			result = V3ToColor(iResult + ((ColorToV3(gte_farColor)-iResult) * IR0));
+			setRGB0(&poly, result.Red(),result.Green(),result.Blue());
+#if PRINT_EVERYTHING
+			cout << "result0 = " << result << std::endl;
+			cout << "IR0 = " << IR0 << std::endl;
+			cout << "ColorToV3.polyColor0 = " << ColorToV3(polyColor) << std::endl;
+			cout << "iResult = " << iResult << std::endl;
+			cout << "result = " << result << std::endl;
+#endif
+			tempZ = vect[1].Z();
+			Clip(tempZ,Scalar::zero,SCALAR_CONSTANT(127));
+			hsz = SCALAR_CONSTANT(110)/tempZ;
+			Clip(hsz,SCALAR_CONSTANT(-512),SCALAR_CONSTANT(511));
+            IR0 = Scalar(gte_DQB)/SCALAR_CONSTANT(256) + (Scalar(gte_DQA)*hsz);
+			Clip(IR0,Scalar::zero,Scalar::one);
+			result = V3ToColor(iResult + ((ColorToV3(gte_farColor)-iResult) * IR0));
+			setRGB1(&poly, result.Red(),result.Green(),result.Blue());
+@*#if PRINT_EVERYTHING
+@*			cout << "result1 = " << result << std::endl;
+@*			cout << "IR0 = " << IR0 << std::endl;
+@*			cout << "ColorToV3.polyColor1 = " << ColorToV3(polyColor) << std::endl;
+@*			cout << "iResult = " << iResult << std::endl;
+@*			cout << "result = " << result << std::endl;
+@*#endif		// PRINT_EVERYTHING
+
+#if PRINT_EVERYTHING
+			cout << "resulting colors: polys:" << int(poly.r0) << "," << int(poly.g0) << "," << int(poly.b0) << ";" << int(poly.r1) << "," << int(poly.g1) << "," << int(poly.b1) << ";" << int(poly.r2) << "," << int(poly.g2) << "," << int(poly.b2) << std::endl;
+#endif		// PRINT_EVERYTHING
+#endif     // FLAG_GOURAUD
+#endif		// FLAG_LIGHTING
+
+			register int32 z;
+			Scalar temp;
+			temp = (((vect[0].Z() >= vect[1].Z()) && (vect[0].Z() >= vect[2].Z()))?vect[0].Z():((vect[1].Z() >= vect[0].Z()) && (vect[1].Z() >= vect[2].Z()))?vect[1].Z():vect[2].Z());
+			z = temp.AsLong() >> 8;
+			if(z <= 0)
+				z = 0;			// kts test code
+			assert(z >= 0);
+			assert(((z>>ADDPRIM_SHIFT_VALUE)+1) > 0);
+
+			if(PolyTooBig(poly))
+			{
+@*				cscreen << "2d subdivision" << std::endl;
+				Subdivide2D@+RENDER_TYPE@+(*globalRendererVariables.viewPort,*primitive,z);
+			}
+			else
+			{
+#	if DO_ASSERTIONS
+				POLY_@+POLY_TYPE@+* poly = (POLY_@+POLY_TYPE@+*)primitive;
+				assert(abs(poly->x0 - poly->x1) < 1024);
+				assert(abs(poly->x0 - poly->x2) < 1024);
+				assert(abs(poly->x1 - poly->x2) < 1024);
+				assert(abs(poly->y0 - poly->y1) < 1024);
+				assert(abs(poly->y0 - poly->y2) < 1024);
+				assert(abs(poly->y1 - poly->y2) < 1024);
+#	endif
+
+				if(z >= 0)
+				{
+@*					cscreen << "drawing prim" << std::endl;
+#if PRINT_EVERYTHING
+					DBSTREAM2( cout << "no sub, adding primitive" << std::endl; )
+					cout << "no sub, adding primitive with a z of " << z << std::endl;
+					cout << "POLYVECT = " << globalRendererVariables.gteVect[0] << ";" << globalRendererVariables.gteVect[1] << ";" << globalRendererVariables.gteVect[2] << std::endl;
+					cout << "primitive =:" << std::endl;
+//					cout << "  taglen:" << hex << ((P_TAG*)primitive.@+POLY_TYPE_LOWER@+.tag)->len   << dec << std::endl;
+@*					cout << "  r0:    " << int(primitive->@+POLY_TYPE_LOWER@+.r0)    << std::endl;
+@*					cout << "  g0:    " << int(primitive->@+POLY_TYPE_LOWER@+.g0)    << std::endl;
+@*					cout << "  b0:    " << int(primitive->@+POLY_TYPE_LOWER@+.b0)    << std::endl;
+					cout << "  code:  " << int(primitive->@+POLY_TYPE_LOWER@+.code)  << std::endl;
+					cout << "  x0:    " << primitive->@+POLY_TYPE_LOWER@+.x0    << std::endl;
+					cout << "  y0:    " << primitive->@+POLY_TYPE_LOWER@+.y0    << std::endl;
+					cout << "  x1:    " << primitive->@+POLY_TYPE_LOWER@+.x1    << std::endl;
+					cout << "  y1:    " << primitive->@+POLY_TYPE_LOWER@+.y1    << std::endl;
+					cout << "  x2:    " << primitive->@+POLY_TYPE_LOWER@+.x2    << std::endl;
+					cout << "  y2:    " << primitive->@+POLY_TYPE_LOWER@+.y2    << std::endl;
+#if FLAG_TEXTURE
+					cout << "  u0:    " << int(primitive->@+POLY_TYPE_LOWER@+.u0)   << std::endl;
+					cout << "  v0:    " << int(primitive->@+POLY_TYPE_LOWER@+.v0)   << std::endl;
+					cout << "  u1:    " << int(primitive->@+POLY_TYPE_LOWER@+.u1)   << std::endl;
+					cout << "  v1:    " << int(primitive->@+POLY_TYPE_LOWER@+.v1)   << std::endl;
+					cout << "  u2:    " << int(primitive->@+POLY_TYPE_LOWER@+.u2)   << std::endl;
+					cout << "  v2:    " << int(primitive->@+POLY_TYPE_LOWER@+.v2)   << std::endl;
+					cout << "  tpage: " << primitive->@+POLY_TYPE_LOWER@+.tpage << std::endl;
+					cout << "  clut:  " << primitive->@+POLY_TYPE_LOWER@+.clut  << std::endl;
+#endif		// FLAG_TEXTURE
+#if FLAG_GOURAUD
+					cout << "  r1:    " << int(primitive->@+POLY_TYPE_LOWER@+.r1)   << std::endl;
+					cout << "  g1:    " << int(primitive->@+POLY_TYPE_LOWER@+.g1)   << std::endl;
+					cout << "  b1:    " << int(primitive->@+POLY_TYPE_LOWER@+.b1)   << std::endl;
+					cout << "  r2:    " << int(primitive->@+POLY_TYPE_LOWER@+.r2)   << std::endl;
+					cout << "  g2:    " << int(primitive->@+POLY_TYPE_LOWER@+.g2)   << std::endl;
+					cout << "  b2:    " << int(primitive->@+POLY_TYPE_LOWER@+.b2)    << std::endl;
+#endif	// FLAG_GOURAUD
+#endif	// PRINT_EVERYTHING
+					globalRendererVariables.viewPort->AddPrimitive(*primitive,(z>>ADDPRIM_SHIFT_VALUE)+1);
+				}
+				DBSTREAM3(
+				else
+					cdebug << "clipped prim" << std::endl;
+				)
+			}
+		}
+		DBSTREAM3(
+		else
+			cdebug << "limiter fired: " << ((void*)flags) << std::endl; )
+	}
+	DBSTREAM3(
+	else
+		cdebug << "normal clipped" << std::endl; )
+	return 1;
+}
+
+//============================================================================

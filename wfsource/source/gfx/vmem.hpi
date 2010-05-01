@@ -1,0 +1,72 @@
+//============================================================================
+// vmem.hpi: video memory map managment
+// Copyright (c) 1997,1998,1999,2000,2001 World Foundry Group.  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//============================================================================
+// Original Author: Kevin T. Seghetti
+//=============================================================================
+
+inline void
+VideoMemory::Validate() const
+{
+#if DO_VALIDATION
+#if DO_VALIDATION > 1
+	for(int index=0;index < MAX_SLOTS;index++)
+	{
+		if(_textures[index])
+		{
+			assert(ValidPtr(_textures[index]));
+			_textures[index]->Validate();
+		}
+		if(_palettes[index])
+		{
+			assert(ValidPtr(_palettes[index]));
+			_palettes[index]->Validate();
+		}
+	}
+#endif
+#endif
+}
+
+//=============================================================================
+
+inline PixelMap&
+VideoMemory::GetSlotTexturePixelMap(int slot)
+{
+    Validate();
+	assert(slot >= 0);
+	assert(slot < MAX_SLOTS);
+	AssertMsg(ValidPtr(_textures[slot]),"slot = " << slot);
+	_textures[slot]->Validate();
+	return *_textures[slot];
+}
+
+//=============================================================================
+
+inline PixelMap&
+VideoMemory::GetSlotPalettePixelMap(int slot)
+{
+	assert(slot >= 0);
+	assert(slot < MAX_SLOTS);
+	AssertMsg(ValidPtr(_palettes[slot]),"slot = " << slot);
+	_palettes[slot]->Validate();
+	return *_palettes[slot];
+}
+
+//=============================================================================

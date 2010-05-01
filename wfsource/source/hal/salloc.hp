@@ -1,0 +1,56 @@
+//============================================================================
+// salloc.hp: stacked memory allocator (variable sized allocations, must be used
+// in fifo order (asserts otherwise)
+//============================================================================
+// Documentation:
+
+//	Abstract:
+//			currently used by the tasker for stack managment
+
+//	History:
+//			Created	8/24/96 14:51 Kevin T. Seghetti
+
+//	Class Hierarchy:
+//			none
+
+//	Dependancies:
+//			halbase.h
+//			_list.h
+
+//	Restrictions:
+
+
+// tasker functions should assert that tasker is running
+
+//============================================================================
+// dependencies
+
+#include <hal/hal.h>
+
+//============================================================================
+
+class SAlloc
+{
+public:
+	SAlloc(void* memory,size_t size);
+	~SAlloc(void);
+
+	void* Allocate(size_t size);
+	void Free(void* mem);
+
+private:
+	SAlloc(void);				// must supply memory upon construction
+	char* _memoryBase;
+	size_t _memorySize;
+	char* _freeMemory;      	// points to first byte of free memory
+
+#if DO_ASSERTIONS
+	enum
+	 {
+		ALLOC_PTRS_MAX = 50
+	 };
+	int32 _allocIndex;
+	void* _allocPtrs[ALLOC_PTRS_MAX];
+#endif
+};
+

@@ -1,0 +1,35 @@
+# wfsrc/Makefile.rul
+
+## C
+.c{$(OBJ_DIR)}$(OBJ) :
+        %echo ----------------------------------------------------------------------
+        %echo $(.SOURCE) =\> $(.TARGET)
+!if "$(WF_TARGET)" == "psx"
+	%setenv LIBRARY_PATH=$(PSX_DIR)/lib
+	%setenv PATH $(PSX_DIR)\bin;$(PATH)
+!endif
+        $(CC) -c @<<
+                $(CCCARGS) $(INCLUDE)
+        << $(CCC_OUT)$(.TARGET) $(.SOURCE)
+
+## C++
+.cc{$(OBJ_DIR)}$(OBJ) :
+        %echo ----------------------------------------------------------------------
+        %echo $(.SOURCE) =\> $(.TARGET)
+!if "$(WF_TARGET)" == "psx"
+        %setenv LIBRARY_PATH=$(PSX_DIR)/lib
+        %setenv PATH $(PSX_DIR)\bin;$(PATH)
+!endif
+        $(CCC) @<<
+              -c $(CCCARGS) $(INCLUDE) $(CCC_OUT)$(.TARGET)
+        << $(.SOURCE)
+!if "$(DMPSX)" == "yes"
+        copy $(.TARGET) temp$(OBJ)
+        $(PSX_DIR)\bin\dmpsx -b temp$(OBJ)
+        copy temp$(OBJ) $(.TARGET)
+!endif
+
+## Assembly Language rules [hehe]
+#TODO this isn't done, but it was better than before
+.asm{$(OBJ_DIR)}$(OBJ) :
+        $(AS) $(AFLAGS) $<, $@

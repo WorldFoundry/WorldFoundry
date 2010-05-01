@@ -1,0 +1,29 @@
+#ifndef SCORE_HP
+#define SCORE_HP
+
+typedef enum { FALSE, TRUE } Bool;
+typedef unsigned long uint32;
+
+class CScore
+	{
+public:
+	CScore();
+	CScore( uint32 theScore );
+	virtual ~CScore();
+
+	CScore& operator=( const CScore& );
+	uint32 operator()();
+
+	Bool operator<( const CScore& );
+	Bool operator<=( const CScore& );
+	Bool operator>( const CScore& );
+	Bool operator>=( const CScore& );
+	Bool operator==( const CScore& );
+
+	const char* asString();
+
+private:
+	uint32 _theScore;
+	};
+
+#endif

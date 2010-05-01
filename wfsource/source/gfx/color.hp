@@ -1,0 +1,142 @@
+//=============================================================================
+// Color.hp:
+// Copyright ( c ) 1997,1998,1999,2000,2002 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description:
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+#ifndef _Color_H
+#define _Color_H
+
+//============================================================================
+// Includes
+//============================================================================
+
+#include <pigsys/pigsys.hp>
+#include <math/scalar.hp>
+
+//============================================================================
+// Class and Structure Prototypes
+//============================================================================
+
+class Color
+{
+public:
+	inline Color();
+	inline Color(const Color& color);
+	inline Color(uint8 red, uint8 green, uint8 blue);
+
+	// public static helpers for unit conversion/angle factories
+	static inline Color FromInt( uint32 color );
+
+//	Color(uint32 color);
+	// default assignment operator ok
+//	~Color();
+
+//TODO	Color operator+=(const Color& other) const;
+//TODO	Color operator-=(const Color& other) const;
+//TODO	Color operator*=(const Scalar& other) const;
+
+	Color operator+(const Color& other) const;
+	Color operator-(const Color& other) const;
+	Color operator*(const Scalar& other) const;
+
+
+	// kts I am not sure this is a good idea, I am doing it because
+	// I am storing color multipliers in a Color class
+	Color operator*(const Color& other) const;
+
+	bool operator == (const Color& other) const { return (_color == other._color); }
+	INLINE void Validate() const;
+
+	uint8 Red() const;
+	uint8 Green() const;
+	uint8 Blue() const;
+
+	uint8 SetRed(uint8 red);
+	uint8 SetGreen(uint8 green);
+	uint8 SetBlue(uint8 blue);
+
+	// I know this exposes the underlying data, but I can't compress them otherwise...
+	INLINE uint32 AsLong() const;
+
+	static const Color black;
+	static const Color white;
+	static const Color red;
+	static const Color green;
+	static const Color blue;
+	static const Color magenta;
+	static const Color cyan;
+	static const Color yellow;
+	static const Color darkgrey;
+	static const Color mediumgrey;
+	static const Color lightgrey;
+
+private:
+	uint32 _color;
+};
+
+#if DO_IOSTREAMS
+std::ostream&
+operator<< (std::ostream& out, const Color& color);
+#endif
+
+//============================================================================
+// 4.12 per component color class
+
+
+class Color48
+{
+public:
+	Color48();
+	Color48(const Color& color);
+	Color48(const Color48& color);
+	Color48(uint16 red, uint16 green, uint16 blue);
+	//Color48(Scalar red, Scalar green, Scalar blue);
+
+	operator Color () const;
+
+	// default assignment operator ok
+//	~Color();
+
+	INLINE void Validate() const;
+
+	uint16 Red() const;
+	uint16 Green() const;
+	uint16 Blue() const;
+
+	uint16 SetRed(uint16 red);
+	uint16 SetGreen(uint16 green);
+	uint16 SetBlue(uint16 blue);
+private:
+	uint16	_color[3];
+};
+
+#if DO_IOSTREAMS
+std::ostream&
+operator<< (std::ostream& out, const Color48& color);
+#endif
+
+//============================================================================
+#include "color.hpi"		// include all inline definitions as appropriate
+//=============================================================================
+#endif
+//=============================================================================

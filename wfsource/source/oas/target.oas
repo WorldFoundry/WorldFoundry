@@ -1,0 +1,21 @@
+@*============================================================================
+@* target.oas
+@*============================================================================
+
+@*============================================================================
+@* camera target oad
+
+@define DEFAULT_MASS		0
+@define DEFAULT_VISIBILITY	0
+@define DEFAULT_MODEL_TYPE	3
+
+TYPEHEADER(Target Position,Target)
+	@include actor.inc
+
+@*	PROPERTY_SHEET_HEADER(Target Position,1)
+@*	----------------------------------------
+@*	PROPERTY_SHEET_FOOTER
+
+TYPEFOOTER
+
+@*============================================================================

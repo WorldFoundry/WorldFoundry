@@ -1,0 +1,19 @@
+release notes for the alpha version of the HAL/PIGS tasker:
+
+
+timer device is not quite done.
+
+example game loop/usage will be done by monday morning.
+
+Please QMail any questions/suggestions/complaints/etc to Kevin Seghetti
+
+if you invoke the gnu make with 'make testhal', it will build a test
+application which will exercise portions of the library. These tests are
+not designed to be examples of use, they have way too much internal detail.
+
+the next version will be posted in the version control system as soon as I
+set it up on the novell server.
+
+files which start with _(underbar) are private to the HAL
+
+all files are subject to change.

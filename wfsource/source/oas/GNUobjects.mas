@@ -1,0 +1,192 @@
+@*============================================================================
+@* GNUobjects.mas: creates objects.mak, a Makefile which will build all of the .oad files
+@* run through prep to create objects.mak
+@*============================================================================
+#============================================================================
+# objects.mak: Makefile
+#   created from  GNUobject.mas,DO NOT MODIFY
+#============================================================================
+@*============================================================================
+
+#.SUFFIXES :
+#.SUFFIXES :     .ht .def .oas .iff
+
+#============================================================================
+@*
+
+
+
+ALL : XML IFF HT DEF
+
+include ../../GNUMakefile.env
+
+
+
+#HT DEF
+
+STD_INCLUDES = actor.inc movebloc.inc common.inc mesh.inc toolset.inc shadow.inc flagbloc.inc
+
+
+@* create xml files 
+$(OAD_DIR)/%.xml : %.oas xml.s
+	../../bin/prep -DTYPEFILE_OAS=$(*F) xml.s $(*F).pp
+	./trimlines.pl <$(*F).pp >$@@ 
+
+@* create iff files for 3dsmax for attrib dialog boxes
+$(OAD_DIR)/%.iff : %.oas iff.s
+	../../bin/prep -DTYPEFILE_OAS=$(*F) iff.s $(OAD_DIR)/$(*F).iff.txt
+	../../bin/iffcomp -o=$@@ $(OAD_DIR)/$(*F).iff.txt
+
+@* create header file with C structures in it for game to include
+%.ht : %.oas
+	../../bin/prep  -DTYPEFILE_OAS=$(*F) oadtypes.s $(*F).pp
+	perl cstruct.pl $(*F).pp >$@@
+@* .ht is oad header file extension
+
+@* create header file for inclusion by the script language
+$(OAD_DIR)/%.def : %.oas
+	../../bin/prep  -DTYPEFILE_OAS=$(*F) oaddef.s $(*F).pp
+	perl cstruct.pl $(*F).pp >$(*F).tmp
+	perl offset.pl $(*F).tmp >$@@
+	rm $*.tmp > nul
+@* .def is script language include file extension
+
+#============================================================================
+# list of all files to build
+
+@define COLTABLEHEADER
+@define COLTABLEFOOTER
+@define COLTABLEENTRY(obj1,obj2,msg1,msg2)
+
+
+@*
+@define OBJECTSHEADER XML : \
+@define OBJECTSFOOTER
+@define OBJECTENTRY(name,collide)       $(OAD_DIR)/@lowercase(name)@+.xml \
+@define OBJECTONLYTEMPLATEENTRY(name,collide) $(OAD_DIR)/@lowercase(name)@+.xml \
+@define OBJECTNOACTORENTRY(name,collide) $(OAD_DIR)/@lowercase(name)@+.xml \
+@define OBJECTSUBENTRY(name,parent,collide) $(OAD_DIR)/@lowercase(name)@+.xml \
+
+@include objects.mac
+
+@undef OBJECTSHEADER
+@undef OBJECTSFOOTER
+@undef OBJECTENTRY
+@undef OBJECTONLYTEMPLATEENTRY
+@undef OBJECTNOACTORENTRY
+@undef OBJECTSUBENTRY
+
+
+
+
+@*
+@define OBJECTSHEADER IFF : \
+@define OBJECTSFOOTER
+@define OBJECTENTRY(name,collide)       $(OAD_DIR)/@lowercase(name)@+.iff \
+@define OBJECTONLYTEMPLATEENTRY(name,collide) $(OAD_DIR)/@lowercase(name)@+.iff \
+@define OBJECTNOACTORENTRY(name,collide) $(OAD_DIR)/@lowercase(name)@+.iff \
+@define OBJECTSUBENTRY(name,parent,collide) $(OAD_DIR)/@lowercase(name)@+.iff \
+
+@include objects.mac
+
+@undef OBJECTSHEADER
+@undef OBJECTSFOOTER
+@undef OBJECTENTRY
+@undef OBJECTONLYTEMPLATEENTRY
+@undef OBJECTNOACTORENTRY
+@undef OBJECTSUBENTRY
+
+@*
+@define OBJECTSHEADER HT : \
+@define OBJECTSFOOTER
+@define OBJECTENTRY(name,collide) @lowercase(name)@+.ht \
+@define OBJECTONLYTEMPLATEENTRY(name,collide) @lowercase(name)@+.ht \
+@define OBJECTNOACTORENTRY(name,collide) @lowercase(name)@+.ht \
+@define OBJECTSUBENTRY(name,parent,collide) @lowercase(name)@+.ht \
+
+@*
+@include objects.mac
+
+@undef OBJECTSHEADER
+@undef OBJECTSFOOTER
+@undef OBJECTENTRY
+@undef OBJECTONLYTEMPLATEENTRY
+@undef OBJECTNOACTORENTRY
+@undef OBJECTSUBENTRY
+
+
+@define OBJECTSHEADER DEF : \
+@define OBJECTSFOOTER
+@define OBJECTENTRY(name,collide) $(OAD_DIR)/@lowercase(name)@+.def \
+@define OBJECTONLYTEMPLATEENTRY(name,collide) $(OAD_DIR)/@lowercase(name)@+.def \
+@define OBJECTNOACTORENTRY(name,collide) $(OAD_DIR)/@lowercase(name)@+.def \
+@define OBJECTSUBENTRY(name,parent,collide) $(OAD_DIR)/@lowercase(name)@+.def \
+
+@*
+@include objects.mac
+
+@undef OBJECTSHEADER
+@undef OBJECTSFOOTER
+@undef OBJECTENTRY
+@undef OBJECTONLYTEMPLATEENTRY
+@undef OBJECTNOACTORENTRY
+@undef OBJECTSUBENTRY
+
+#============================================================================
+# list of dependencies for all .oad files to build
+@*
+@define OBJECTSHEADER
+@define OBJECTSFOOTER
+@define OBJECTENTRY(name,collide) @n$(OAD_DIR)\@+name@+.oad : name@+.oas types3ds.s oad.h $(STD_INCLUDES)
+@define OBJECTONLYTEMPLATEENTRY(name,collide) @n$(OAD_DIR)\@+name@+.oad : name@+.oas types3ds.s oad.h $(STD_INCLUDES)
+@define OBJECTNOACTORENTRY(name,collide) @n$(OAD_DIR)\@+name@+.oad : name@+.oas types3ds.s oad.h $(STD_INCLUDES)
+@define OBJECTSUBENTRY(name,parent,collide) @n$(OAD_DIR)\@+name@+.oad : name@+.oas types3ds.s oad.h $(STD_INCLUDES)
+
+@*
+@include objects.mac
+
+@undef OBJECTSHEADER
+@undef OBJECTSFOOTER
+@undef OBJECTENTRY
+@undef OBJECTONLYTEMPLATEENTRY
+@undef OBJECTNOACTORENTRY
+@undef OBJECTSUBENTRY
+
+#============================================================================
+# list of dependencies for all .ht files to build
+@*
+@define OBJECTSHEADER
+@define OBJECTSFOOTER
+@define OBJECTENTRY(name,collide) @n@+name@+.ht : name@+.oas oadtypes.s oad.h $(STD_INCLUDES)
+@define OBJECTONLYTEMPLATEENTRY(name,collide) @n@+name@+.ht : name@+.oas oadtypes.s oad.h $(STD_INCLUDES)
+@define OBJECTNOACTORENTRY(name,collide) @n@+name@+.ht : name@+.oas oadtypes.s oad.h $(STD_INCLUDES)
+@define OBJECTSUBENTRY(name,parent,collide) @n@+name@+.ht : name@+.oas oadtypes.s oad.h $(STD_INCLUDES)
+@*
+@include objects.mac
+@undef OBJECTSHEADER
+@undef OBJECTSFOOTER
+@undef OBJECTENTRY
+@undef OBJECTONLYTEMPLATEENTRY
+@undef OBJECTNOACTORENTRY
+@undef OBJECTSUBENTRY
+
+
+#============================================================================
+# list of dependencies for all .def files to build
+@*
+@define OBJECTSHEADER
+@define OBJECTSFOOTER
+@define OBJECTENTRY(name,collide) @n$(OAD_DIR)\@+name@+.def : name@+.oas oaddef.s oad.h $(STD_INCLUDES)
+@define OBJECTONLYTEMPLATEENTRY(name,collide) @n$(OAD_DIR)\@+name@+.def : name@+.oas oaddef.s oad.h $(STD_INCLUDES)
+@define OBJECTNOACTORENTRY(name,collide) @n$(OAD_DIR)\@+name@+.def : name@+.oas oaddef.s oad.h $(STD_INCLUDES)
+@define OBJECTSUBENTRY(name,parent,collide) @n$(OAD_DIR)\@+name@+.def : name@+.oas oaddef.s oad.h $(STD_INCLUDES)
+@*
+@include objects.mac
+@undef OBJECTSHEADER
+@undef OBJECTSFOOTER
+@undef OBJECTENTRY
+@undef OBJECTONLYTEMPLATEENTRY
+@undef OBJECTNOACTORENTRY
+@undef OBJECTSUBENTRY
+
+#============================================================================

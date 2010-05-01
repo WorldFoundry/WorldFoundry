@@ -1,0 +1,38 @@
+# wfsource/source/Makefile.lib
+
+#TOP-ALL : LIBRARY_NAMES_DEFINES OBJ_DIR PIGS_LIB
+
+INCLUDE += -I..\hal\$(WF_TARGET)
+
+################################################################################
+## The library
+
+#.RESPONSE.PSYQ : pre=@ suf=.rsp in=128 psylib
+
+# I need this as a forward reference for $(PIGS_LIB)
+PIGS_LIB : $(PIGS_LIB)
+
+$(PIGS_LIB) : $(LIB_OBJS)
+        $(AR) $(LIBOUT)$(.TARGET) @<<
+                $(.SOURCES)
+        <<
+
+################################################################################
+## Test program
+!include Makefile.test
+
+################################################################################
+## Clean
+
+#kts was rm /s, but that doesn't work under win95 (or 4dos)
+# let me know if this doesn't work under NT
+clean :
+  -del /s /y $(LIB_OBJ_DIR) >&nul
+  -del $(PIGS_LIB) >&nul
+
+clean-lib :
+  -del /y $(PIGS_LIB) >&nul
+
+################################################################################
+# print: print all switch settings
+!include Makefile.print

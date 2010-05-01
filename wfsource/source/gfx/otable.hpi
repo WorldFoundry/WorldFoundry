@@ -1,0 +1,147 @@
+//=============================================================================
+// otable.hpi: ordering table class
+// Copyright ( c ) 1997,1998,1999,2000 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description:
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+//void
+//OrderTable::AddPrimList(uint32* oTable)	// add a set of primitives to the drawing list for this frame
+//{
+//	assert(ValidPtr(oTable));
+//	assert(_primList == NULL);
+//	_primList = oTable;
+//}
+
+// note: due to the way order tables are merged, we cannot put anything into node 0,
+// as it will get lost when we insert the order table into another
+//============================================================================
+
+INLINE void
+OrderTable::Validate() const
+{
+	ValidatePtr(_orderTable);
+	RangeCheckExclusive(0,_depth,10000);  // kts arbitrary
+}
+
+//============================================================================
+
+INLINE void
+OrderTable::Render()
+{
+	Validate();
+	assert(_depth > 0);
+//	cout << "rendering otable:" << std::endl;
+//	cout << (*this) << std::endl;
+	DrawOTag( (
+#if defined(__PSX__)
+	(uint32*)
+#endif
+	_orderTable) + _depth - 1);
+}
+
+//============================================================================
+
+INLINE void
+//WFAddPrim(void *ot, void *p)
+WFAddPrim( ORDER_TABLE_ENTRY* ot, Primitive* p )
+{
+	addPrim( ot, (ORDER_TABLE_ENTRY*)p );
+}
+
+INLINE void
+WFAddPrims( ORDER_TABLE_ENTRY* ot, ORDER_TABLE_ENTRY* p0, ORDER_TABLE_ENTRY* p1 )
+{
+	addPrims( ot, p0, p1 );
+}
+
+//============================================================================
+
+static int maxDepth=0;
+
+INLINE void
+OrderTable::AddPrimitive(Primitive& prim,int depth)
+{
+	Validate();
+	assert(depth > 0);
+//	AssertMsg(depth < _depth,"depth = " << depth << ", _depth = " << _depth);
+//#if DEBUG
+//	if(depth > _depth)
+//		cerr << "order table depth exceeded: otable depth = " << _depth << ", requested depth = " << depth << std::endl;
+//#endif
+
+	if(depth >= _depth)		            // kts 11/10/97 20:55
+	{
+		depth = _depth - 1;
+		if(depth > maxDepth)
+			maxDepth = depth;
+	}
+//	cout << "adding prim: " << prim << " at a depth of " << depth << std::endl << std::endl;
+//	cout << "to order table " << *this << std::endl << std::endl;
+	WFAddPrim(&_orderTable[depth],&prim);
+//	WFAddPrim(&_orderTable[1],prim);
+//	cout << "resulting in " << *this << std::endl;
+}
+
+//============================================================================
+
+//void AltClearOTagR( uint32 *ot, long size );
+
+INLINE void
+OrderTable::Clear()
+{
+	// kts test code
+	if(maxDepth > _depth)
+		printf("order table depth exceeded: otable depth = %d, requested depth = %d\n",_depth, maxDepth);
+	maxDepth = 0;
+	Validate();
+//	cout << "Clearing otable :" << _orderTable << std::endl;
+	ClearOTagR((
+//	AltClearOTagR((
+#if defined(__PSX__)
+	(ulong*)
+#endif
+	_orderTable), _depth);
+//	cout << *this << std::endl;
+}
+
+//============================================================================
+
+INLINE void
+OrderTable::AddOrderTable(OrderTable& orderTable, int depth)	// add a set of primitives to the drawing list for this frame
+{
+	Validate();
+	assert(depth < _depth);
+	assert(depth > 0);
+
+//	cout << "adding order table at a depth of " << depth << std::endl << std::endl;
+//	cout << orderTable << std::endl << std::endl;
+//	cout << "to order table " << *this << std::endl << std::endl;
+
+//	assert(getaddr(orderTable._orderTable) == 0xffffff);
+//	setaddr(orderTable._orderTable, getaddr(&_orderTable[depth]));
+//	setaddr(&_orderTable[depth], orderTable._orderTable + orderTable._depth - 1);
+//	WFAddPrims(&_orderTable[depth],orderTable._orderTable,orderTable._orderTable + orderTable._depth - 1);
+	WFAddPrims(&_orderTable[depth],orderTable._orderTable + orderTable._depth - 1,orderTable._orderTable);
+//	cout << "resulting in " << std::endl << *this << std::endl;
+}
+
+//============================================================================

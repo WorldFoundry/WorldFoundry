@@ -1,0 +1,146 @@
+//============================================================================
+// global.hp: for levelcon, all levelcon files include this
+//============================================================================
+// Copyright 1997,1998 Recombinant Limited.  All Rights Reserved.
+// By Kevin T. Seghetti
+//============================================================================
+
+// use only once insurance
+#ifndef _GLOBAL_HP
+#define _GLOBAL_HP
+
+#define OLD_IOSTREAMS
+
+//#ifdef _DEBUG
+#define DEBUG 1
+//#endif
+
+
+#if !defined( SW_DBSTREAM )
+#	if DEBUG > 0
+#		define SW_DBSTREAM 3
+#	else
+#		define SW_DBSTREAM 0
+#	endif	// DEBUG > 0
+#endif	// !defined( SW_DBSTREAM )
+
+#pragma warning( disable : 4786 )
+#pragma warning( disable : 4800 )	// shut up about conversion to bool [performance warning]
+
+#define NOMINMAX		// Turn off windows.h definition of min() and max(), use the one from STL instead
+typedef unsigned long ulong;
+
+#include "pigtool.h"
+#include <iostream.h>
+#include <fstream.h>
+#include <strstrea.h>
+
+#include <../lib/stl/algobase.h>
+#include <../lib/stl/bstring.h>
+#include <max.h>
+#include <impexp.h>
+#include "../lib/wf_id.hp"
+#include <istdplug.h>
+#include "dbstrm.hpp"
+//#include <pigsys/pigsys.h>
+//#include <iostream.h>
+//#include <assert.h>
+//============================================================================
+// Exception handling class
+class LVLExporterException
+{
+public:
+	LVLExporterException(long _errorCode=0xff) { errorCode = _errorCode; }
+	long	errorCode;
+};
+
+//============================================================================
+// copy of parts of the microsoft assert macro
+
+extern void LevelconAssert(void *, void *, unsigned);
+
+#include <assert.h>
+#undef	assert
+#ifdef NDEBUG
+#error
+#define assert(exp)	((void)0)
+#else
+#define assert(exp) (void)( (exp) || (LevelconAssert(#exp, __FILE__, __LINE__), 0) )
+#endif	/* NDEBUG */
+
+//============================================================================
+
+#define AssertMessageBox(__cond__, __msg__)\
+	if (!(__cond__))\
+	{\
+		char messageBuffer[1024];\
+		strstream outputStream(messageBuffer,1024,ios::out|ios::binary);\
+		outputStream << __msg__;\
+		outputStream << '\0';\
+		MessageBox(GetCOREInterface()->GetMAXHWnd(), outputStream.str(), "Level Exporter Error", MB_OK);\
+		throw LVLExporterException();\
+	}
+
+// remove pigsys definition
+#undef AssertMsg
+#define AssertMsg AssertMessageBox
+
+#	define RangeCheck( min, value, max) \
+		{\
+		AssertMsg((value) >= (min), #min " = " << (min) << ", " << #value " = " << (value) ); \
+		AssertMsg((value) < (max), #value " = " << (value) << ", " #max " = " << (max) );\
+		}
+
+#define InMappedMemory(ptr) 1
+#define AlignedPtr( ptr )			( ( (long)ptr & 1 ) == 0 )
+
+bool inline
+ValidPtr(const void* ptr)
+{
+	if(ptr)
+	{
+		if(AlignedPtr(ptr))
+		{
+			if(InMappedMemory(ptr))
+			{
+				return true;
+			}
+		}
+	}
+	printf( "ValidPtr( %p ) failed\n", ptr );
+	return false;
+}
+
+#	define assertEq(value1, value2) AssertMsg((value1) == (value2), #value1 " = " << (value1) << ", " #value2 " = " << (value2))
+#	define assertNe(value1, value2) AssertMsg((value1) != (value2), #value1 " = " << (value1) << ", " #value2 " = " << (value2))
+
+//============================================================================
+
+// MAX's Point3 class doesn't come with ostream operators...
+ostream& operator<<(ostream& s, const Point3 &o);
+ostream& operator<<(ostream& s, const Matrix3 &o);
+
+
+// null stream is not working, so must stay on until nullstream works
+#define SW_DEBUGLOG 1
+
+#if SW_DEBUGLOG
+#define DEBUGLOG(text) text
+#else
+#define DEBUGLOG(text)
+#endif
+
+//============================================================================
+// kts these macros is used to convert floats into world foundry compatible scalars
+
+#define WF_ONE_LS 	(1<<16)
+#define WF_FLOAT_TO_SCALAR(f) ((fixed32)((f)*(float)WF_ONE_LS))
+#define WF_SCALAR_TO_FLOAT(s)	((s)/(float)WF_ONE_LS)
+#define WF_INT_TO_SCALAR(i)	((fixed32)((i)*(int)WF_ONE_LS))
+
+//==============================================================================
+
+#endif
+//==============================================================================
+// global.hp for 3ds max lib
+//==============================================================================

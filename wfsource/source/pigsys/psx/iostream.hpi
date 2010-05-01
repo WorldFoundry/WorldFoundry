@@ -1,0 +1,228 @@
+// ------------------------------------------------------------------------
+// iostream.hpi
+// Copyright ( c ) 1995,96,97,98,99 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//=============================================================================
+// Description:
+//		Here is my first stab at a simple ostream (kts)
+//
+// Original Author: Brad McKee
+// Since then: Kevin T. Seghetti
+// ------------------------------------------------------------------------
+// ------------------------------------------------------------------------
+
+#include <pigsys/pigsys.hp>
+
+// ------------------------------------------------------------------------
+
+inline void
+ios::Validate() const
+{
+//	assert(x_fill >= 0);
+	assert(x_fill < 0x7f);
+		// using rangecheck uses streams, so streams cannot use rangecheck
+//	RangeCheck(' ',x_fill,0x7f);
+	assert(x_width >= 0);
+	assert(x_width < 100);			// kts arbitrary
+//	RangeCheck(0,x_width,100);
+	assert((x_flags & ~basefield) == 0);
+}
+
+// ------------------------------------------------------------------------
+// kts for now, dummys
+
+inline int
+ios::width() const
+{
+	return x_width;
+}
+
+inline int
+ios::width(int _i)
+{
+	int _iO;
+	_iO = (int)x_width;
+	x_width = _i;
+	return _iO;
+}
+
+inline char
+ios::fill() const
+{
+	return x_fill;
+}
+
+inline char
+ios::fill(char _c)
+{
+	char _cO;
+	_cO = x_fill;
+	x_fill = _c;
+	return _cO;
+}
+
+// ------------------------------------------------------------------------
+
+inline ostream& __setfill(ostream& s, int _fc) { s.fill((char)_fc); return s; }
+inline ostream& __setw(ostream& s, int _wid) { s.width(_wid); return s; }
+
+// ------------------------------------------------------------------------
+
+inline long
+ios::flags() const
+{
+	return x_flags;
+}
+
+// ------------------------------------------------------------------------
+
+inline long
+ios::setf(long _l,long _m)
+{
+	long _lO;
+//	lock();
+	_lO = x_flags;
+	x_flags = (_l&_m) | (x_flags&(~_m));
+//	unlock();
+	return _lO;
+}
+
+// ------------------------------------------------------------------------
+
+inline long
+ios::setf(long _l)
+{
+	long _lO;
+//	lock();
+	_lO = x_flags;
+	x_flags |= _l;
+//	unlock();
+	return _lO;
+}
+
+// ------------------------------------------------------------------------
+
+inline long
+ios::unsetf(long _l)
+{
+	long _lO;
+//	lock();
+	_lO = x_flags;
+	x_flags &= (~_l);
+//	unlock();
+	return _lO;
+}
+
+// ------------------------------------------------------------------------
+
+inline ostream&
+dec(ostream& _strm)
+{
+	_strm.setf(ios::dec,ios::basefield);
+	return _strm;
+}
+
+// ------------------------------------------------------------------------
+
+inline ostream&
+hex(ostream& _strm)
+{
+	_strm.setf(ios::hex,ios::basefield);
+	return _strm;
+}
+
+// ------------------------------------------------------------------------
+
+
+inline istream&
+dec(istream& _strm)
+{
+	_strm.setf(ios::dec,ios::basefield);
+	return _strm;
+}
+
+// ------------------------------------------------------------------------
+
+inline istream&
+hex(istream& _strm)
+{
+	_strm.setf(ios::hex,ios::basefield);
+	return _strm;
+}
+
+
+// ------------------------------------------------------------------------
+
+inline void
+istream::Validate() const
+{
+	ios::Validate();
+	ValidatePtr(_input);
+}
+
+// ------------------------------------------------------------------------
+
+#if 0
+inline istream& istream::getline(unsigned char * _b,int _lim,char _delim)
+{
+//	lock();
+//	_fGline++;
+	get((char *)_b, _lim, (int)(unsigned char)_delim);
+//	unlock();
+	return *this;
+}
+// ------------------------------------------------------------------------
+
+inline istream&
+istream::getline(signed char * _b, int _lim, char _delim)
+{
+//	lock();
+//	_fGline++;
+	get((char *)_b, _lim, (int)(unsigned char)_delim);
+//	unlock();
+	return *this;
+}
+#endif
+
+// ------------------------------------------------------------------------
+
+inline void
+ostream::Validate() const
+{
+	ios::Validate();
+	ValidatePtr(_output);
+}
+
+// ------------------------------------------------------------------------
+
+inline void
+ifstream::Validate() const
+{
+	istream::Validate();
+}
+
+// ------------------------------------------------------------------------
+
+inline void
+ofstream::Validate() const
+{
+	ostream::Validate();
+}
+
+// ------------------------------------------------------------------------

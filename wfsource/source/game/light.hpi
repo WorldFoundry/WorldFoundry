@@ -1,0 +1,70 @@
+//==============================================================================
+// light.hpi:
+// Copyright ( c ) 1997,1999,2000,2002 World Foundry Group.  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//==============================================================================
+// Description: Actor is the base class for game world objects.
+//==============================================================================
+
+#include "oas/light.ht"		// get oad structure information
+#include "camera.hp"
+
+//==============================================================================
+
+INLINE void
+Light::Set(Camera& camera,int index) const
+{
+	const _Light* myOAD = getOad();
+
+	if(myOAD->lightType == DIRECTIONAL_LIGHT)
+	{
+//#pragma message ("KTS: how do I convert eulers to a unit vector?")
+		Vector3 src( Vector3::unitX );
+#if 0
+		const Euler& e = GetPhysicalAttributes().Rotation();
+		//Vector3 src(SCALAR_CONSTANT(1.0),0,0);
+		Matrix34 m(e,Vector3::zero);
+		src *= m;
+#else
+      Matrix34 temp = GetPhysicalAttributes().Matrix();
+      temp[3] = Vector3::zero;
+      src *= GetPhysicalAttributes().Matrix();
+#endif
+
+		camera.GetRenderCamera().SetDirectionalLight(index,src,Color48(_color));
+//		camera.GetRenderCamera().SetDirectionalLight(index,Vector3(SCALAR_CONSTANT(1),SCALAR_CONSTANT(0),SCALAR_CONSTANT(0)),Color48(_color));
+	}
+	else
+	{
+		assert(myOAD->lightType == AMBIENT_LIGHT);
+		assert(index = -1);
+		camera.GetRenderCamera().SetAmbientColor(_color);
+	}
+}
+
+//==============================================================================
+
+INLINE int
+Light::Type() const
+{
+	const _Light* myOAD = getOad();
+	return myOAD->lightType;
+}
+
+//==============================================================================

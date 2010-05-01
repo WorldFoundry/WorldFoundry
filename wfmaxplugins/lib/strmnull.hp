@@ -1,0 +1,102 @@
+// ===========================================================================
+// strmnull.hp - stream which eats input (bit-bucket output stream)
+// Copyright 1997,99 World Foundry Group. 
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+
+
+#ifndef LIB_STRMNULL_HP
+#define LIB_STRMNULL_HP
+#if SW_DBSTREAM > 0
+//#include <pigsys/pigsys.h>
+// ===========================================================================
+
+#if !defined(OLD_IOSTREAMS)
+#error 3dsmax uses old iostreams!
+#endif
+
+
+#if defined(OLD_IOSTREAMS)
+
+//#error hey! use new iostreams! __FILE__
+class nullstreambuf : public streambuf
+{
+public:
+	nullstreambuf( char* s, int n );
+	~nullstreambuf();
+	virtual int sync();
+	virtual int overflow( int );
+	virtual int underflow()	{ return EOF; }
+};
+
+// ===========================================================================
+
+#if defined(__WIN__)
+class nullstream : public ostream_withassign
+//class nullstream : public ostream
+#elif defined(__PSX__)
+class nullstream : public ostream
+
+#elif defined(__LINUX__)
+class nullstream : public _IO_ostream_withassign
+#else
+#error platform not defined!
+#endif
+{
+public:
+	nullstream();
+	~nullstream();
+
+protected:
+	enum { bsize = 128 };
+	char msgs[ bsize ];
+	nullstreambuf* strbuf;
+};
+
+
+
+//==============================================================================
+#else
+// used in the case of new IO streams
+
+class nullstream : public iostream
+{
+public:
+	nullstream()
+		: iostream(&_Sb), _Sb() {}
+	/*_CRTIMP*/ nullstream(char *, streamsize, openmode = in | out);
+	/*_CRTIMP*/ virtual ~nullstream() {}
+	strstreambuf *rdbuf() const
+		{return ((strstreambuf *)&_Sb); }
+	void freeze(bool _F = true)
+		{_Sb.freeze(_F); }
+	char *str()
+		{return (_Sb.str()); }
+	streamsize pcount() const
+		{return (_Sb.pcount()); }
+private:
+	strstreambuf _Sb;
+	};
+
+//==============================================================================
+#endif	// OLD_IOSTREAMS
+// ===========================================================================
+#endif	// DBSTREAM > 0
+#endif	// PCLIB_STRMNULL_HP
+// ===========================================================================

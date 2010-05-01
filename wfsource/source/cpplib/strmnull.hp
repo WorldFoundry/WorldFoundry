@@ -1,0 +1,138 @@
+// ===========================================================================
+// strmnull.hp - stream which eats input (bit-bucket output stream)
+// Copyright 1997,1999,2000,2002 World Foundry Group. 
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+
+#ifndef PCLIB_STRMNULL_HP
+#define PCLIB_STRMNULL_HP
+#if SW_DBSTREAM > 0
+#include <pigsys/pigsys.hp>
+
+// ===========================================================================
+
+#if defined(OLD_IOSTREAMS)
+
+//#error hey! use new iostreams! __FILE__
+class nullstreambuf : public streambuf
+{
+public:
+	nullstreambuf( char* s, int n );
+	~nullstreambuf();
+	virtual int sync();
+	virtual int overflow( int );
+	virtual int underflow()	{ return EOF; }
+};
+
+// ===========================================================================
+
+#if defined(__WIN__)
+class nullstream : public ostream_withassign
+//class nullstream : public ostream
+#elif defined(__PSX__)
+class nullstream : public ostream
+
+#elif defined(__LINUX__)
+class nullstream : public _IO_ostream_withassign
+#else
+#error platform not defined!
+#endif
+{
+public:
+	nullstream();
+	~nullstream();
+
+protected:
+	enum { bsize = 128 };
+	char msgs[ bsize ];
+	nullstreambuf* strbuf;
+};
+#define CREATENULLSTREAM(name) nullstream name;
+
+//==============================================================================
+#else
+// used in the case of new IO streams
+
+#if defined(__WIN__)
+
+// kts this worked with an older vc++, but doesn't with vc7, since I upgraded
+// I cannot really test with the older compiler, if you have the older
+// compiler try to form an ifdef so that it can compile with either
+
+#if 0
+class nullstream : public std::iostream
+{
+public:
+	nullstream()
+		: iostream(&_Sb), _Sb() {}
+//	/*_CRTIMP*/ nullstream(char *, streamsize, openmode = in | out);
+	/*_CRTIMP*/ virtual ~nullstream() {}
+	std::strstreambuf *rdbuf() const
+		{return ((std::strstreambuf *)&_Sb); }
+	void freeze(bool _F = true)
+		{_Sb.freeze(_F); }
+	char *str()
+		{return (_Sb.str()); }
+	std::streamsize pcount() const
+		{return (_Sb.pcount()); }
+private:
+	std::strstreambuf _Sb;
+	};
+#define CREATENULLSTREAM(name) nullstream name;
+
+#else
+
+class nullstreambuf : public std::streambuf
+{
+public:
+	virtual int_type overflow( int_type c) {
+		return c;
+	}
+	virtual int underflow()	{ return EOF; }
+};
+
+#define CREATENULLSTREAM(name) nullstreambuf name##buf; std::ostream name(&name##buf);
+#endif
+
+#elif defined(__PSX__)
+#error psx cannot do new iostreams
+#elif defined(__LINUX__)
+class nullstreambuf : public std::streambuf
+{
+protected:
+   virtual int_type overflow(int_type c) 
+   {
+      return c;
+   }
+};
+extern nullstreambuf globalnullstreambuf;
+extern std::ostream globalnullstream;
+
+#define CREATENULLSTREAM(name) nullstreambuf name##buf; std::ostream name(&name##buf);
+
+#else
+#error platform not defined!
+#endif
+
+//==============================================================================
+#endif	// OLD_IOSTREAMS
+// ===========================================================================
+#endif	// DBSTREAM > 0
+#endif	// PCLIB_STRMNULL_HP
+// ===========================================================================

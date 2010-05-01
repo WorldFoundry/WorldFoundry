@@ -1,0 +1,169 @@
+//==============================================================================
+// DMalloc.hpi
+// Copyright ( c ) 1998,1999,2000,2003 World Foundry Group.  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//==============================================================================
+// Description:
+// Dynamic memory allocation class
+//============================================================================
+
+inline void
+DMalloc::FreeChunk::Validate() const
+{
+#if DO_ASSERTIONS
+	if(_nextChunk)
+		ValidatePtr(_nextChunk);
+#endif
+	//RangeCheckExclusive(0,_size,500000);  // kts arbitrary
+}
+
+#if DO_IOSTREAMS
+
+inline void
+DMalloc::FreeChunk::_Print(std::ostream& out) const
+{
+//	out << "FreeChunk: size = " << _size << ", nextChunk = " << (void*)_nextChunk << endl;
+	out << "FreeChunk: start = " << this << ", end = " << (void*)(((char*)this)+_size) << ", size = " << std::dec << _size << ", nextChunk = " << (void*)_nextChunk << std::endl;
+}
+
+#endif
+
+//==============================================================================
+
+DMalloc::FreeChunk::FreeChunk(FreeChunk* next, int32 size)
+{
+	assert(size > 0);
+	if(next)
+		ValidatePtr(next);
+	_size = size;
+	_nextChunk = next;
+	Validate();
+}
+
+inline int32
+DMalloc::FreeChunk::Size() const
+{
+	Validate();
+	return _size;
+}
+
+inline DMalloc::FreeChunk*
+DMalloc::FreeChunk::Next() const
+{
+	Validate();
+	return _nextChunk;
+}
+
+inline void
+DMalloc::FreeChunk::Next(FreeChunk* next)
+{
+	if(next)
+	{
+		ValidatePtr(next);
+		next->Validate();
+	}
+	_nextChunk = next;
+	Validate();
+}
+
+
+inline void
+DMalloc::FreeChunk::Size(int32 size)
+{
+	RangeCheckExclusive(0,_size,500000);  // kts arbitrary
+	_size = size;
+	Validate();
+}
+
+//============================================================================
+
+inline size_t
+DMalloc::BytesFree() const         // returns # of bytes left in pool
+{
+	assert(0);							// until not using malloc, can't do this
+	return(0);
+}
+
+//=============================================================================
+
+INLINE void
+DMalloc::Clear()
+{
+	assert(0);			// until not using malloc, can't do this
+	Validate();
+}
+
+//============================================================================
+
+inline bool
+DMalloc::ValidAllocation(void* memory)
+{
+	assert(ValidPtr(memory));
+	if(memory >= _memory && memory < _endMemory )
+		return true;
+	return false;
+}
+
+//============================================================================
+
+INLINE bool
+DMalloc::Empty() const
+{
+	assert(0);			                // this is not coded right, need to see if sizeof free chunk == size of DMalloc
+	Validate();
+	FreeChunk* chunk = _firstChunk;
+	return chunk->Next() == NULL;
+}
+
+//=============================================================================
+
+inline void
+DMalloc::Free(const void* mem,int32 /*size*/)
+{
+	Free(mem);
+}
+
+//============================================================================
+
+inline void
+DMalloc::AllocatedChunk::Validate() const
+{
+	assert(_size > 0);
+	assert(_cookie == ALLOCATED_COOKIE);
+}
+
+inline
+DMalloc::AllocatedChunk::AllocatedChunk(int32 size)
+{
+	assert(size > 0);
+	_size = size;
+#if DO_ASSERTIONS
+   	_cookie = ALLOCATED_COOKIE;
+#endif
+	Validate();
+}
+
+int32
+DMalloc::AllocatedChunk::Size() const
+{
+	return _size;
+}
+
+//============================================================================
+

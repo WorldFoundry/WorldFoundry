@@ -1,0 +1,31 @@
+// clock.hp
+
+#ifndef TIMER_CLOCK_HP
+#define TIMER_CLOCK_HP
+
+#include <math/scalar.hp>
+
+class Clock
+{
+public:
+	Clock();
+	~Clock();
+
+	Scalar operator()() const;
+	Scalar Current() const;
+	Scalar Delta() const;
+	Scalar LastDelta() const;
+
+	inline void reset();
+
+	void Tick( Scalar time );
+
+protected:
+	Scalar _nWallClock;
+	Scalar _deltaClock;
+	Scalar _lastDeltaClock;
+};
+
+#include <timer/clock.hpi>
+
+#endif	// TIMER_CLOCK_HP

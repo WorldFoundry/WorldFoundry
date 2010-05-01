@@ -1,0 +1,82 @@
+README.windows: 
+
+The following prequisites will need to be installed:
+* Microsoft Visual C++ (Currently builds under MSCV 6.0 with service pack 5)
+* OpusMake (www.opussoftware.com)
+* 4DOS (www.jpsoft.com)	
+* TCL for windows (dev.scriptics.com) (I used 8.4 and copied tcl84.dll to \windows\system)
+
+From worldfoundry.org:
+* World Foundry source code (either through cvs (wfsource) http://sourceforge.net/cvs/?group_id=329
+* World Foundry tool code (either through cvs (wftools) 
+* wfbindir.zip (from the world foundry file download page on source forge (http://sourceforge.net/project/showfiles.php?group_id=329) 
+
+Make sure OpusMake is the make which runs when you enter 'make' on
+the command line.
+
+The environment variable MSVCDIR must be set (installing msvc creates a batch file called 
+vcvars32.bat in its bin directory which sets this). Due to a problem in the makefiles 
+MSVCDIR must NOT contain any spaces (for example "Program files", instead use the
+shorted version "Progra~1".
+
+
+Unzip the source or get it from cvs into a directory called 'wfsource'. 
+Unzip the tools source or get it from cvs into a directory next to wfsource called 'wftools'.
+Unzip wfbindir.zip into wfsource\bin (you will need to create bin)
+
+Set the following environment variables:
+WF_DIR=(whereever you unziped it to)\wfsource
+TCLDIR=whereever you installed tcl
+(so that TCLDIR\include will find the include files, and the lib file is at TCLDIR\lib\tcl84.lib).
+
+
+[KTS not sure if this is still true]
+WARNING: the current build process uses some older dos tools which don't know about long
+directory names, therefore none of the directory names in the path to WFSOURCE can be more than 8 character
+long.
+
+
+then:
+mkdir /s c:\tools\share
+cp wftools\bin\bison.simple c:\tools\share
+cd wfsource 
+make
+cd wfsource\game
+make test
+
+If everything goes well the game should run.
+
+Once you see it run, set BUILDMODE=release and build again from the top, 
+\this time it should run a bit faster.
+
+The debug version has msvc debugging info, plus tons of assertions and other sanity checks,
+the release version has full optimizations turned on.
+
+If you have any trouble, email me (kts@worldfoundry.org) and I will see what I can do.
+
+//==============================================================================
+bits of old instructions
+
+
+BUILDMODE=debug
+RENDERER=gl
+RENDERER_PIPELINE=software
+(the game should also compile with RENDERER=directx, but I haven't tested that in a while) 
+OAD_DIR=(whereever you unziped it to)\wfsource\levels\oad
+
+miniwatcom.zip (from the world foundry file download page on source forge (http://sourceforge.net/project/showfiles.php?group_id=329)  
+
+The game executable will be in the object directory 
+(PIGS_OBJ_DIR\objdebugglsoftwarexss.win\velgame\velgame.exe
+
+You will need some World Foundry game data to test with, download cdiff.zip from 
+ftp.worldfoundry.org and unzip it.
+
+The engine looks in the current directory for cd.iff, I copy it into source\game and
+then create a batch file to run the executable from there (make test will run it)
+
+
+Once you see it run, set BUILDMODE=release and build again, this time the executable
+wll be in (PIGS_OBJ_DIR\objreleaseglsoftwarexss.win\velgame\velgame.exe
+and will run much faster.
+

@@ -1,0 +1,57 @@
+@*============================================================================
+@* iff.prp: prep file used to generate level*.iff.txt, uses asset.inc from levelcon
+@*============================================================================
+
+@define SECTOR_SIZE 2048
+
+@define FILE_HEADER(levelName,roomCount, levelconVersion) include "ram.iff.txt"@n//============================================================================@n// level asset file, contains all the data required to run a WF level created by prep (iff.prp) from asset.inc DO NOT MODIFY@n//============================================================================@n{ 'ALGN' .align( 2048 ) }@n@n{ 'LVAS'@n	{ 'TOC'@n		'ASMP'	.offsetof( ::'LVAS'::'ASMP', -2048 )	.sizeof( ::'LVAS'::'ASMP' )@n		'LVL'	.offsetof( ::'LVAS'::'LVL', -2048 )	.sizeof( ::'LVAS'::'LVL' )
+@define ROOM_START(name,id)		'@+id@+'	.offsetof( ::'LVAS'::'@+id@+', -2048 )	.sizeof( ::'LVAS'::'@+id@+' )
+
+@define ROOM_END
+@define ROOM_ENTRY( name, value ) @c
+@define FILE_FOOTER	'FAKE'	.offsetof( ::'LVAS'::'ASMP' )	.sizeof( ::'LVAS'::'ASMP' ) @n}@n	{ 'ALGN' .align( 2048 ) }
+@include ASSETINCPATH@+asset.inc
+@undef FILE_HEADER
+@undef ROOM_START
+@undef ROOM_END
+@undef ROOM_ENTRY
+@undef FILE_FOOTER
+
+@define FILE_HEADER(levelName, roomCount, levelconVersion)	{ 'ASMP'
+@define ROOM_START(name,id)
+@define ROOM_END
+@define ROOM_ENTRY( name, value )@-		$@+value@+l { 'STR' "@+name@+" }
+@define FILE_FOOTER	}@n	{ 'ALGN' .align( 2048 ) }
+@include ASSETINCPATH@+asset.inc
+@undef FILE_HEADER
+@undef ROOM_START
+@undef ROOM_END
+@undef ROOM_ENTRY
+@undef FILE_FOOTER
+
+
+@define FILE_HEADER(levelName, roomCount, levelconVersion)	{ 'LVL' [ "@+levelName@+.lvl" ] }@n
+@define ROOM_START(name,id)	{ 'ALGN' .align ( SECTOR_SIZE ) }@n	{ '@+id@+' @\
+	@undef ROOM_NAME @define ROOM_NAME name@t @n @\
+	@if(! @strcmp(PERM)(id))@\
+		( @\
+			@undef ROOM_NUM @define ROOM_NUM @\
+			@-@=3( @replace((Room)([0-9]*))(\2)( ROOM_NAME))@t @\
+			@-	{ 'ASS'	$1@+@=3h(ROOM_NUM)@+ffel ["pal@+@=(ROOM_NUM)@+.tga"] } @n @\
+			@-		{ 'ASS'	$1@+@=3h(ROOM_NUM)@-fffl ["@+ROOM_NAME@+.tga"] } @n @\
+			@-		{ 'ASS'	$5@+@=3h(ROOM_NUM)@-fffl ["@+ROOM_NAME@+.ruv"] } @n @\
+			@-		{ 'ASS'	$7@+@=3h(ROOM_NUM)@-fffl ["@+ROOM_NAME@+.cyc"] } @n @\
+		) @\
+	@if(@strcmp(PERM)(id))@\
+		( @\
+			@-	{ 'ASS'	$1fffffel ["palPerm.tga"] }@n@\
+			@-		{ 'ASS'	$1ffffffl ["Perm.tga"] }@n@\
+			@-		{ 'ASS'	$5ffffffl ["Perm.ruv"] }@n@\
+			@-		{ 'ASS'	$7ffffffl ["Perm.cyc"] }@n@\
+		)
+
+@define ROOM_END 	}@n
+@define ROOM_ENTRY( name, value ) @if(! @search(.tga)(name))(@-	{ 'ASS'	$@+value@+l ["@+name@+"] })
+@define FILE_FOOTER	{ 'ALGN' .align ( SECTOR_SIZE ) }@n}
+
+@include ASSETINCPATH@+asset.inc

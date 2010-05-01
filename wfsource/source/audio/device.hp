@@ -1,0 +1,27 @@
+#ifndef AUDIO_DEVICE_HP
+#define AUDIO_DEVICE_HP
+
+#include <streams/binstrm.hp>
+class SoundBuffer;
+#if defined( __WIN__ )
+struct IDirectSound;
+#endif
+
+class SoundDevice
+{
+public:
+#if defined( __WIN__ )
+	SoundDevice( HWND = NULL );
+#else
+	SoundDevice();
+#endif
+	~SoundDevice();
+	SoundBuffer* CreateSoundBuffer( binistream& );
+
+protected:
+#if defined( __WIN__ )
+	struct IDirectSound* lpDirectSound;
+#endif
+};
+
+#endif	// AUDIO_DEVICE_HP

@@ -1,0 +1,24 @@
+@*============================================================================
+@* missile.oas
+@*============================================================================
+
+@*============================================================================
+@* basic missile definition
+
+@define DEFAULT_MOBILITY 1
+@define DEFAULT_MOVESBETWEENROOMS 1
+@define DEFAULT_TEMPLATE 1
+
+TYPEHEADER(Missile)
+    @include actor.inc
+
+	PROPERTY_SHEET_HEADER(Missile,1)
+@*	--------------------------------
+	TYPEENTRYBOOLEAN(Explode On Impact,,1)
+	TYPEENTRYFIXED32(Arming Delay,,FIXED32(0),FIXED32(100),FIXED32(0.2))
+	TYPEENTRYFIXED32(Explosion Delay,,FIXED32(0),FIXED32(3600),FIXED32(2))
+	PROPERTY_SHEET_FOOTER
+
+TYPEFOOTER
+
+@*============================================================================

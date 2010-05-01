@@ -1,0 +1,17 @@
+//============================================================================
+// font.hp
+
+#ifndef FONT_HP
+#define FONT_HP
+
+#include <gfx/pixelmap.hp>
+
+class Font
+{
+	Font();
+	~Font();
+
+	void Render( PixelMap& pm, const char* str );
+};
+
+#endif	// FONT_HP

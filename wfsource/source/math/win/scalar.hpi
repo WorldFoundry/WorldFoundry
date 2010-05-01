@@ -1,0 +1,5 @@
+#if defined( __WATCOMC__ )
+#	include "win/watcom/scalar.hpi"
+#else
+#	include "win/msvc/scalar.hpi"
+#endif

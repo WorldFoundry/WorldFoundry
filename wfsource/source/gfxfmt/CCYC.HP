@@ -1,0 +1,13 @@
+#ifndef GFXFMT_CCYC_HP
+#define GFXFMT_CCYC_HP
+
+#include <gfxfmt/types.h>
+
+typedef struct
+{
+	int16 start;
+	int16 end;
+	int32 speed;		// fixed
+} CCYC;
+
+#endif	// GFXFMT_CCYC_HP

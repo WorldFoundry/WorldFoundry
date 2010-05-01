@@ -1,0 +1,141 @@
+//==============================================================================
+// plane.hpi:
+// Copyright (c) 1997,1999,2000 World Foundry Group, 
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+//==============================================================================
+//
+// Description: The Plane class encapsulates a planar sloped surface.
+//				The data is stored as coefficients to the plane equation:
+//					Ax + By + Cz + D = 0
+//
+// Original Author: Phil Torre, 7/17/97 14:24
+//
+//==============================================================================
+
+//==============================================================================
+
+INLINE const Vector3&
+Plane::Normal() const
+{
+	return _normal;
+}
+
+//==============================================================================
+
+INLINE Vector3&
+Plane::Normal(Vector3& newNormal)
+{
+	_normal = newNormal;
+	return _normal;
+}
+
+//==============================================================================
+
+INLINE const Scalar&
+Plane::Offset() const
+{
+	return _offset;
+}
+
+//==============================================================================
+
+INLINE Scalar&
+Plane::Offset(Scalar& newOffset)
+{
+	_offset = newOffset;
+	return _offset;
+}
+
+//==============================================================================
+
+INLINE const Scalar&
+Plane::A() const
+{
+	return _normal.X();
+}
+
+//==============================================================================
+
+INLINE const Scalar&
+Plane::B() const
+{
+	return _normal.Y();
+}
+
+//==============================================================================
+
+INLINE const Scalar&
+Plane::C() const
+{
+	return _normal.Z();
+}
+
+//==============================================================================
+
+INLINE const Scalar&
+Plane::D() const
+{
+	return _offset;
+}
+
+//==============================================================================
+
+INLINE Scalar&
+Plane::A(Scalar& newA)
+{
+	_normal.SetX(newA);
+	return newA;
+}
+
+//==============================================================================
+
+INLINE Scalar&
+Plane::B(Scalar& newB)
+{
+	_normal.SetY(newB);
+	return newB;
+}
+
+//==============================================================================
+
+INLINE Scalar&
+Plane::C(Scalar& newC)
+{
+	_normal.SetZ(newC);
+	return newC;
+}
+
+//==============================================================================
+
+INLINE Scalar&
+Plane::D(Scalar& newD)
+{
+	_offset = newD;
+	return _offset;
+}
+
+//==============================================================================
+
+INLINE bool
+Plane::Zero() const
+{
+	return ( (_normal == Vector3::zero) && (_offset == Scalar::zero) );
+}
+
+//==============================================================================
+

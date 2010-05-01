@@ -1,0 +1,41 @@
+@*============================================================================
+@* actbox.oas
+@*============================================================================
+
+@*============================================================================
+@* activation box type definition
+
+@define DEFAULT_VISIBILITY	0
+@define DEFAULT_MODEL_TYPE	3
+@define DEFAULT_MASS 		0.0
+
+TYPEHEADER(Activation Box,ActBox)
+	@include actor.inc
+
+
+	PROPERTY_SHEET_HEADER(Activation Box,1)
+@*	---------------------------------------
+	LEVELCONFLAGCOMMONBLOCK(activate)
+
+	TYPEENTRYINT32(MailBox,Write to Mailbox, 0, 3999, 2, "Mailbox to set when activated", SHOW_AS_NUMBER)
+	TYPEENTRYINT32(MailBoxValue,Mailbox Value, 0, 65536, 1, "Value to write to mailbox when activated", SHOW_AS_NUMBER)
+	TYPEENTRYINT32(Activated Actor Mailbox,, 0, 3999, 0, "Actor which activated this", SHOW_AS_NUMBER)
+
+	GROUP_START(Exit)
+	TYPEENTRYBOOLEAN(ClearOnExit,Clear Mailbox On Exit, 0)
+	TYPEENTRYFIXED32(Mailbox Exit Value,,FIXED32(-32767),FIXED32(32767),FIXED32(0),,,"ClearOnExit" )
+	GROUP_STOP()
+
+	TYPEENTRYINT32(Activation Mailbox,, 0, 3999, 1, "Read from mailbox to determine if active", SHOW_AS_NUMBER)
+	PROPERTY_SHEET_FOOTER
+
+	PROPERTY_SHEET_HEADER(FieldFX,0)
+@*	--------------------------------
+	TYPEENTRYFIXED32(Vector X,, FIXED32(-1000),FIXED32(1000),FIXED32(0),,"Not Up")
+	TYPEENTRYFIXED32(Vector Y,, FIXED32(-1000),FIXED32(1000),FIXED32(0),,"Not Up")
+	TYPEENTRYFIXED32(Vector Z,, FIXED32(-1000),FIXED32(1000),FIXED32(0))
+	PROPERTY_SHEET_FOOTER
+
+TYPEFOOTER
+
+@*============================================================================

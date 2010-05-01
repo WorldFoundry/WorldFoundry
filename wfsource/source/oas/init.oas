@@ -1,0 +1,22 @@
+@*============================================================================
+@* init.oas
+@*============================================================================
+
+@*============================================================================
+@* Invisible level initialization data
+
+@* position defines character's initial position in the level
+@* One and only one object of this type exists per level
+@* Other global level data is attached to this object
+
+TYPEHEADER(InitData)
+    @include actor.inc
+
+	PROPERTY_SHEET_HEADER(Init,1)
+@*	-----------------------------
+	TYPEENTRYINT32(placeholder,,1, 100, 1, "", SHOW_AS_NUMBER)
+	PROPERTY_SHEET_FOOTER
+
+TYPEFOOTER
+
+@*============================================================================

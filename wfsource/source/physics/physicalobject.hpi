@@ -1,0 +1,89 @@
+//==============================================================================
+// physicalobject.hpi:
+// Copyright ( c ) 2002,2003 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//=============================================================================
+// Description: The PhysicalObject is a virtual base class, a client needs to derive
+// from this and fill out the virutual functions to be able to use the movement handlers
+// and collision system
+// This is how I am able to decouple the physics from all of the other pieces it
+// needs to access
+//
+// Original Author: Kevin T. Seghetti
+//==============================================================================
+
+#include "oas/actor.ht"
+                  
+//==============================================================================
+                  
+INLINE
+PhysicalObject::PhysicalObject(const void* oadData,  const CommonBlock& commonBlock) : BaseObject(oadData,commonBlock)
+{
+}
+
+//==============================================================================
+
+INLINE
+PhysicalObject::~PhysicalObject()
+{
+}
+
+//==============================================================================
+
+INLINE Vector3
+PhysicalObject::currentDir() const
+{
+    return Vector3( GetPhysicalAttributes().Rotation().GetC().Cos(), GetPhysicalAttributes().Rotation().GetC().Sin(), Scalar::zero );
+}
+
+//==============================================================================
+
+inline const _Movement* 
+PhysicalObject::GetMovementBlockPtr() const
+{
+
+	_Actor* pActorData = (_Actor*)_oadData;
+	assert( ValidPtr( pActorData ) );
+   return (_Movement*)GetBlockPtr(pActorData->moveblocPageOffset);
+}
+
+//==============================================================================
+
+inline PhysicalObject&
+UpcastToPhysicalObject(BaseObject* base)
+{
+   assert(ValidPtr(base));
+   PhysicalObject* result = dynamic_cast<PhysicalObject*>(base);
+   assert(ValidPtr(result));
+   return *result;
+}
+
+//==============================================================================
+
+inline const PhysicalObject&
+UpcastToPhysicalObject(const BaseObject* base)
+{
+   assert(ValidPtr(base));
+   const PhysicalObject* result = dynamic_cast<const PhysicalObject*>(base);
+   assert(ValidPtr(result));
+   return *result;
+}
+
+//==============================================================================
+

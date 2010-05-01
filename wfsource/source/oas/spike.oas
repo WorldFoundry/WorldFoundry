@@ -1,0 +1,20 @@
+@*============================================================================
+@* spike.oas
+@*============================================================================
+
+@*============================================================================
+@* Spike type definition
+
+TYPEHEADER(Spike)
+	@include actor.inc
+
+	PROPERTY_SHEET_HEADER(Spike,1)
+@*	------------------------------
+	TYPEENTRYFIXED32(Health Modifier,,FIXED32(-100),FIXED32(100),FIXED32(-1))
+@*	@include activate.inc
+	LEVELCONFLAGCOMMONBLOCK(activate)
+	PROPERTY_SHEET_FOOTER
+
+TYPEFOOTER
+
+@*============================================================================

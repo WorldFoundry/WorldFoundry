@@ -1,0 +1,28 @@
+//==============================================================================
+//==============================================================================
+
+#include <Entities/idata.h>
+
+//==============================================================================
+
+#define ATTRIBUTEDATANAME "WorldFoundryAttributeData"
+
+//==============================================================================
+
+class WorldFoundryAttributeData : public IData
+{
+public:
+   WorldFoundryAttributeData(): IData( ATTRIBUTEDATANAME) { };
+  WorldFoundryAttributeData(const string& newData): IData( ATTRIBUTEDATANAME) { init(newData); };
+  string toString() { return attributeString; };
+  void init( string s ) { attributeString = s; };
+  IData * clone() { return new WorldFoundryAttributeData(attributeString); };
+  static int TYPE;
+
+  void Set(const string& newData) { attributeString = newData; }
+private:
+  string attributeString;
+};
+
+//==============================================================================
+

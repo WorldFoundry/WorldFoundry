@@ -1,0 +1,340 @@
+//==============================================================================
+// int16li.hpi:
+// Copyright ( c ) 1996,1997,1998,1999,2000,2002,2003 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//=============================================================================
+
+//============================================================================
+// new iterator functions
+//============================================================================
+
+INLINE void
+Int16List::Validate() const
+{
+#if DO_VALIDATION
+   if(_memory)
+   {
+      _memory->Validate();
+      assert(ValidPtr(_data));
+      assert(_max >=  0);
+      assert(_max <  MAX_ACTOR_ENTRIES);
+      assert(_num >= 0);
+      assert(_num <= _max);
+   #if DO_VALIDATION > 1
+      for(int index=0;index<_num;index++)
+      {
+         if(_data[index] != NULL_ENTRY)
+            RangeCheckExclusive(0,_data[index],MAX_ACTOR_INDEX);
+      }
+   #endif
+   }
+   else
+   {
+      assert(_max == 0);
+      assert(_num == 0);
+   }
+
+#endif
+}
+
+//=============================================================================
+
+INLINE
+Int16List::Int16List() :
+	_data( NULL ),
+	_num( 0 ),
+	_max( 0 ),
+   _memory(NULL)
+{
+}
+
+//============================================================================
+
+INLINE
+Int16List::~Int16List()
+{
+	Validate();
+   assert(ValidPtr(_memory));
+   if(_data)
+	   _memory->Free(_data);
+}
+
+//============================================================================
+
+INLINE void
+Int16List::Construct(Memory& memory, int32 max)
+{
+   assert(_memory == NULL);            // can't construct more than once
+   assert(_data == NULL);
+
+   _memory = &memory;
+   assert(ValidPtr(_memory));
+   _memory->Validate();
+	assert(_data == NULL);
+	assert(_num == 0);
+	assert( _max == 0);
+	assert( max > 0);
+	assert( max < MAX_ACTOR_ENTRIES);
+
+	_max = max;
+	_data = new (*_memory) int16[_max];
+	assert( ValidPtr(_data) );
+	Validate();
+}
+
+//============================================================================
+
+INLINE int32
+Int16List::Size() const					// returns current # of entries
+{
+	Validate();
+	return(_num);
+}
+
+//============================================================================
+
+INLINE void
+Int16List::Add(int32 value)
+{
+	RangeCheckExclusive(0,value,MAX_ACTOR_INDEX);
+	Validate();
+   assert(_max > 0);
+	bool added = false;
+	for (int listIndex = 0; listIndex < _num; listIndex++)
+	{
+		if (_data[listIndex] == NULL_ENTRY)
+		{
+			_data[listIndex] = value;
+			added = true;
+			break;
+		}
+	}
+	if (!added)
+	{
+		assert(_num < _max);
+		_data[_num] = value;
+		_num++;
+	}
+	assert(_num <= _max);
+}
+
+//============================================================================
+
+INLINE void
+Int16List::Remove(int32 value)
+{
+	Validate();
+   assert(_max > 0);
+	assert(value > 0);
+	int32 listIndex = 0;
+	while(listIndex < _num)
+	{
+		if(_data[listIndex] == value)
+		{
+			_data[listIndex] = NULL_ENTRY;
+			return;
+		}
+		listIndex++;
+	}
+	AssertMsg(0,"Didn't find actor index " << value << "  in actor list");					// actor not found in this actor list
+}
+
+//============================================================================
+
+INLINE void
+Int16List::RemoveIfInList( int32 value )
+{
+	RangeCheckExclusive(0,value,MAX_ACTOR_INDEX);
+	Validate();
+	int32 listIndex = 0;
+	while(listIndex < _num)
+	{
+		if(_data[listIndex] == value)
+		{
+			_data[listIndex] = NULL_ENTRY;
+			return;
+		}
+		listIndex++;
+	}
+	//AssertMsg(0,"Didn't find actor index " << value << "  in actor list");					// actor not found in this actor list
+}
+
+//============================================================================
+
+INLINE bool
+Int16List::IsInList( int32 value )
+{
+	RangeCheckExclusive(0,value,MAX_ACTOR_INDEX);
+	Validate();
+	assert(value > 0);
+	int32 listIndex = 0;
+	while(listIndex < _num)
+	{
+		if(_data[listIndex] == value)
+			return true;
+		listIndex++;
+	}
+	return false;
+}
+
+//============================================================================
+
+INLINE int32
+Int16List::operator[](int32 index) const
+{
+	RangeCheckExclusive(0,index,_num);
+	Validate();
+	return(_data[index]);
+}
+
+//============================================================================
+
+#if SW_DBSTREAM
+
+inline
+std::ostream& operator << ( std::ostream& s, const Int16List& al )
+{
+	s << "Int16List:" << std::endl;
+	al.Validate();
+
+	int32 listIndex = 0;
+	while(listIndex < al._num)
+	{
+		s << "  " << listIndex << ": " << al._data[listIndex] << std::endl;
+		listIndex++;
+	}
+	return s;
+}
+#endif
+
+//============================================================================
+//============================================================================
+
+INLINE void
+Int16ListIter::Validate() const
+{
+#if DO_VALIDATION
+	assert(ValidPtr(_int16List));
+	_int16List->Validate();
+	assert(_int16List->_num >= 0);
+	assert(ValidPtr(_int16List->_data));
+
+	assert( _objIndex >= 0);
+	assert( _objIndex <= _int16List->_num );
+#endif
+}
+
+//============================================================================
+
+INLINE bool
+Int16ListIter::Empty() const
+{
+	Validate();
+	return(_objIndex == _int16List->_num);
+}
+
+//============================================================================
+
+INLINE void
+Int16ListIter::SkipNullObjects()
+{
+	Validate();
+		// skip empty objects
+	for ( ; _objIndex < _int16List->_num; ++_objIndex )
+	{
+		if ( _int16List->_data[_objIndex] >= 0 )
+		{
+// kts move this code into the validate function, and figure out how to make it work in a general way
+			//RangeCheckExclusive(0,_int16List->_data[_objIndex],Int16List::MAX_ACTOR_INDEX);
+			//AssertMsg( theLevel->getActor(_int16List->_data[_objIndex]), "Actor Index " << _int16List->_data[_objIndex] << " seems to be missing"  );
+			return;
+		}
+	}
+	assert(Empty());
+	Validate();
+}
+
+//============================================================================
+
+INLINE
+Int16ListIter::Int16ListIter(const Int16List& new_int16List)
+{
+	new_int16List.Validate();
+	_int16List = &new_int16List;
+	_objIndex = 0;
+	 SkipNullObjects();
+	Validate();
+}
+
+//============================================================================
+
+INLINE Int16ListIter&
+Int16ListIter::operator++()
+{
+	Validate();
+	assert( _objIndex < _int16List->_num );
+
+	++_objIndex;
+	 SkipNullObjects();
+#if DO_ASSERTIONS
+	if(_objIndex < _int16List->_num)
+		RangeCheck(0,_int16List->_data[_objIndex],Int16List::MAX_ACTOR_INDEX);
+#endif
+	return(*this);
+}
+
+//============================================================================
+
+INLINE Int16ListIter&
+Int16ListIter::operator+=(int offset)
+{
+	Validate();
+	while(offset-- && !Empty())
+		operator++();
+	return(*this);
+}
+
+//============================================================================
+
+INLINE int32
+Int16ListIter::operator*() const				// dereference operator, used to read the current object from the interator
+{
+	Validate();
+	if(_objIndex >= _int16List->_num)
+	{
+		assert(0);				// shouldn't de-reference an iterator which is off the end of the list
+		return(-1);
+	}
+	assert(_int16List->_data[_objIndex] >= 0);
+	return(_int16List->_data[_objIndex]);
+}
+
+//============================================================================
+
+INLINE Int16ListIter&
+Int16ListIter::operator= (const Int16ListIter& i)
+{
+	Validate();
+	i.Validate();
+	_int16List = i._int16List;
+	_objIndex = i._objIndex;
+	return *this;
+}
+
+//============================================================================

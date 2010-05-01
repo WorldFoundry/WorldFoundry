@@ -1,0 +1,109 @@
+//==============================================================================
+// actroit.hp:		
+// Copyright ( c ) 1997,1999,2000,2002,2003 World Foundry Group.  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+#ifndef _ACTROOMSITER_HP
+#define _ACTROOMSITER_HP
+
+#include <cpplib/int16li.hp>
+#include <physics/physicalobject.hp>
+#include "room.hp"
+class ActiveRooms;
+
+//============================================================================
+// iterate through all of the active rooms
+
+class ActiveRoomsIter
+{
+public:
+	ActiveRoomsIter(const ActiveRooms& activeRooms);
+	ActiveRoomsIter& operator++();
+	ActiveRoomsIter& operator+=(int offset);
+	Room& operator*() const;				// dereference operator, returns the current Room
+	bool Empty() const;
+	ActiveRoomsIter& operator= (const ActiveRoomsIter& i);
+	inline void Validate() const;
+private:
+	void SkipNullObjects();
+	const ActiveRooms* _activeRooms;
+
+	int _roomIndex;
+	ActiveRoomsIter();
+};
+
+//============================================================================
+// iterate through all of the active rooms
+
+class ActiveRoomsIterConst
+{
+public:
+	ActiveRoomsIterConst(const ActiveRooms& activeRooms);
+	ActiveRoomsIterConst& operator++();
+	ActiveRoomsIterConst& operator+=(int offset);
+	const Room& operator*() const;				// dereference operator, returns the current Room
+	bool Empty() const;
+	ActiveRoomsIterConst& operator= (const ActiveRoomsIterConst& i);
+	inline void Validate() const;
+private:
+	void SkipNullObjects();
+	const ActiveRooms* _activeRooms;
+
+	int _roomIndex;
+	ActiveRoomsIterConst();
+};
+
+//============================================================================
+// iterate through all of the objects in all of the active rooms
+
+typedef BaseObjectIteratorWrapper (Room::* pRoomGetIterFunc)() const;
+
+//==============================================================================
+
+class ActiveRoomsBaseObjectIter : public BaseObjectIterator
+{
+public:
+	ActiveRoomsBaseObjectIter(const ActiveRooms& activeRooms,int listIndex);
+   virtual ~ActiveRoomsBaseObjectIter();
+
+	virtual BaseObject& operator*();				
+	virtual bool Empty() const;
+	virtual BaseObjectIterator& operator++();
+
+	void Validate() const;
+   virtual BaseObjectIterator* Copy() const;
+protected:
+   virtual void _Validate() const;
+
+private:
+	INLINE BaseObjectIteratorWrapper GetRoomIter();
+	const ActiveRooms& _activeRooms;
+	int32 currentActiveRoomIndex;			// note: must be initialized before alIter
+   int _listIndex;
+   BaseObjectIteratorWrapper poIter;
+};
+
+//============================================================================
+#include "actroit.hpi"	//include all inline definitions as appropriate
+//=============================================================================
+#endif                           // _ACTROOMSITER_HP
+//=============================================================================

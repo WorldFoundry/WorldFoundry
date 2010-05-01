@@ -1,0 +1,109 @@
+//===========================================================================
+// AssetSlot.hp: AssetSlot class
+// Copyright ( c ) 1997,1999,2000,2003 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//===========================================================================
+// Description: manages all of the AssetSlot loaded by each room (also handles permanents)
+// Original Author: Kevin T. Seghetti
+//==========================================================================
+
+#ifndef _AssetSlot_HP
+#define _AssetSlot_HP
+
+#include <memory/memory.hp>
+#include <memory/lmalloc.hp>
+#include <gfx/rmuv.hp>
+#include <gfx/ccyc.hp>
+#include <gfx/vmem.hp>
+#include <streams/asset.hp>
+#include <streams/binstrm.hp>
+
+//=============================================================================
+// map asset ID's to where they are in memory
+
+class AssetMap
+{
+public:
+	AssetMap(int entries,Memory& memory);
+	~AssetMap();
+
+	void Validate() const;			    // only valid after all assets have been set
+
+	binistream LookupAsset(packedAssetID asset) const;
+	inline const void* LookupAssetMemory(packedAssetID id) const;
+	void SetAsset(int entry, packedAssetID id, void* memory, int size);
+	void NULLAsset(int entry,packedAssetID id);
+
+	DBSTREAM1( friend std::ostream& operator << ( std::ostream& s, const AssetMap& am ); )
+private:
+	struct AssetMapEntry
+	{
+		packedAssetID _id;
+		void* _memory;
+		int32 _size;
+	};
+
+	int _entries;
+	AssetMapEntry* _assetMapArray;
+};
+
+//=============================================================================
+
+class AssetSlot
+{
+public:
+public:
+	AssetSlot(int slotIndex, int roomIndex, binistream& roomStream, int assetCount, void* memory, int memorySize, VideoMemory& videoMemory);
+	~AssetSlot();
+
+	const RMUV& GetRMUV() const;
+	const CCYC& GetCCYC() const;
+	binistream LookupAsset(packedAssetID asset) const;
+	const void* LookupAssetMemory(packedAssetID id) const;
+    const PixelMap& GetTexturePixelMap() const;
+    
+	Memory& GetSlotMemory();
+	const Memory& GetSlotMemory() const;
+
+#if SW_DBSTREAM
+	std::ostream& _print( std::ostream& ) const;
+	friend std::ostream& operator << ( std::ostream& s, const AssetSlot& as )	{ return as._print( s ); }
+#endif
+
+	void Validate() const;
+private:
+   void* LoadChunk( binistream& stream,  int32 tag);
+
+	int			 _slotIndex;				    // slot index
+	RMUV         _rmuv;					// stored seperately since it needs to get constructed
+	CCYC         _ccyc;
+	LMalloc      _assetsMemory;
+	AssetMap*    _assetMap;				// map of pointers into the lmalloc array of loaded assets
+   VideoMemory& _videoMemory;
+};
+
+//=============================================================================
+
+#if	(USE_INLINE_DEFS || defined( _AssetSlot_CC )) && !defined(AssetSlot_JUSTDEFS)
+#include "assslot.hpi"	// include all inline definitions as appropriate
+#endif
+
+//=============================================================================
+#endif // !_AssetSlot_HP
+//=============================================================================

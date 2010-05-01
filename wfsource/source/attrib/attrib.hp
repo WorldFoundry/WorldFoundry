@@ -1,0 +1,122 @@
+//==============================================================================
+// attrib.hp
+// Coypright (c) 1997,1998,1999,2000,2003 World Foundry Group.  
+// by William B. Norris IV
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+//==============================================================================
+
+#ifndef ATTRIB_HP
+#define ATTRIB_HP
+
+//==============================================================================
+
+#include <windows.h>
+#include <windowsx.h>
+#define Button_GetFont( __hwnd__ )	( (HFONT)( SendMessage( (__hwnd__), WM_GETFONT, (WPARAM)0, 0L ) ) )
+inline void Button_SetFont( HWND __hwnd__, HFONT __font__, BOOL fRedraw = TRUE );
+inline void
+Button_SetFont( HWND __hwnd__, HFONT __font__, BOOL fRedraw )
+{
+	SetWindowFont( __hwnd__, __font__, fRedraw );
+}
+
+class Oad;
+class uiDialog;
+class Symbol;
+#include <pigsys/pigsys.hp>
+#include <pigsys/assert.hp>
+#include <oas/oad.h>
+
+extern HINSTANCE hInstance;
+
+class Attributes
+{
+public:
+	Attributes( HWND hwnd, Oad* theOad, bool bExpandedDisplay = false );
+	~Attributes();
+
+	HWND _hDlg;
+	HWND _hPanel;
+	int _idxCurrentTab;
+
+	void setData( const void* );
+
+	void ChangeSheet();
+
+	void Init();
+	void Destroy();
+
+	void CreateGadgets();	// const char* szClassName = NULL );
+
+	void Apply();
+	void SetObjectSelected( int );
+	void DestroyGadgets();
+
+	uiDialog* findGadget( const char* szName, buttonType ) const;
+	uiDialog* findGadget( const char* szName ) const;
+
+	// public variables are better than globals
+	int x;
+	int y;
+	HWND CreateWindowEx( DWORD dwExStyle,
+		LPCTSTR lpClassName,
+		LPCTSTR lpWindowName,
+		DWORD dwStyle,
+		int x,
+		int y,
+		int nWidth,
+		int nHeight,
+		HWND hWndParent,
+		HMENU hMenu = NULL,
+		HINSTANCE hInstance = ::hInstance,
+		LPVOID lpParam = NULL
+	);
+
+	enum { _MAX_GADGETS = 250 };
+	uiDialog* _gadgets[ _MAX_GADGETS ];
+	int _numGadgets;
+
+	HFONT _fontWingdings;
+	HFONT _font;
+	char szOadDir[ _MAX_PATH ];
+	char szWorldFoundryDir[ _MAX_PATH ];
+
+	void refreshGadgetEnabledStates();
+
+//	const string& className() const		{ return _oad->className(); }
+
+protected:
+	Oad* _oad;
+	HBRUSH _hBrushStatic;
+	enum { _Y_INC = 21 };
+	bool _bExpandedDisplay;
+};
+extern Attributes* theAttributes;
+#pragma message( "Don't publish this as a global -- use a static member of Attributes, instead" )
+extern BOOL CALLBACK AttributesDlgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam );
+
+class Exception
+{
+public:
+	long	data;
+};
+
+//==============================================================================
+#endif	// ATTRIB_HP
+//==============================================================================
+

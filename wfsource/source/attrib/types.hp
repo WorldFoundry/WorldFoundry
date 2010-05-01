@@ -1,0 +1,43 @@
+#ifndef ATTRIB_TYPES_HP
+#define ATTRIB_TYPES_HP
+
+#include <cstdlib>
+
+#include <pigsys/pigsys.hp>
+#include <oas/oad.h>
+
+// A chunk header
+typedef struct
+{
+	unsigned short int id;
+	unsigned long length;
+} Header;
+
+
+typedef struct
+{
+	ulong version;
+} State;
+
+
+// Application types
+
+typedef unsigned char byte;
+
+typedef struct
+{
+	char oadFilename[ _MAX_PATH ];
+} ClassChunk;
+
+typedef ClassChunk MeshNameChunk;
+
+class uiDialog;
+
+typedef struct
+{
+//	int offset;
+	void* data;
+	uiDialog* theGadget;
+} DialogGlue;
+
+#endif	// ATTRIB_TYPES_HP

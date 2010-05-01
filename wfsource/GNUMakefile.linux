@@ -1,0 +1,81 @@
+#################################################################################
+## linux
+
+
+# paths which should be detected with autoconf:
+
+
+TCL_LIB= -ltcl
+PERL_LIB = `perl -MExtUtils::Embed -e ldopts`
+LUA_LIB = -llua -llualib -lm
+GL_LIB = -lGLU -lGL
+ODE_LIB = -lode 
+
+## Linker
+#LINKPOST = ,$(TEST_PROG)$(EXE),$(TEST_PROG).sym,$(TEST_PROG).map
+
+# wfsrc/Makefile.linux
+
+## C Compiler
+CC_linux                              = gcc
+CCC_linux                             = g++
+CCC_OUT_linux                         = -o
+CCCARGS_linux                         +=  $(CDEFS) -W -Wall -Wpointer-arith -Wcast-align -Wno-unknown-pragmas
+#CCCARGS_linux += -S -fverbose-asm   # kts used to generate an asm file for visual inspection
+ifeq ($(BUILD_DO_DEBUGGING_INFO),1)
+CCCARGS_linux += -g
+endif
+
+ifeq ($(BUILD_DO_OPTIMIZATIONS),1)
+CCCARGS_linux += -mcpu=i486 -O3 -fomit-frame-pointer -finline-functions -fno-exceptions -ffast-math 
+endif
+
+CCCARGS_MULTITHREADED_S =
+CCCARGS_MULTITHREADED_M = -MD
+
+XLIBS = -L/usr/X11/lib -L/usr/X11R6/lib -lX11 -lXext -lXmu -lXt -lXi -lSM -lICE
+#LIBS_linux +=  $(XLIBS) -L/usr/local/lib/libGL -llibGL  -lMesaaux -lMesatk -lMesaGLU -lMesaGL -lm $(XLIBS)
+
+#LNARGS += -L/usr/lib -L/usr/local/lib -L/usr/X11R6/lib
+LNARGS += -L/usr/local/lib -L/usr/X11R6/lib
+
+#LIBS_linux +=  -L/usr/lib -L/usr/local/lib
+SYS_LIBS += -lm -lX11 -lXext -lXmu -lXt -lXi -lSM -lICE -lpthread -lc -lstdc++
+
+LIBS_linux += $(LIBS_linux_$(RENDERER))
+
+INCLUDE_linux +=
+
+## dir commands
+MKDIR = mkdir
+RMDIR = rmdir
+
+DEL = rm
+
+
+## Linker
+
+
+## Librarian
+AR_linux = ar -r
+LIBOUT_linux = 
+
+## obj files
+OBJ = .o
+
+## Executable
+EXE_linux = 
+RUN_linux =
+
+## Resources
+#RESOURCE = $(LIB_OBJ_DIR)$(TEST_PROG).res
+
+## Assembler
+AS_linux = as
+AFLAGS_linux =
+
+## Non-standard includes useful *only* for this platform
+#INCLUDE += -I"$(MSVCDIR)/include"
+
+#INCLUDE += -I/usr/local/include 
+INCLUDE += -I/usr/local/include/GL -I/usr/X11R6/include

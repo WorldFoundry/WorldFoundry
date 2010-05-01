@@ -1,0 +1,51 @@
+//=============================================================================
+// particle/emitter.hpi:
+// Copyright ( c ) 1997,98,99 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description:
+// Original Author: William B. Norris IV
+//============================================================================
+
+inline void
+Emitter::Validate() const
+{
+#if DO_ASSERTIONS
+	const int MAX_PARTICLES = 1000;		// kts arbirrary
+#endif
+	_memory.Validate();
+	RangeCheck(0,_nParticles,MAX_PARTICLES);
+	RangeCheck(Scalar::zero,_currentSphereRadius,SCALAR_CONSTANT(100));  // kts arbitrary
+
+	RangeCheck(Scalar::zero,_period,SCALAR_CONSTANT(50));  // kts arbitrary
+	RangeCheck(_timeStart,_timeToGenerate, _timeStart + _period);
+
+	RangeCheckInclusive( Scalar::zero, _particleParameters.initialAlpha, Scalar::one );
+	RangeCheckInclusive( Scalar::zero, _particleParameters.alphaDecrement, Scalar::one );
+	assert( _particleParameters.templateObject );
+
+	RangeCheck(0,_nParticlesAvailable,_nParticles);
+	RangeCheck(0,_nParticlesAvailable,MAX_PARTICLES);
+	_particleMemPool.Validate();
+	ValidatePtr(_tblParticles);
+	ValidatePtr(_tblObjects);
+
+}
+
+//==============================================================================

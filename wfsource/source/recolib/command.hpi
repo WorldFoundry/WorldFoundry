@@ -1,0 +1,36 @@
+//=============================================================================
+// command.hpi:
+//=============================================================================
+
+inline std::ostream&
+operator<<(std::ostream& s, const CommandLine &cl)
+{
+	s << "Command Line strings:" << std::endl;
+	for(std::vector<std::string>::const_iterator iter=cl.commands.begin();
+	iter<cl.commands.end();
+	iter++)
+	{
+		s <<	*iter << std::endl;
+	}
+	return s;
+}
+
+//=============================================================================
+
+inline size_t
+CommandLine::Size() const
+{
+	return(commands.size());
+}
+
+//=============================================================================
+
+inline const std::string&
+CommandLine::operator[] (unsigned int index) const
+{
+//	assert(index >= 0);
+	assert(index < commands.size());
+	return commands[index];
+}
+
+//=============================================================================

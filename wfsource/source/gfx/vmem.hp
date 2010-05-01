@@ -1,0 +1,106 @@
+//============================================================================
+// vmem.hp: video memory map managment
+// Copyright (c) 1997,1998,1999,2000,2001,2002 World Foundry Group.  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//============================================================================
+// Original Author: Kevin T. Seghetti
+//=============================================================================
+
+#ifndef _VMem_HP
+#define _VMem_HP
+
+//=============================================================================
+
+#include <pigsys/pigsys.hp>
+#include <gfx/pixelmap.hp>
+
+//=============================================================================
+
+class VideoMemory
+{
+public:
+	VideoMemory(Display& display);
+	~VideoMemory();
+
+	inline void Validate() const;
+
+	enum
+	{	MAX_TRANSIENT_SLOTS = 3,
+		MAX_PERMENENT_SLOTS = 1,
+		MAX_SLOTS = MAX_TRANSIENT_SLOTS + MAX_PERMENENT_SLOTS,
+		PERMANENT_SLOT = MAX_TRANSIENT_SLOTS	  // last slot is permanent
+	};
+
+	PixelMap& GetSlotTexturePixelMap(int slot);
+	PixelMap& GetSlotPalettePixelMap(int slot);
+
+#if defined(DESIGNER_CHEATS)
+	void ClearSlot(int slot) const;		// set slot back to background color, for debugging
+#endif
+private:
+
+	enum
+	{
+		VRAMPaletteBaseX		= 0,
+		VRAMPaletteBaseY		= 240*2,
+#if defined(VIDEO_MEMORY_IN_ONE_PIXELMAP)
+		VRAMPaletteWidth		= 320,
+		VRAMPaletteHeight		= ( Display::VRAMHeight - VRAMPaletteBaseY ) / ( MAX_SLOTS ),
+#else
+		VRAMPaletteWidth		= 256,
+		VRAMPaletteHeight		= 8,
+#endif
+		VRAMPermanentBaseX		= 320,
+		VRAMPermanentBaseY		= 0,
+#if defined(VIDEO_MEMORY_IN_ONE_PIXELMAP)
+		VRAMPermanentWidth		= 128,
+		VRAMPermanentHeight		= Display::VRAMHeight,
+#else
+		VRAMPermanentWidth		= 256,
+		VRAMPermanentHeight		= 256,
+#endif
+		VRAMTransientBaseX			= VRAMPermanentBaseX+VRAMPermanentWidth,
+		VRAMTransientBaseY			= 0,
+#if defined(VIDEO_MEMORY_IN_ONE_PIXELMAP)
+		VRAMTransientWidth			= 192,
+		VRAMTransientHeight			= 512	// 256 so we have room for the font, which must be on a texture page boundry
+#else
+        // some video cards can't handle textures larger than 256x256
+		VRAMTransientWidth			= 256,
+		VRAMTransientHeight			= 256	
+#endif
+#pragma message ("KTS: write our own font system to get around this")
+//		VRAMTransientHeight			= Display::VRAMHeight
+	};
+
+	void AllocateTextureSlots(Display& display);
+	PixelMap* AllocateTextureSlot(Display& display,
+		const int16 basex, const int16 basey,
+		const uint16 width, const uint16 height
+		);
+
+	PixelMap* _textures[MAX_SLOTS];
+	PixelMap* _palettes[MAX_SLOTS];
+};
+
+//============================================================================
+#include "vmem.hpi"	// include all inline definitions as appropriate
+//=============================================================================
+#endif
+//=============================================================================

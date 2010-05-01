@@ -1,0 +1,99 @@
+//==============================================================================
+// actrooms.hp:
+// Copyright ( c ) 1997,1999,2000,2003 World Foundry Group.  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description: all room memory slot code (texture and otherwise
+//
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+#ifndef _ACTROOMS_HP
+#define _ACTROOMS_HP
+
+#include <oas/levelcon.h>
+#include <asset/assets.hp>
+#include <timer/clock.hp>
+#include <physics/physicalobject.hp>
+#include "rooms.hp"
+#include "room.hp"
+
+//=============================================================================
+
+class ActiveRoomsIter;
+class ActiveRoomsIterConst;
+class ActiveRoomsBaseObjectIter;
+
+//=============================================================================
+// to be used by the Level class
+
+class ActiveRooms
+{
+public:
+	ActiveRooms(Memory& memory, AssetManager& assetManager, const LevelRooms& levelRooms);						// stub, real work happens in Construct
+	void Construct(int numRooms);			// total room count for this level
+	~ActiveRooms();
+
+	INLINE const Room* GetActiveRoom(int activeRoomIndex) const;           // this returns a const ptr to the active room indexed
+
+	INLINE ActiveRoomsIterConst GetIter() const;
+	INLINE ActiveRoomsIter GetMutableIter() const;
+
+   inline BaseObjectIteratorWrapper GetObjectIter(int listIndex) const;
+
+   void DetectCollision(const Clock& currentTime);
+
+	void UpdateRoom(const PhysicalObject* watchObject);			// Check if in new room and update adj. rooms
+
+	// active room methods
+	void InitActiveRoom( int nRoom, const LevelRooms& lRooms );
+	void FreeActiveRooms();
+
+	bool IsActiveRoom( int idxRoom ) const;             // return true if room is in active room list
+	INLINE int GetActiveRoomIndex( int idxRoom ) const;
+
+	// active room method helpers
+	bool WaitRoomLoad( bool blocking );
+	inline void Validate() const;
+private:
+	// functions
+	void ChangeActiveRoom( int nRoom );
+	void AttachActiveRoom( int idxRoom, int idxToRoom );
+
+	int *					_tblFromRooms;
+	int *					_tblToRooms;
+
+	// data
+	int						_numRooms;	// number of rooms in level, used by to & from arrays, maybe this should be in LevelRooms
+	Room *					_activeRooms[MAX_ACTIVE_ROOMS];  // array of ptrs to the currently active rooms
+	Room*					_fromActiveRooms[MAX_ACTIVE_ROOMS];
+
+	Memory&	_memory;
+	AssetManager& _assetManager;
+	const LevelRooms& _levelRooms;
+
+	friend class ActiveRoomsIter;
+	friend class ActiveRoomsIterConst;
+};
+
+//============================================================================
+#include "actrooms.hpi"	//include all inline definitions as appropriate
+//=============================================================================
+#endif                           // _ACTROOMS_HP
+//=============================================================================

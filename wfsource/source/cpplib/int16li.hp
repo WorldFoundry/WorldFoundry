@@ -1,0 +1,91 @@
+//============================================================================
+// Int16rLi.hp: Int16List: a container containing an array of pointers to Int16s (currently only used for actor offsets)
+// this could probably be replaced with an STL container, but our old coding standards forbid STL
+// I haven't decided if we should remove that restriction or not
+// Copyright ( c ) 1996,1997,1999,2000,2002,2003 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//=============================================================================
+
+#ifndef _I16LIST_HP
+#define _I16LIST_HP
+
+#include <pigsys/pigsys.hp>
+#include <memory/memory.hp>
+
+//==============================================================================
+
+class Int16List
+{
+public:
+	Int16List();
+	~Int16List();
+	void Construct(Memory& memory,  int32 max);						// can only be called once, treat as a constructor
+	void Add( int32 value );
+	void Remove( int32 value );
+	void RemoveIfInList( int32 value );
+	bool IsInList(int32 value);
+	int32 Size() const;						// returns current # of entries
+	int32 operator[]( int32 index ) const;
+
+	inline void Validate() const;
+
+	friend class Int16ListIter;
+	friend class Int16ListIterConst;
+
+	DBSTREAM1( friend std::ostream& operator << ( std::ostream& s, const Int16List& al ); )
+
+private:
+	enum
+	{
+		NULL_ENTRY=-1,
+		MAX_ACTOR_INDEX = 5000,			// kts arbitrary
+		MAX_ACTOR_ENTRIES = 5000			// kts arbitrary
+
+	};
+	int16* _data;
+	int _num;
+	int _max;
+   Memory* _memory;
+};
+
+//============================================================================
+// iterate through all of the objects in an Int16List
+
+class Int16ListIter
+{
+public:
+	Int16ListIter(const Int16List&);
+	Int16ListIter& operator++();
+	Int16ListIter& operator+=(int offset);
+	int32 operator*() const;				// dereference operator, returns the current actors index
+	bool Empty() const;
+	Int16ListIter& operator= (const Int16ListIter& i);
+	inline void Validate() const;
+private:
+	const Int16List* _int16List;
+	int _objIndex;
+	Int16ListIter();
+	void SkipNullObjects();
+};
+
+//==============================================================================
+#include "int16li.hpi"	// include all inline definitions as appropriate
+//==============================================================================
+#endif // !_I16LIST_HP
+//==============================================================================

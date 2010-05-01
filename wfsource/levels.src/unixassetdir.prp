@@ -1,0 +1,6 @@
+@*============================================================================
+@* unixassetdir.prp:
+@*============================================================================
+
+@define ASSET_EXTENSION( X ) find `pwd` -name "*.@+@lowercase(X)@-" -print >>files.lst
+@include ../../source/streams/assets.inc

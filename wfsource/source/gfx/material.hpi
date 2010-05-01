@@ -1,0 +1,113 @@
+//=============================================================================
+// Material.hpi:
+// Copyright ( c ) 1997,1998,1999,2000,2001 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description:
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+#include <gfx/rendobj3.hp>
+#include <gfx/pixelmap.hp>
+
+//============================================================================
+
+INLINE void
+Material::Validate() const
+{
+	AssertMsg((_materialFlags & (~MATERIAL_FLAGS_MASK)) == 0,"_materialFlags = " << std::hex << _materialFlags << ", MATERIAL_FLAGS_MASK = " << MATERIAL_FLAGS_MASK);
+	ValidateRenderMask(_materialFlags);
+	_color.Validate();
+//	assert(_renderer3D == Get3DRenderObjectPtr());
+	RangeCheck(0,_texture.u,Display::VRAMWidth);
+	RangeCheck(0,_texture.v,Display::VRAMHeight);
+#if defined( __PSX__ )
+	RangeCheck(0,_texture.w,256);
+	RangeCheck(0,_texture.h,256);
+#endif
+#if DO_ASSERTIONS
+    if(_texturePixelMap)
+    {
+        ValidatePtr(_texturePixelMap);
+        _texturePixelMap->Validate();
+    }
+#endif
+}
+
+//============================================================================
+
+int32
+Material::GetMaterialFlags() const
+{
+	return _materialFlags;
+}
+
+//============================================================================
+
+INLINE const Color&
+Material::GetColor() const
+{
+	return(_color);
+}
+
+//============================================================================
+
+INLINE const Color&
+Material::SetColor(const Color& color)
+{
+	_color = color;
+//#if defined(__PSX)
+	setRGB0( &_cdColor, color.Red(),color.Green(),color.Blue());  // keep psx specific color up to date
+//#endif
+	return(_color);
+}
+
+//============================================================================
+
+INLINE pRenderObj3DFunc
+Material::Get3DRenderer() const
+{
+#if DO_ASSERTIONS
+#if defined( __WIN__)
+	long* rendererPtr = (long*)&_renderer3D;
+//	cout << "rendererPtr = " << rendererPtr << std::endl;
+//	cout << "renderer = " << hex << *rendererPtr << std::endl;
+	assert(ValidCodePtr((void*)(*rendererPtr)));
+#endif
+#endif
+	return(_renderer3D);
+}
+
+//============================================================================
+
+#if DO_IOSTREAMS
+INLINE std::ostream& operator<<(std::ostream& s, const Material& mat)
+{
+	s << "Material: " << std::endl;
+//	s << "pRenderObj2DFunc " << (void*)mat._renderer2D << std::endl;
+//	s << "pRenderObj3DFunc " << (void*)mat._renderer3D << std::endl;
+	s << "P_CODE " << std::hex << *(int32*)&mat._cdColor << std::endl;
+	s << "Color " <<  std::dec << mat._color << std::endl;
+	s << "materialFlags " <<  mat._materialFlags << std::endl;
+	s << "Texture: " << mat._texture << std::endl;
+	return s;
+}
+#endif
+
+//============================================================================

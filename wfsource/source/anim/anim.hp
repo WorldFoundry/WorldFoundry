@@ -1,0 +1,124 @@
+//=============================================================================
+// Anim.hp:
+// Copyright ( c ) 1997,1999,2000 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description:
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+#ifndef _Anim_H
+#define _Anim_H
+
+#define READ_INTERMEDIATE_ANIM_FORMAT	// if defined, read uncompressed IFF
+// leave this defined in the checked in version until max2iff has been
+// updated in delta
+
+//============================================================================
+// Includes
+//============================================================================
+
+#include <pigsys/pigsys.hp>
+#include <math/scalar.hp>
+#include <cpplib/array.hp>
+#include <memory/memory.hp>
+#include <gfx/rendobj3.hp>
+
+class Channel;
+
+//============================================================================
+// Class and Structure Prototypes
+//============================================================================
+#if 0
+
+class ChannelPlayer
+{
+public:
+	ChannelPlayer() { value = 0; }
+	ChannelPlayer(char bar) { value = bar; }
+	int operator==(const ChannelPlayer& left) const { return (value == left.value); }
+
+	int value;
+};
+
+#if DO_IOSTREAMS
+ostream&
+operator<< (ostream& out, const ChannelPlayer& channel);
+#endif	// DO_IOSTREAMS
+
+
+#if DO_IOSTREAMS
+
+INLINE ostream&
+operator<< (ostream& out, const ChannelPlayer& channel)
+{
+	cout << channel.value << endl;
+	return out;
+}
+
+#endif	// DO_IOSTREAMS
+
+#endif	// 0
+//=============================================================================
+
+class AnimateRenderObject3D
+{
+public:
+	AnimateRenderObject3D(Memory& memory, IFFChunkIter& meshIter,const RenderObject3D& renderObject);
+	void Validate() const;
+
+	void Animate(Scalar time,RenderObject3D& renderObject);
+private:
+	AnimateRenderObject3D();			// must construct with a iffchunk
+
+	char*	_channelData;           // The CANM chunk loaded off of disk
+
+#if DO_IOSTREAMS
+	friend std::ostream& operator<< (std::ostream& out, const AnimateRenderObject3D& anim);
+#endif
+#if DO_ASSERTIONS
+	int16 _vertexCount;
+#endif
+#ifdef READ_INTERMEDIATE_ANIM_FORMAT	// if defined, read uncompressed IFF
+	int16 _frameCount;
+	Vertex3D* _animArray;			    // pointer to array containing every vertex of every frame of animation
+#else
+	Array<Channel*> _channels;		// constructed Channel objects, which store pointers into _channelData
+#endif
+	Scalar _endTime;
+	Scalar _rate;						// frames per second
+};
+
+//=============================================================================
+
+#if DO_IOSTREAMS
+std::ostream&
+operator<< (std::ostream& out, const AnimateRenderObject3D& anim);
+#endif
+
+//============================================================================
+
+#if		USE_INLINE_DEFS || defined( _Anim_CC )
+#include "anim.hpi"		// include all inline definitions as appropriate
+#endif
+
+//=============================================================================
+#endif
+//=============================================================================
+

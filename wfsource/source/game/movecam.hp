@@ -1,0 +1,178 @@
+//==============================================================================
+// movecam.hp
+// Copyright ( c ) 1994,1995,1996,1997,1999,2000,2002,2003 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//===========================================================================
+
+#ifndef _MOVECAM_HP
+#define _MOVECAM_HP
+
+#include <physics/physical.hp>
+#include <math/vector3.hp>
+
+//============================================================================
+// data structure containing all camera position/orientation related data
+
+struct cameraPosition
+{
+	Vector3 position;
+	Vector3 direction;              // AKA look-at
+	Vector3 up;                     // AKA look-up
+	Scalar field;					// field of view
+	Scalar hither;					// clipping planes
+	Scalar yon;
+};
+
+//============================================================================
+
+class CameraHandler : public MovementHandler
+{
+public:
+	virtual const PhysicalObject* GetWatchObject(const MovementObject& movementObject) const = 0;
+	virtual const Vector3& GetLookAt(const MovementObject& movementObject) const = 0;
+	virtual bool ValidView(const MovementObject& movementObject) const = 0;
+protected:
+	void SetCamera(PhysicalObject& physicalObject, const cameraPosition& destCam);         // will attempt to cast to Camera&
+	struct cameraData
+	{
+		int32	collisionDirections;	// hit something last frame, do something about it!
+		int32	idxCamShotActor;			// index of camshot actor
+		Scalar panStartTime;
+		int32	delayCounter;
+		Vector3 direction;
+		int32	idxOldCamShotActor;
+		int32	idxTrackObject;					// pointer to object being tracked
+		Vector3 oldCameraPosition;				// used by the slew code
+		bool	validView;
+	};
+
+	cameraData& GetCameraMovementData(MovementObject& movementObject);
+	const cameraData& GetCameraMovementData(const MovementObject& movementObject) const;
+};
+
+//==============================================================================
+// this handler just waits for a valid camshot
+
+class DelayCameraHandler : public CameraHandler
+{
+public:
+	virtual void init(MovementManager& movementManager, MovementObject& movementObject);
+	virtual bool check();
+	virtual bool update(MovementManager& movementManager, MovementObject& movementObject, const BaseObjectList& baseObjectList);
+	virtual void predictPosition(MovementManager& movementManager, MovementObject& movementObject, const Clock& clock, const BaseObjectList& baseObjectList);
+	virtual const PhysicalObject* GetWatchObject(const MovementObject& movementObject) const;
+	virtual bool ValidView(const MovementObject& movementObject) const;
+	virtual const Vector3& GetLookAt(const MovementObject& movementObject) const;
+   virtual size_t DataSize();                // returns how much storage this handler uses
+//private:
+//	struct cameraData
+//	{
+//		int32	collisionDirections;	// hit something last frame, do something about it!
+//		int32	idxCamShotActor;			// pointer to camshot actor
+//		Scalar panStartTime;
+//		int32	delayCounter;
+//		Vector3 direction;
+//		int32 idxOldCamShotActor;
+//		int32 idxTrackObject;					// pointer to object being tracked
+//		Vector3 oldCameraPosition;				// used by the slew code
+//		bool validView;
+//	};
+//	cameraData& GetCameraMovementData(Actor* thisActor);
+//	const cameraData& GetCameraMovementData(const Actor* thisActor) const;
+};
+
+//==============================================================================
+
+class NormalCameraHandler : public CameraHandler
+{
+public:
+	virtual void init(MovementManager& movementManager, MovementObject& movementObject);
+	virtual bool check();
+	virtual bool update(MovementManager& movementManager, MovementObject& movementObject, const BaseObjectList& baseObjectList);
+	virtual void predictPosition(MovementManager& movementManager, MovementObject& movementObject, const Clock& clock, const BaseObjectList& baseObjectList);
+	virtual const PhysicalObject* GetWatchObject(const MovementObject& movementObject) const;
+	virtual bool ValidView(const MovementObject& movementObject) const;
+	virtual const Vector3& GetLookAt(const MovementObject& movementObject) const;
+   virtual size_t DataSize();                // returns how much storage this handler uses
+protected:
+	bool _update(MovementObject& movementObject,cameraPosition&);
+//	struct normalCameraData
+//	{
+//		Vector3 direction;
+//		int32 idxOldCamShotActor;
+//		int32 idxTrackObject;					// pointer to object being tracked
+//		Vector3 oldCameraPosition;				// used by the slew code
+//		bool validView;
+//	};
+//	normalCameraData& GetCameraMovementData(Actor* thisActor);
+//	const normalCameraData& GetCameraMovementData(const Actor* thisActor) const;
+};
+
+//==============================================================================
+
+class PanCameraHandler : public NormalCameraHandler
+{
+public:
+	virtual void init(MovementManager& movementManager, MovementObject& movementObject);
+	virtual bool check();
+	virtual bool update(MovementManager& movementManager, MovementObject& movementObject, const BaseObjectList& baseObjectList);
+	virtual void predictPosition(MovementManager& movementManager, MovementObject& movementObject, const Clock& clock, const BaseObjectList& baseObjectList);
+	virtual const PhysicalObject* GetWatchObject(const MovementObject& movementObject) const;
+	virtual const Vector3& GetLookAt(const MovementObject& movementObject) const;
+   virtual size_t DataSize();                // returns how much storage this handler uses
+//private:
+//	struct panCameraData : normalCameraData
+//	{
+//		Scalar panStartTime;
+//		struct
+//		{
+//		} orig;
+//	};
+//	const panCameraData& GetCameraMovementData(const Actor* thisActor) const;
+//	panCameraData& GetCameraMovementData(Actor* thisActor);
+};
+
+//==============================================================================
+
+class BungeeCameraHandler : public NormalCameraHandler
+{
+public:
+	virtual void init(MovementManager& movementManager, MovementObject& movementObject);
+	virtual bool check();
+	virtual bool update(MovementManager& movementManager, MovementObject& movementObject, const BaseObjectList& baseObjectList);
+	virtual void predictPosition(MovementManager& movementManager, MovementObject& movementObject, const Clock& clock, const BaseObjectList& baseObjectList);
+	virtual const PhysicalObject* GetWatchObject(const MovementObject& movementObject) const;
+	virtual const Vector3& GetLookAt(const MovementObject& movementObject) const;
+   virtual size_t DataSize();                // returns how much storage this handler uses
+//private:
+//	struct bungeeCameraData : normalCameraData
+//	{
+//	};
+//	const bungeeCameraData& GetCameraMovementData(const Actor* thisActor) const;
+//	bungeeCameraData& GetCameraMovementData(Actor* thisActor);
+};
+
+
+//==============================================================================
+#if		USE_INLINE_DEFS || defined(_movement_CC)
+#include "movecam.hpi"	// include all inline definitions as appropriate
+#endif
+//==============================================================================
+#endif // _MOVECAM_HP
+//==============================================================================

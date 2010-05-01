@@ -1,0 +1,9 @@
+#ifndef CONSOLE_HDUMP_HP
+#define CONSOLE_HDUMP_HP
+
+#include <console/console.hp>
+
+ulong HDumpLine( char* buffer, size_t bufferSize, Console& );
+void HDump( char* title, void* buffer, size_t bufferSize, Console& );
+
+#endif	// CONSOLE_HDUMP_HP

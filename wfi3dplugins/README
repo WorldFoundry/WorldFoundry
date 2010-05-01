@@ -1,0 +1,16 @@
+This package contains several plugins for use with Innovation3D.
+
+To install the packages do:
+bash$ make -f Makefile.dist
+bash$ ./configure
+bash$ make
+bash$ make install
+
+
+/usr/local/i3d
+
+If you installed it somewhere else, you can use the configure optiosn to specify where it is installed.  The same goes for NURBS++ and QT
+
+
+By default, all plugins are installed to I3DDIR/Plugins.  If you wish to change this location, you can set it with the prefix option of configure.
+

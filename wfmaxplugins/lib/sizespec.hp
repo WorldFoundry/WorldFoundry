@@ -1,0 +1,12 @@
+// sizespec.hp
+
+struct size_specifier
+{
+//	size_specifier()	{}
+//	size_specifier( int s, int w, int f )	{ sign = s; whole = w; fraction = f; }
+	int sign;
+	int whole;
+	int fraction;
+};
+
+extern size_specifier fp_1_15_16;

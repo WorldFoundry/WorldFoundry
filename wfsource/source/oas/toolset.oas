@@ -1,0 +1,13 @@
+@*============================================================================
+@* toolset.oas: this file only exists to create the .ht file for the common actor data
+@*============================================================================
+
+@*============================================================================
+@* toolset type definition
+
+TYPEHEADER(Toolset)
+@*    LEVELCONFLAGCOMMONBLOCK(ToolSet)
+    @include toolset.inc
+TYPEFOOTER
+
+@*============================================================================

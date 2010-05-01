@@ -1,0 +1,10 @@
+@*//=============================================================================
+@*// mailbox.des: used to generate mailbox.def, which is included by the scripts
+@*//=============================================================================
+
+@define Comment(val) ; val
+@define MAILBOXENTRY(name,value)  ( define mailbox name value )
+
+@include mailbox.inc
+
+@*//=============================================================================

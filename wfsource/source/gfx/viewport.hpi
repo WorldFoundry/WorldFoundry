@@ -1,0 +1,174 @@
+//=============================================================================
+// viewport.hpi: viewport hardware abstraction class
+// Copyright ( c ) 1997,1998,1999,2000,2001 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description: The viewport class encapsulates data and behavior for a single
+//	 hardware screen
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+INLINE void
+ViewPort::Validate() const					// test integrity of class instance
+{
+#if DO_ASSERTIONS
+#if defined(USE_ORDER_TABLES)
+	assert(_orderTableDepth > 0);
+
+	for(int index=0;index < ORDER_TABLES;index++)
+	{
+		AssertMsg(ValidPtr(_orderTable[index]),"index = " << index << ", orderTable[index] = " << _orderTable[index]);
+		_orderTable[index]->Validate();
+	}
+	assert(ValidPtr(_primitives));
+#endif
+
+	RangeCheckInclusive( Scalar::zero, _xSize, Scalar( _display.XSize(), 0 ) );
+	RangeCheckInclusive( Scalar::zero, _ySize, Scalar( _display.YSize(), 0 ) );
+#endif
+}
+
+//============================================================================
+
+#if defined(USE_ORDER_TABLES)
+
+INLINE int
+ViewPort::GetConstructionOrderTableIndex()
+{
+	Validate();
+	return(_display.GetConstructionOrderTableIndex());
+}
+
+//============================================================================
+
+INLINE OrderTable&
+ViewPort::GetConstructionOrderTable()
+{
+	Validate();
+	return(*_orderTable[GetConstructionOrderTableIndex()]);
+}
+
+//==============================================================================
+
+INLINE void
+ViewPort::AddOrderTable(OrderTable& orderTable,int depth)
+{
+	Validate();
+	GetConstructionOrderTable().AddOrderTable(orderTable,depth);
+}
+
+#endif
+
+//============================================================================
+
+#if defined(USE_ORDER_TABLES)
+INLINE void
+ViewPort::AddPrimitive(Primitive& prim,int depth)
+{
+	assert(depth > 0);
+	Validate();
+	_orderTable[_display.GetConstructionOrderTableIndex()]->AddPrimitive(prim,depth);
+}
+#endif
+
+//============================================================================
+
+inline void
+ViewPort::RenderBegin()
+{
+}
+
+//==============================================================================
+
+inline void
+ViewPort::RenderEnd()
+{
+}
+
+//==============================================================================
+
+INLINE void
+ViewPort::Render()			            // "rendering" a viewport is adding it to the draw order table
+{
+	Validate();
+#if defined(USE_ORDER_TABLES)
+	assert(_orderTableDepth > 0);
+	_display.AddConstructionOrderTable(GetConstructionOrderTable(),1);			// kts 1 for now, how should we control the order of viewports?
+#else
+#pragma message ("KTS " __FILE__ ": write viewport gl render code")
+//#error now what?
+#endif
+}
+
+//============================================================================
+
+INLINE void
+ViewPort::Clear()
+{
+	Validate();
+#if defined(RENDERER_PIPELINE_GL)
+	// do nothing
+#elif defined(RENDERER_PIPELINE_SOFTWARE) || defined(RENDERER_PIPELINE_PSX)
+
+#if defined(USE_ORDER_TABLES)
+	GetConstructionOrderTable().Clear();
+	_primitives[_display.GetConstructionOrderTableIndex()].Clear();
+#else
+#error now what?
+#endif
+#endif
+}
+
+//============================================================================
+
+INLINE Scalar
+ViewPort::XSize() const
+{
+	Validate();
+	return(_xSize);
+}
+
+//============================================================================
+
+INLINE Scalar
+ViewPort::YSize() const
+{
+	Validate();
+	return(_ySize);
+}
+
+//============================================================================
+
+INLINE Scalar
+ViewPort::HalfXSize() const
+{
+	Validate();
+	return(_halfXSize);
+}
+
+//============================================================================
+
+INLINE Scalar
+ViewPort::HalfYSize() const
+{
+	Validate();
+	return(_halfYSize);
+}
+
+//============================================================================

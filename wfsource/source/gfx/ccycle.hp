@@ -1,0 +1,63 @@
+//==============================================================================
+// ccycle.hp
+// Copyright ( c ) 1997,2001,2002 World Foundry Group.  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Original Author: William B. Norris IV
+//============================================================================
+
+#ifndef COLOURCYCLE_HP
+#define COLOURCYCLE_HP
+
+//==============================================================================
+
+#include <timer/clock.hp>
+
+//==============================================================================
+                                        
+class ColourCycle
+{
+public:
+	ColourCycle(Clock& clock);
+	ColourCycle(Clock& clock,  int start, int end, Scalar speed );	//, VisualPixelmap* * pal );
+	~ColourCycle();
+
+#if defined(RENDERER_BRENDER)
+	void ApplyTime( Scalar time, VisualPixelmap* );
+#endif
+
+protected:
+#if defined(RENDERER_BRENDER)
+	void Cycle( VisualPixelmap* );
+#endif
+
+	int _start;
+	int _end;
+	Scalar _speed;
+	Scalar _timeToChange;
+	// use a pointer to the pointer to the palette, because the palettes aren't
+	// available when the rooms are constructed.  sigh.
+	//VisualPixelmap* * _pal;
+
+   Clock& _clock;
+};
+
+//=============================================================================
+#endif	// COLOURCYCLE_HP
+//=============================================================================

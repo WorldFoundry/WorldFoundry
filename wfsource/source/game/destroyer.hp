@@ -1,0 +1,82 @@
+//============================================================================
+// Destroy.hp:
+// Copyright ( c ) 1995,1996,1997,1998,1999,2000,2002 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+//
+//	Abstract: Destroy Header file
+//	History:
+//			Created	from object.hps using prep
+//
+//	Class Hierarchy:
+//			none
+//
+//	Dependancies:
+//
+//	Restrictions:
+//
+//	Example:
+//
+//============================================================================
+
+#ifndef _Destroy_HP
+#define _Destroy_HP
+
+//============================================================================
+
+#include "actor.hp"
+#include <physics/activate.hp>
+
+//============================================================================
+
+struct _Destroyer;
+
+//============================================================================
+
+class Destroy: public Actor
+{
+public:
+	Destroy(const SObjectStartupData* startupData);
+	virtual ~Destroy()			{ }
+
+	virtual EActorKind kind() const;
+
+	virtual void update();
+
+private:
+
+   inline const _Activation* GetActivateBlockPtr() const;
+
+	INLINE const _Destroyer* getOad() const;
+   Activation activation;
+};
+
+//============================================================================
+
+Actor* OadDestroyer(const SObjectStartupData* startupData);
+
+//==============================================================================
+#if		USE_INLINE_DEFS || defined(_DESTROY_CC)
+#include "destroyer.hpi"	// include all inline definitions as appropriate
+#endif
+
+//============================================================================
+#endif // !_Destroy_HP
+//============================================================================
+

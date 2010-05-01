@@ -1,0 +1,109 @@
+//=============================================================================
+// Camera.hp:
+// Copyright ( c ) 1997,1998,1999,2000,2001,2002 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description:
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+#ifndef _RenderCamera_H
+#define _RenderCamera_H
+
+//============================================================================
+// Includes
+//============================================================================
+
+#include <pigsys/pigsys.hp>
+#include <math/matrix34.hp>
+#include <gfx/viewport.hp>
+#include <gfx/rendobj3.hp>
+
+//=============================================================================
+
+struct RendererScratchVariablesStruct
+{
+	RendererVariables rv;			    // must be at top
+};
+
+//============================================================================
+
+class ScrollingMatte;
+struct TileMap;
+
+//============================================================================
+// Class and Structure Prototypes
+//============================================================================
+
+class RenderCamera
+{
+public:
+	RenderCamera(ViewPort& _viewPort);
+	~RenderCamera();
+	const Matrix34& GetPosition();
+	void SetPosition(const Matrix34& position);
+
+	void SetAmbientColor(const Color& color);
+	void SetDirectionalLight(int lightIndex,const Vector3& direction, Color48 color);
+
+	void SetFog(const Color& color,Scalar near, Scalar far);
+
+#if defined(DO_STEREOGRAM)
+	void SetStereogram(Scalar eyeDistance, Angle eyeAngle);
+#endif
+
+	void RenderBegin();
+	void RenderObject(RenderObject3D& _object,const Matrix34& objectPosition);
+	void RenderMatte(ScrollingMatte& _matte, const TileMap& map, Scalar xMult, Scalar yMult);
+	void RenderEnd();
+
+	INLINE void Validate() const;
+private:
+	ViewPort& _viewPort;
+	Matrix34 _position;
+	Matrix34 _invertedPosition;
+
+	enum { MAX_LIGHTS = 3 };
+	Vector3	_dirLightDirections[MAX_LIGHTS];
+	Color48	_dirLightColors[MAX_LIGHTS];
+	Color	_ambientColor;
+	Color	_fogColor;
+	Scalar	_fogNear;
+	Scalar	_fogFar;
+
+	RendererScratchVariablesStruct*	_scratchMemory;
+#if DO_ASSERTIONS
+	static bool	_renderInProgress;	// there can be only one (camera rendering at a time)
+#endif
+#if defined(DO_STEREOGRAM)
+	Angle _eyeAngle;				    // what is this called? occular?
+	Scalar _eyeDistance;
+#endif
+};
+
+//============================================================================
+
+#if		USE_INLINE_DEFS || defined( _RenderCamera_CC )
+#include <gfx/camera.hpi>		// include all inline definitions as appropriate
+#endif
+
+//=============================================================================
+#endif
+//=============================================================================
+

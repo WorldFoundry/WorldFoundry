@@ -1,0 +1,23 @@
+@*============================================================================*/
+@* objects.cos: creates objects.col, collision array
+@*============================================================================*/
+//============================================================================*/
+// objects.col: collision array, included by room.cc
+// created from  object.cos,DO NOT MODIFY */
+//============================================================================*/
+
+@define OBJECTSHEADER   @nint collisionTable[] =@n{@n	0,	// NULL
+@define OBJECTSFOOTER	@n};
+@define OBJECTENTRY(name,collide) 	collide,	// name
+@define OBJECTONLYTEMPLATEENTRY(name,collide) 	collide,	// name
+@define OBJECTNOACTORENTRY(name,collide) 	collide,	// name
+@define OBJECTSUBENTRY(name,parent,collide) 	collide,	// name
+@define COLTABLEHEADER
+@define COLTABLEFOOTER
+@define COLTABLEENTRY(obj1,obj2,msg1,msg2)
+
+//============================================================================
+
+@include objects.mac
+
+//============================================================================

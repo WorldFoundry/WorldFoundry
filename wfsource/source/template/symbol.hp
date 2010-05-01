@@ -1,0 +1,38 @@
+#ifndef SYMBOL_HP
+#define SYMBOL_HP
+#include "pigsys/pigsys.hp"
+#include <string>
+
+//==============================================================================
+                          
+class Symbol
+{
+public:
+	Symbol( const std::string& szName, const std::string& szValue );
+	virtual ~Symbol();
+	Symbol();
+
+	const std::string& Name() const			{ return _szName; }
+	const std::string& Value() const			{ return _szValue; }
+
+	bool operator==( const Symbol& sym2 ) const						{ return Name() == sym2.Name(); }
+	bool operator<( const Symbol& sym2 ) const						{ return Name() < sym2.Name(); }
+
+protected:
+	std::string		_szName;
+	std::string		_szValue;
+};
+
+//==============================================================================
+
+inline std::ostream& 
+operator<<( std::ostream& s, const class Symbol& sym )
+{ 
+   s << sym.Name() << " = " << sym.Value(); 
+   return s; 
+}
+
+//==============================================================================
+#endif	/* SYMBOL_HP */
+//==============================================================================
+

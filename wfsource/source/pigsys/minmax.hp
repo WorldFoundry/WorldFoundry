@@ -1,0 +1,76 @@
+#ifndef MINMAX_HP
+#define MINMAX_HP
+
+// minmax.hp
+
+#define	MAX(_1,_2)				((_1)>(_2)?(_1):(_2))
+#define	MIN(_1,_2)				((_1)<(_2)?(_1):(_2))
+
+#if defined( __LINUX__ )        // kts stl provides min & max under linux
+
+#include <algorithm>
+using std::min;
+using std::max;
+
+#else
+
+template <class TYPE>
+inline const TYPE&
+min(const TYPE& a, const TYPE& b)
+{
+    return( a<b?a:b );
+}
+
+template <class TYPE>
+inline const TYPE&
+max(const TYPE& a, const TYPE& b)
+{
+    return( a>b?a:b );
+}
+
+template <class TYPE>
+inline TYPE&
+min(TYPE& a, TYPE& b)
+{
+    return( a<b?a:b );
+}
+
+template <class TYPE>
+inline TYPE&
+max(TYPE& a, TYPE& b)
+{
+    return( a>b?a:b );
+}
+
+#endif
+
+
+
+#if 0
+template <class T> inline const T&
+min( const T& _1, const T& _2 )
+{
+	return _1 < _2 ? _1 : _2;
+}
+
+template <class T> inline T
+min( T _1, T _2 )
+{
+	return _1 < _2 ? _1 : _2;
+}
+
+
+template <class T> inline const T&
+max( const T& _1, const T& _2 )
+{
+	return _1 > _2 ? _1 : _2;
+}
+
+template <class T> inline T
+max( T _1, T _2 )
+{
+	return _1 > _2 ? _1 : _2;
+}
+#endif
+
+#endif	// MINMAX_HP

@@ -1,0 +1,32 @@
+#! /usr/bin/perl -w
+# cvsaddr
+
+use Data::Dumper;
+
+my @dirs = `find . -maxdepth 1 -type d`;
+
+foreach $_ ( @dirs )
+{
+    chomp;
+    print $_, "\n";
+    print "cvs returned:" . `cvs add $_`;
+}
+
+
+foreach $dir ( @dirs )
+{
+    next if $dir =~ m|/CVS/?|;
+    
+    print "\n\nDIR: $dir\n";
+    
+    my @files = `cd "$dir"; find .`;
+    foreach $_ ( @files )
+    {
+        chomp;
+        next if /^\.$/;
+        next if m|/CVS/?|;
+        next if m|^($dir)$|;
+        `cd $dir; cvs add -kb $_`;
+    }
+}
+

@@ -1,0 +1,221 @@
+//============================================================================
+// assslot.hpi:
+// Copyright ( c ) 1997,1999,2000,2001,2003 World Foundry Group.  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+#include "assets.hp"
+
+//=============================================================================
+
+inline void
+AssetMap::Validate() const
+{
+#if DO_VALIDATION
+	assert(_entries >= 0);
+	assert(_entries < AssetManager::MAX_ASSETS_PER_ROOM);
+
+#if DO_VALIDATION > 1
+	for(int index=0;index < _entries; index++)
+	{
+		_assetMapArray[index]._id.Validate();
+		if(_assetMapArray[index]._memory)
+			assert(ValidPtr(_assetMapArray[index]._memory));
+	}
+#endif
+#endif
+}
+
+//============================================================================
+
+#if SW_DBSTREAM > 0
+inline std::ostream& operator << ( std::ostream& s, const AssetMap& am )
+{
+	am.Validate();
+
+	s << "AssetMap:" << std::endl;
+	for(int index=0;index<am._entries;index++)
+	{
+		s << am._assetMapArray[index]._id;
+		s << ", memory = " << am._assetMapArray[index]._memory;
+		s << ", size = " << am._assetMapArray[index]._size << std::endl;
+	}
+	return s;
+}
+#endif
+
+//============================================================================
+
+inline
+AssetMap::AssetMap(int entries,Memory& memory)
+{
+	assert(entries >= 0);
+	assert(entries < AssetManager::MAX_ASSETS_PER_ROOM);
+	_entries = entries;
+//	_assetMapArray = (AssetMapEntry*)memory.Allocate(sizeof(AssetMapEntry)*_entries);
+	_assetMapArray = new (memory) AssetMapEntry[entries];
+	assert(ValidPtr(_assetMapArray));
+}
+
+//=============================================================================
+
+inline
+AssetMap::~AssetMap()
+{
+	Validate();
+	// assume all memory will go away when slot destroyed
+}
+
+//=============================================================================
+
+inline binistream
+AssetMap::LookupAsset(packedAssetID id) const
+{
+	Validate();
+
+	for(int index=0;index<_entries;index++)
+	{
+		if(_assetMapArray[index]._id == id && _assetMapArray[index]._memory)
+		{
+			assert(ValidPtr(_assetMapArray[index]._memory));
+			return binistream(_assetMapArray[index]._memory,_assetMapArray[index]._size);
+		}
+	}
+	AssertMsg(0,"Asset " << id << " not found, map contains:\n" << *this);				            // asset not found
+	return binistream( (void*)NULL, 0 );
+}
+
+//=============================================================================
+
+inline const void*
+AssetMap::LookupAssetMemory(packedAssetID id) const
+{
+	Validate();
+
+	for(int index=0;index<_entries;index++)
+	{
+		if(_assetMapArray[index]._id == id && _assetMapArray[index]._memory)
+		{
+			assert(ValidPtr(_assetMapArray[index]._memory));
+			return (void*)_assetMapArray[index]._memory;
+		}
+	}
+	AssertMsg(0,"Asset " << id << " not found, map contains:\n" << *this);				            // asset not found
+	return binistream( (void*)NULL, 0 );
+}
+
+//=============================================================================
+
+inline void
+AssetMap::NULLAsset(int entry,packedAssetID id)
+{
+	assert(entry >= 0);
+	AssertMsg(entry < _entries, "entry = " << entry << ", _entries = " << _entries);
+	_assetMapArray[entry]._id = id;
+	_assetMapArray[entry]._memory = NULL;
+	_assetMapArray[entry]._size = 0;
+}
+
+//=============================================================================
+
+inline void
+AssetMap::SetAsset(int entry, packedAssetID id, void* memory, int size)
+{
+	assert(entry >= 0);
+	AssertMsg(entry < _entries, "entry = " << entry << ", _entries = " << _entries);
+	assert(ValidPtr(memory));
+
+	_assetMapArray[entry]._id = id;
+	_assetMapArray[entry]._memory = memory;
+	_assetMapArray[entry]._size = size;
+}
+
+//=============================================================================
+
+inline binistream
+AssetSlot::LookupAsset(packedAssetID asset) const
+{
+	return _assetMap->LookupAsset(asset);
+}
+
+//=============================================================================
+
+inline const void*
+AssetSlot::LookupAssetMemory(packedAssetID asset) const
+{
+	return _assetMap->LookupAssetMemory(asset);
+}
+
+//=============================================================================
+
+
+inline const RMUV&
+AssetSlot::GetRMUV() const
+{
+	return _rmuv;
+}
+
+//============================================================================
+
+inline const CCYC&
+AssetSlot::GetCCYC() const
+{
+	return _ccyc;
+}
+
+//============================================================================
+
+inline void
+AssetSlot::Validate() const
+{
+#if DO_VALIDATION
+	_assetsMemory.Validate();
+	assert(ValidPtr(_assetMap));
+	_assetMap->Validate();
+	_rmuv.Validate();
+#endif
+}
+
+//============================================================================
+
+inline Memory&
+AssetSlot::GetSlotMemory()
+{
+	return _assetsMemory;
+}
+
+//============================================================================
+
+inline const Memory&
+AssetSlot::GetSlotMemory() const
+{
+	return _assetsMemory;
+}
+
+//==============================================================================
+
+inline const PixelMap& 
+AssetSlot::GetTexturePixelMap() const
+{
+    return _videoMemory.GetSlotTexturePixelMap(_slotIndex);
+}
+
+//============================================================================

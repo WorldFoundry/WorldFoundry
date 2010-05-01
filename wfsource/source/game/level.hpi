@@ -1,0 +1,319 @@
+//============================================================================
+// level.hpi:
+// Copyright ( c ) 1994,1995,1996,1997,1998,1999,2000,2002,2003 World Foundry Group.  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description: The Level class encapsulates data and behavior for a level
+//              in the game.
+// Original Author: Ann Mei Chang
+//============================================================================
+
+#include <asset/assets.hp>
+#include <room/actrooms.hp>
+#include "gamestrm.hp"
+#include "actor.hp"
+
+//============================================================================
+
+inline void
+Level::Validate() const
+{
+#if DO_VALIDATION
+	assert(ValidPtr(this));
+	ValidatePtr(_theActiveRooms);
+	_theActiveRooms->Validate();
+#if DO_VALIDATION > 1
+	ActiveRoomsIterConst activeRoomIter(_theActiveRooms->GetIter());
+	while(!activeRoomIter.Empty())
+	{
+		(*activeRoomIter).Validate();
+		++activeRoomIter;
+	}
+#endif
+	// kts write more validation here
+#endif
+}
+
+//============================================================================
+
+inline const _LevelOnDisk& 
+Level::GetLevelData() const
+{
+	assert(ValidPtr(_levelData));
+	return(*_levelData);
+}
+
+
+//============================================================================
+
+inline int
+Level::GetMaxObjectIndex() const
+{
+	return _actors.Size();
+}
+
+//============================================================================
+
+inline const ActiveRooms&
+Level::GetActiveRooms() const
+{
+	ValidatePtr(_theActiveRooms);
+	return *_theActiveRooms;
+}
+
+//============================================================================
+
+inline AssetManager&
+Level::GetAssetManager()
+{
+	ValidatePtr(_theAssetManager);
+	return *_theAssetManager;
+}
+
+//============================================================================
+
+inline const LevelRooms&
+Level::GetLevelRooms() const
+{
+	ValidatePtr(_theLevelRooms);
+	return *_theLevelRooms;
+}
+
+//============================================================================
+
+inline LevelRooms&
+Level::GetMutableLevelRooms()
+{
+	Validate();
+	return *_theLevelRooms;
+}
+
+//============================================================================
+
+
+inline const _LevelObj&
+Level::GetLevelOAD() const
+{
+	return *_levelOad;
+}
+
+//============================================================================
+
+inline Actor*
+Level::getActor( int idxActor ) const
+{
+	RangeCheck(0,idxActor,_actors.Size());
+   if(_actors[idxActor])
+   {
+      Actor* result = dynamic_cast<Actor*>(_actors[idxActor]);
+      assert(ValidPtr(result));
+      return result;
+   }
+   else
+      return NULL;
+}
+
+//==============================================================================
+
+inline BaseObjectList& 
+Level::GetObjectList()
+{
+   return _actors;
+}
+
+//============================================================================
+
+inline Actor*
+Level::GetActorNoTemplate( int idxActor ) const
+{
+	AssertMsg( 0 <= idxActor && idxActor < _actors.Size(), "Requested " << idxActor << std::endl );
+	AssertMsg( !_templateObjects[ idxActor ], "tried to read to a templated actor's pointer" );
+   if(_actors[idxActor])
+   {
+      Actor* result = dynamic_cast<Actor*>(_actors[idxActor]);
+      assert(ValidPtr(result));
+      return result;
+   }
+   else
+      return NULL;
+}
+
+//============================================================================
+
+#if 0
+inline _CFont*
+Level::GetFont() const
+{
+	return _font;
+}
+#endif
+
+#if 0
+inline Continue*
+Level::getContinue()
+{
+	return _continuationMarker;
+}
+
+inline void
+Level::setContinue( Continue* continuationMarker )
+{
+	_continuationMarker = continuationMarker;
+}
+#endif
+
+inline PhysicalObject*
+Level::mainCharacter() const
+{
+	return _mainCharacter;
+}
+
+inline void
+Level::setMainCharacter(PhysicalObject* newMain)
+{
+	assert( ValidPtr( newMain ) );
+	_idealMainCharacter = newMain;
+}
+
+inline void
+Level::updateMainCharacter()
+{
+	assert( ValidPtr( _idealMainCharacter ) );
+	_mainCharacter = _idealMainCharacter;
+}
+
+
+inline ViewPort&
+Level::GetViewPort()
+{
+	return _viewPort;
+}
+
+//=============================================================================
+
+inline Camera*
+Level::camera() const
+{
+	return _camera;
+}
+
+//=============================================================================
+
+inline bool
+Level::done() const
+{
+	return _done;
+}
+
+//=============================================================================
+
+inline const Clock&
+Level::LevelClock() const
+{
+   return levelClock;
+}
+
+inline const SObjectStartupData*
+Level::FindTemplateObjectData(int32 objectIndex) const
+{
+	AssertMsg( objectIndex < _numTemplateObjects,  objectIndex << " object index past end of object list");
+	assert( objectIndex > 0);
+	//AssertMsg( ValidPtr( _templateObjects[objectIndex] ), *( getActor( objectIndex ) ) << " Object #" << objectIndex << " is not a template object" );
+	AssertMsg( ValidPtr( _templateObjects[objectIndex] ), " Object #" << objectIndex << " is not a template object" );
+	return(_templateObjects[objectIndex]);
+}
+
+//============================================================================
+
+inline int32*
+ObjectGetOAD( const SObjectStartupData* startupData )
+{
+	// kts assume movement data is at top of oad
+	assert( ValidPtr( startupData ) );
+	assert( ValidPtr( startupData->objectData) );
+
+	int32* pOADData = (int32*) (startupData->objectData + 1);	// get address of top of oad data, which is equal to the top of the movement data
+	assert( ValidPtr( pOADData ) );
+
+	return( pOADData );
+}
+
+//============================================================================
+
+inline const CommonBlock&
+Level::GetCommonBlock() const
+{
+   return *_commonBlock;
+}
+
+//============================================================================
+
+inline Mailboxes&
+Level::GetMailboxes() 
+{
+   return _mailboxes;
+}
+
+//============================================================================
+
+inline Memory&
+Level::GetMemory()
+{
+//	Validate();				            // called too early in construction process, fails
+	return *_memory;
+}
+
+//============================================================================
+
+class _Toolset;
+
+inline _Toolset*
+ObjectGetOADToolset( const SObjectStartupData* startupData )
+{
+	assert( ValidPtr( startupData ) );
+	assert( ValidPtr( startupData->objectData) );
+
+	int32 *pOADData = ObjectGetOAD( startupData );
+	assert( ValidPtr( pOADData ) );
+
+	// kts assume tool data is second in the oad
+	int toolDataOffset = *(pOADData + 1);	// add 1 for tool data offset
+	// cannot assert toolDataOffset since an offset of 0 is valid
+//	printf("ObjGetOADTool: object on disk = %lx, OAD on disk = %lx\n", startupData->objectData,pOADData);
+//	printf("ObjGetOADTool: toolDataOffset = %lx\n", toolDataOffset);
+//	printf("Object Type = %d\n", startupData->objectData->type);
+	assert((toolDataOffset & 3) == 0);	// make sure it's q-aligned (valid)
+   return (_Toolset*)startupData->commonBlock->GetBlockPtr(toolDataOffset);
+}
+
+//============================================================================
+
+inline int
+Level::GetActiveRoomIndex(int roomIndex) const
+{
+	if(roomIndex == AssetManager::ROOM_PERM_INDEX)
+		return AssetManager::PERM_SLOT_INDEX;
+	// ok, interate the active rooms looking for this one
+
+	ValidatePtr(_theActiveRooms);
+	assert( _theActiveRooms->IsActiveRoom( roomIndex ) );
+	return _theActiveRooms->GetActiveRoomIndex(roomIndex);
+}
+
+//============================================================================

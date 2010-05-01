@@ -1,0 +1,6 @@
+TODO
+
+* handle resize
+** InsertMenuItem (for Arrange by -> <Column> menu)
+** right click over column header
+

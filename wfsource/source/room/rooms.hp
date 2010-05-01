@@ -1,0 +1,98 @@
+//===========================================================================
+// rooms.hp:
+// Copyright ( c ) 1997,1999,2000,2001,2002,2003 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//===========================================================================
+// Description: Container for all of the rooms
+//              
+// Original Author: Kevin T. Seghetti
+//==========================================================================
+
+#ifndef _ROOMS_HP
+#define _ROOMS_HP
+
+#include <pigsys/pigsys.hp>
+#include <math/vector3.hp>
+#include <physics/colspace.hp>
+#include <oas/levelobj.ht>
+#include "room.hp"
+
+//==============================================================================
+// kts 5/31/2003 10:10:32: should this be here, or at a higher level?
+                  
+enum
+{
+   ROOM_OBJECT_LIST_COLLIDE,
+   ROOM_OBJECT_LIST_RENDER,
+   ROOM_OBJECT_LIST_UPDATE,
+   ROOM_OBJECT_LIST_LIGHT,
+   ROOM_OBJECT_LIST_ACTIVATION_BOX
+};
+
+//==============================================================================
+
+class LevelRooms
+{
+public:
+	LevelRooms();
+	~LevelRooms();
+
+	void Validate() const;
+
+	void InitRooms(int numRooms, _LevelOnDisk* levelData, 
+      PRoomObjectListCheckFunc* listCheckFuncList, 
+      Array<BaseObject*>& masterObjectList, 
+      RoomCallbacks* roomCallbacks, Memory& memory, const _LevelObj& levelOad);
+
+	void Reset();
+
+	void InitRoomSlotMap();                            // room slot initilization
+
+	INLINE int GetSlotIndex(int roomIndex) const;
+
+	void AddObjectToRoom( int32 objectIndex );  				// don't call???
+	void RemoveObjectFromRoom( int32 idxObject );  		// remove object from its room
+
+   Room* FindContainingRoom(const ColSpace& object, const Vector3& objpos) const;
+   //Room* FindContainingRoom(const PhysicalObject& object) const;
+
+	INLINE int NumberOfRooms() const;
+	INLINE const Room& GetRoom( int idxRoom ) const;
+
+private:
+	int AdjacentRoomIndex( const int roomidx, const int index );	// initRoomSlots helper
+	// room handling
+	Room *							_rooms;									// pointer to array of room instances
+	int								_numRooms;
+
+	// room slot variables
+	int *					_roomSlotMap;  // which room # uses which asset slot
+
+   // cached variables (local pointers to external data/interfaces)
+   RoomCallbacks* _roomCallbacks;
+	int32 * _roomArray;                          // pointer to roomOnDisk index arary
+   _LevelOnDisk* _levelData;
+   Array<BaseObject*>* _masterObjectList;
+};
+
+//=============================================================================
+#include "rooms.hpi"	
+//=============================================================================
+#endif // !_LEVELROOMS_HP
+//=============================================================================

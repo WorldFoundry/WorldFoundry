@@ -1,0 +1,9 @@
+11/30/2002 6:09PM
+kts fix glortho to work with resolutions other that 640x480
+figure out a way to re-register textures when switching from full screen to window and back
+
+
+17 Mar 99
+
+* Fix dependencies so that $(RENDERER)/Makefile.inc is built from Makefile instead of by hand
+

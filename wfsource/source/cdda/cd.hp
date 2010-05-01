@@ -1,0 +1,6 @@
+#ifndef CDDA_CD_HP
+#define CDDA_CD_HP
+
+DWORD playCDTrack( HWND hWndNotify, BYTE bTrack );
+
+#endif	// CDDA_CD_HP

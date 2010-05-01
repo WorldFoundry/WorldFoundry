@@ -1,0 +1,19 @@
+source/gfx/README:
+
+This renderer was originally written for the Sony Playstation, with a windows version designed
+to emulate as closely as possible the Playstation limitations (so we could use pc's for psx
+development). Therefore it is a bit convoluted and restrictive (for example, doesn't use 
+z-buffering, since the psx doesn't have that, uses ordering tables instead).
+
+Now that the primary target is Linux & Windows, I will be adding some capability as I find
+the time.
+
+
+The renderer is broken into 3 sections:
+Common: in source/gfx, this code is common to all platforms and renderers (with some ifdefs)
+renderer pipeline:  in source/software & source/directxpipeline, 3d portion of renderer
+	At this time the only functional pipeline is the software renderer. I intend
+	to make pipelines which use gl and directx.
+
+2d polygon renderer: in source/psx, source/gl, source/directx, low level 2d polygon renderer
+

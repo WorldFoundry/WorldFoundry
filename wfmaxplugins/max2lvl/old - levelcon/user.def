@@ -1,0 +1,12 @@
+; "===================================================================="
+; " user.def:                                                       "
+;
+; "====================================================================="
+
+	( define DIRECTOR_CAMSHOT_HIGH 98 )			; high priority camshot
+	( define DIRECTOR_CAMSHOT_MED 99 )
+	( define DIRECTOR_CAMSHOT_LOW 100 )
+
+;	( define FALSE 0 )
+	( define NULL 0 )
+;	( define TRUE 1 )

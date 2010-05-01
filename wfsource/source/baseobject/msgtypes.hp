@@ -1,0 +1,27 @@
+// Warning: Re-ordering this list may invalid the values embedded in animations.
+// To fix this, the .ini files given to al2int must be updated to generate the
+// appropriate message types.
+
+NOTHING = 1,			// kts so I can make tables of messages to send, including not sending one
+DIE,
+DELTA_POWER,
+DELTA_HEALTH,
+DELTA_SHIELD,
+PLAY_SOUND_EFFECT,
+PLAY_DIALOG,
+PLAY_SONG,
+MOVEMENT_CUE,
+MOVEMENT_FORCE_X,		// Force vectors applied by joystick and field effects
+MOVEMENT_FORCE_Y,
+MOVEMENT_FORCE_Z,
+COLLISION,
+SET_MAILBOX,
+SET_CAMERA_SHOT,
+SET_ANIM_CYCLE,         // Manually select new anim cycle (animManager may change it back!)
+OVERRIDE_ANIM_CYCLE,	// Select new anim cycle and set override timer
+ANIM_CYCLE_DONE,		// The animation your actor is playing has completed
+SPECIAL_COLLISION,
+
+// add new message types here
+
+MAX_MSG_TYPE

@@ -1,0 +1,153 @@
+// ------------------------------------------------------------------------
+// math/psx/MatrixPS.hp
+// Copyright (c) 1997,98,99 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ------------------------------------------------------------------------
+
+#ifndef _MatrixPS_PSX_HP
+#define _MatrixPS_PSX_HP
+
+#include <math/vector3.hp>
+
+// ------------------------------------------------------------------------
+// 3 x 4 Matrix Class (for use with PSX GTE)
+// ------------------------------------------------------------------------
+
+class Angle;
+class Vector3;
+class Euler;
+//class Quaternion;
+class Scalar;
+class Matrix34;
+
+class binistream;
+#if defined( WRITER )
+class binostream;
+#endif
+
+DBSTREAM1( class ostream; )
+
+class Matrix34_PS
+{
+public:
+
+#if defined( __PSX__ )
+	void SetGTE();				// set GTE to contain this matrix, is there a
+								// better way do to this? (like a HardwareMatrix class?)
+#endif
+//	struct RotateX { };
+//	struct RotateY { };
+//	struct RotateZ { };
+#if 0				// kts 7/24/97 11:04 not used, changing to match psx matrix dimensions
+	// construct/destruct
+	INLINE Matrix34_PS();
+		// identity matrix
+	INLINE Matrix34_PS( const Vector3& translation );
+		// translation matrix
+	INLINE Matrix34_PS( const Vector3& scale, const Vector3& translation );
+		// scale matrix
+//	INLINE Matrix34_PS( RotateX, const Angle&, const Vector3& translation );
+		// RotateX matrix
+//	INLINE Matrix34_PS( RotateY, const Angle&, const Vector3& translation );
+		// RotateY matrix
+//	INLINE Matrix34_PS( RotateZ, const Angle&, const Vector3& translation );
+		// RotateZ matrix
+//	INLINE Matrix34_PS( const Euler& euler, const Vector3& translation );
+		// euler rotation matrix
+//	INLINE Matrix34_PS( const Quaternion&, const Vector3& translation );
+		// quaternion matrix
+	INLINE Matrix34_PS
+	(
+		const Vector3& row0,
+		const Vector3& row1,
+		const Vector3& row2,
+		const Vector3& row3
+	);
+	INLINE Matrix34_PS( const Matrix34_PS& );
+		// gte 3 x 3 matrix plus translation vector
+
+	// copy
+	INLINE Matrix34_PS& operator = ( const Matrix34_PS& );
+#endif
+	INLINE Matrix34_PS( const Matrix34& );				// standard 3 x 4 matrix
+
+#if 0
+	// element access: idxRow: 0..3, idxColumn: 0..2
+	Scalar GetElement( int idxRow, int idxColumn ) const;
+	void SetElement( int idxRow, int idxColumn, const Scalar& value );
+	INLINE const Vector3& GetTranslation() const;
+	INLINE void SetTranslation( const Vector3& );
+
+	// initialization methods
+	void Construct
+	(
+		const Vector3& row1,
+		const Vector3& row2,
+		const Vector3& row3,
+		const Vector3& row4
+	);
+	INLINE void ConstructIdentity();
+	void ConstructTranslation( const Vector3& );
+//	void ConstructScale( const Vector3& s, const Vector3& translation );
+//	void ConstructEuler( const Euler& euler, const Vector3& translation );
+//	void ConstructQuaternion( const Quaternion&, const Vector3& translation );
+//	void ConstructRotationX( const Angle angle, const Vector3& translation );
+//	void ConstructRotationY( const Angle angle, const Vector3& translation );
+//	void ConstructRotationZ( const Angle angle, const Vector3& translation );
+#endif
+	void ConstructMatrix34( const Matrix34& );
+#if 0
+
+	// multiply
+	Matrix34_PS operator * ( const Matrix34_PS& ) const;
+	const Matrix34_PS& operator *= ( const Matrix34_PS& );
+
+#endif
+	// ostream support
+#if DO_IOSTREAMS
+	friend ostream& operator << ( ostream&, const Matrix34_PS& );
+#endif
+
+#if 0
+	// binary io stream support
+	friend binistream& operator >> ( binistream& is, Matrix34_PS& );
+#if defined( WRITER )
+	friend binostream& operator << ( binostream& os, const Matrix34_PS& );
+#endif
+#endif
+private:
+#if 0
+	// helpers
+	void SetRow( int idxRow, const Vector3& );
+#endif
+	typedef struct wf_Matrix34_PS
+	{
+   		int16 m[3][3];
+		Vector3 t;
+	} wf_Matrix34_PS;
+
+	// data members
+	wf_Matrix34_PS _matrix;
+};
+
+// ------------------------------------------------------------------------
+#include <math/psx/MatrixPS.hpi>	// include all inline definitions as appropriate
+// ------------------------------------------------------------------------
+#endif // _MatrixPS_PSX_HP
+// ------------------------------------------------------------------------

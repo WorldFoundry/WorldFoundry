@@ -1,0 +1,18 @@
+#ifndef INI_PROFILE_HP
+#define INI_PROFILE_HP
+
+#undef GetPrivateProfileString
+
+// User Profile Routines
+int GetPrivateProfileInt(const char *, const char *, int, const char *);
+int  GetPrivateProfileString(const char *, const char *, const char *, char *, int, const char *);
+bool WritePrivateProfileString(const char *, const char *, const char *, const char *);
+bool WritePrivateProfileInt(const char *, const char *, int nValue, const char *);
+
+// System .ini Routines
+int GetProfileInt(char *, char *, int);
+int  GetProfileString(char *, char *, char *, char *, int);
+bool WriteProfileString(char *, char *, char *);
+bool WriteProfileInt(char *, char *, int nValue);
+
+#endif	// INI_PROFILE_HP

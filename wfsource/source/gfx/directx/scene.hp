@@ -1,0 +1,79 @@
+//=============================================================================
+// directx/scene.hp:
+// Copyright ( c ) 1998,99 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description: software renderer specific data structures, etc.
+// Original Author: Kevin T. Seghetti
+// Based on boids.cc
+//  Purpose:    Sample showing DrawPrimitive functionality
+//	Copyright (C) 1995 - 1997 Microsoft Corporation. 
+//============================================================================
+
+#ifndef _SCENE_HP
+#define _SCENE_HP
+
+//==============================================================================
+//	Include files
+
+#include "Common.hp"
+
+//==============================================================================
+// Typedefs
+
+typedef struct t_boid
+{
+	D3DVECTOR	loc;
+	D3DVECTOR	dir;		// cur direction
+	D3DVECTOR	delta_pos;	// change in position from flock centering
+	D3DVECTOR	delta_dir;	// change in direction
+	int			delta_cnt;	// number of boids that influence this delta_dir
+	float		speed;
+	float		yaw, pitch, roll, dyaw;
+	D3DVECTOR	color;
+} Boid;
+
+typedef struct t_obstacle
+{
+	D3DVECTOR	loc;
+	float		radius;
+} Obstacle;
+
+typedef struct t_flock
+{
+	int			num_boids;
+	Boid		*boids;
+	int			num_obs;
+	Obstacle	*obs;
+	float		**dist;	// 2-d array of boid distances, yuk what a waste
+	D3DVECTOR	goal;
+} Flock;
+
+//==============================================================================
+//Function Prototypes
+
+// Boids Functions
+void UpdateFlock (Flock flock);
+
+class D3DTexture;
+extern D3DTexture	videoMemoryTexture;
+
+//==============================================================================
+#endif // _SCENE_HP
+//==============================================================================

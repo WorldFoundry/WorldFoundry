@@ -1,0 +1,80 @@
+# wfsource/source/Makefile.print
+
+print .PHONY :
+	%echo + Shell----------------------------------------------------------------------+
+        @ver
+	%echo + Environment----------------------------------------------------------------+
+        set
+	%echo +----------------------------------------------------------------------------+
+	%echo + Platform ------------------------------------------------------------------+
+	%echo WF_TARGET        = $(WF_TARGET)
+!if "$(WF_TARGET)" == "win"
+	%echo +----------------------------------------------------------------------------+
+	%echo + Windows -------------------------------------------------------------------+
+	%echo SUBSYSTEM        = $(SUBSYSTEM)
+	%echo MULTITHREADED  = $(MULTITHREADED)
+!endif
+!if "$(WF_TARGET)" == "psx"
+	%echo +----------------------------------------------------------------------------+
+	%echo + Sony Playstation ----------------------------------------------------------+
+	%echo PSX_DIR                           = $(PSX_DIR)
+!endif
+	%echo +----------------------------------------------------------------------------+
+	%echo + Debugging -----------------------------------------------------------------+
+	%echo MEMORY_TRACKING        = $(MEMORY_TRACKING)
+	%echo +----------------------------------------------------------------------------+
+	%echo + Switches ------------------------------------------------------------------+
+	%echo BUILDMODE               = $(BUILDMODE)
+	%echo SCALAR_TYPE             = $(SCALAR_TYPE)
+	%echo BUILD_DO_DEBUGGING_INFO = $(BUILD_DO_DEBUGGING_INFO)
+	%echo BUILD_DO_ASSERTIONS     = $(BUILD_DO_ASSERTIONS)
+	%echo BUILD_DO_VALIDATION     = $(BUILD_DO_VALIDATION)
+	%echo BUILD_DO_DEBUG_VARIABLES= $(BUILD_DO_DEBUG_VARIABLES)
+	%echo BUILD_DO_TEST_CODE      = $(BUILD_DO_TEST_CODE)
+	%echo BUILD_DO_OPTIMIZATIONS  = $(BUILD_DO_OPTIMIZATIONS)
+	%echo BUILD_DO_IOSTREAMS      = $(BUILD_DO_IOSTREAMS)
+	%echo BUILD_DBSTREAM          = $(BUILD_DBSTREAM)
+	%echo RENDERER                = $(RENDERER)
+	%echo RENDERER_PIPELINE       = $(RENDERER_PIPELINE)
+	%echo RENDERER_DIR            = $(RENDERER_DIR)
+	%echo RENDERER_PIPELINE_DIR   = $(RENDERER_PIPELINE_DIR)
+	%echo
+	%echo +----------------------------------------------------------------------------+
+	%echo + Library -------------------------------------------------------------------+
+	%echo LIB_NAME       = $(LIB_NAME)
+	%echo PIGS_OBJ_DIR   = $(PIGS_OBJ_DIR)
+	%echo PIGS_LIB_DIR   = $(PIGS_LIB_DIR)
+	%echo PIGS_LIB       = $(PIGS_LIB)
+	%echo PIGS_LIBS      = $(PIGS_LIBS)
+	%echo LIB_OBJS       = [$(LIB_OBJS)]
+	%echo TEST_PROG      = $(TEST_PROG)
+	%echo +----------------------------------------------------------------------------+
+	%echo + Compilation ---------------------------------------------------------------+
+        %echo CCC            = $(CCC)
+        %echo CCCARGS        = $(CCCARGS)
+        %echo INCLUDE        = $(INCLUDE)
+        %echo LIBS           = $(LIBS)
+	%echo PIGSYS = $(PIGSYS)
+
+################################################################################
+
+print_short .PHONY :
+	%echo ===============================================================================
+	%echo WF_TARGET = $(WF_TARGET)
+	%echo BUILDMODE = $(BUILDMODE)
+
+################################################################################
+
+dir_obj .PHONY :
+	%echo $(PIGS_LIB_DIR)
+	%echo ===============================================================================
+	@dir /K /H $(PIGS_LIB_DIR)*.*
+
+################################################################################
+
+lib .PHONY :
+	%echo Modules in $(PIGS_LIB)
+	%echo ===============================================================================
+	@lib /nologo /list $(PIGS_LIB)
+
+################################################################################

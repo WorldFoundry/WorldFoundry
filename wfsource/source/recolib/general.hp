@@ -1,0 +1,68 @@
+//=============================================================================
+// general.h:
+//=============================================================================
+
+//Documentation:
+
+//	Abstract:
+//		general contains several simple concrete classes and includes libtypes
+
+//	Class Hierarchy:
+//		error
+//		version
+//		boolean
+
+//	Dependancies:
+//			none
+
+//	Example:
+
+//==============================================================================
+
+#ifndef PCLIB_general_H
+#define PCLIB_general_H
+
+#include <cstdlib>
+
+#include <pclib/error.hp>
+
+#include <pclib/libtypes.hp>
+
+//=============================================================================
+
+class version
+{
+public:
+	version(const ulong v = 1 ) { ver = v; }
+	ulong operator=(const version &v ) { ver = v.ver; return(ver); }
+	operator ulong() const {return(ver);}
+	ulong operator++() { ++ver; return(++ver); }
+	ulong operator++(int) { return(ver++); }
+private:
+	ulong ver;
+};
+
+#include <pclib\boolean.hp>
+
+//==============================================================================
+// string code that works
+//(zero terminates at char AFTER the count given)
+
+inline void
+StringNCopy(char *dest, const char *source, unsigned int count)
+{
+	while(count--)
+		*dest++ = *source++;
+	*dest = 0;
+}
+
+//==============================================================================
+
+void Quit (errorcode error = NOERR);
+void Beep (void);
+
+//==============================================================================
+
+#endif
+
+//==============================================================================

@@ -1,0 +1,35 @@
+//============================================================================
+// hdump.hp: formated hex and ascii data dumper
+// Copyright(c) 1994/5 Cave Logic Studios
+// By Kevin T. Seghetti
+//============================================================================
+/* Documentation:
+
+	Abstract:
+			formated hex and ascii data dumper
+	History:
+
+	Class Hierarchy:
+			none
+
+	Dependancies:
+			iostream (cout)
+	Restrictions:
+	Example:
+*/
+//============================================================================
+// use only once insurance
+#ifndef _hDUMP_HP
+#define _hDUMP_HP
+
+#include <iostream>
+
+//#include "libtypes.hp"
+
+//============================================================================
+
+void HDump(void* buffer, unsigned long bufferSize, int indent=0,char* indentString = ">", std::ostream& out=std::cout,unsigned int charsPerLine=16);
+
+//============================================================================
+#endif
+//============================================================================

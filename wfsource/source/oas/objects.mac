@@ -1,0 +1,107 @@
+@*============================================================================
+@* objects.mac: list of game objects creatable in game
+@*============================================================================
+@*
+@*  This is the master list of game object types creatable in game
+@*              OBJECTENTRY(objectname,collidable)                              ; standard object
+@*              OBJECTNOACTORENTRY(objectname,collidable)               ; object which will never have an actor, for example, collision boxes
+@*              OBJECTONLYTEMPLATEENTRY(objectname)     ; object which can only be created from a template, therefore should not be constructed at load time
+@*              OBJECTSUBENTRY(child, parent,collidable)                ; object which is derived from another object
+@*      There must be a .oas file for each object named here
+@*
+@* collidable indicates whether this object does ANYTHING when intersecting something else.
+@* Anything with a collidable of 0 will never receive any general collision messages
+@*
+@* note: object names must not exceed 8 characters
+@*============================================================================
+
+OBJECTSHEADER
+@* activation boxes and special invisible objects
+@* activation boxes are handled separately for collision
+        OBJECTENTRY(ActBox,0)
+        OBJECTENTRY(Generator,0)
+        OBJECTENTRY(Target,0)
+        OBJECTNOACTORENTRY(Room,0)
+        OBJECTENTRY(StatPlat,1)
+        OBJECTENTRY(Enemy,1)
+        OBJECTENTRY(Platform,1)
+        OBJECTONLYTEMPLATEENTRY(Missile,1)
+@*        OBJECTENTRY(Continue,1)
+        OBJECTONLYTEMPLATEENTRY(Explode,1)
+	OBJECTENTRY(Spike,1)
+        OBJECTENTRY(Matte,0)
+@*        OBJECTENTRY(Movie,0)
+        OBJECTENTRY(Destroyer,0)
+        OBJECTENTRY(Camera,1)
+        OBJECTENTRY(Shadow,0)
+        OBJECTENTRY(LevelObj,0)
+        OBJECTENTRY(CamShot,0)
+        OBJECTENTRY(ActBoxOR,0)
+        OBJECTENTRY(Warp,0)
+        OBJECTENTRY(Tool,0)
+@*        OBJECTENTRY(Meter,0)
+@*        OBJECTNOACTORENTRY(Handle,0)
+        OBJECTENTRY(Director,0)
+        OBJECTONLYTEMPLATEENTRY(Shield,1)
+@*	OBJECTENTRY(Merged,0)
+@*	OBJECTENTRY(Font,0)
+        OBJECTENTRY(Player,1)
+@*        OBJECTENTRY(Pole,1)
+	OBJECTENTRY(Light,0)
+	OBJECTNOACTORENTRY(Disabled,0)
+	OBJECTNOACTORENTRY(Alias,0)
+
+@*        OBJECTENTRY(File,1)
+@*        OBJECTENTRY(Dir,1)
+OBJECTSFOOTER
+
+@*============================================================================
+
+COLTABLEHEADER
+        COLTABLEENTRY(Explode,Explode,CI_SPECIAL,CI_SPECIAL)
+        COLTABLEENTRY(Explode,Enemy,CI_SPECIAL,CI_NOTHING)
+        COLTABLEENTRY(Explode,Player,CI_SPECIAL,CI_NOTHING)
+        COLTABLEENTRY(Explode,Missile,CI_SPECIAL,CI_NOTHING)
+        COLTABLEENTRY(Explode,Spike,CI_SPECIAL,CI_NOTHING)
+        COLTABLEENTRY(Explode,Platform,CI_SPECIAL,CI_NOTHING)
+        COLTABLEENTRY(Enemy,Enemy,CI_PHYSICS,CI_PHYSICS)
+        COLTABLEENTRY(Enemy,Platform,CI_PHYSICS,CI_PHYSICS)
+        COLTABLEENTRY(Enemy,Spike,CI_NOTHING,CI_SPECIAL)
+        COLTABLEENTRY(Enemy,StatPlat,CI_PHYSICS,CI_PHYSICS)
+@*        COLTABLEENTRY(Enemy,Pole,CI_PHYSICS,CI_PHYSICS)
+        COLTABLEENTRY(Enemy,Player,CI_SPECIAL,CI_PHYSICS)
+        COLTABLEENTRY(Enemy,Missile,CI_NOTHING,CI_SPECIAL)
+        COLTABLEENTRY(Platform,Platform,CI_PHYSICS,CI_PHYSICS)
+        COLTABLEENTRY(Platform,Spike,CI_NOTHING,CI_SPECIAL)
+        COLTABLEENTRY(Platform,StatPlat,CI_PHYSICS,CI_PHYSICS)
+@*        COLTABLEENTRY(Platform,Pole,CI_PHYSICS,CI_PHYSICS)
+        COLTABLEENTRY(Platform,Player,CI_PHYSICS,CI_PHYSICS)
+        COLTABLEENTRY(Platform,Missile,CI_NOTHING,CI_SPECIAL)
+        COLTABLEENTRY(Spike,Spike,CI_PHYSICS,CI_PHYSICS)
+        COLTABLEENTRY(Spike,Player,CI_SPECIAL,CI_NOTHING)       @*CI_PHYSICS)
+        COLTABLEENTRY(Spike,Missile,CI_SPECIAL,CI_NOTHING)
+        COLTABLEENTRY(StatPlat,StatPlat,CI_PHYSICS,CI_PHYSICS)
+@*        COLTABLEENTRY(Pole,Pole,CI_PHYSICS,CI_PHYSICS)
+        COLTABLEENTRY(StatPlat,Spike,CI_NOTHING,CI_SPECIAL)
+@*        COLTABLEENTRY(Pole,Spike,CI_NOTHING,CI_SPECIAL)
+        COLTABLEENTRY(StatPlat,Player,CI_PHYSICS,CI_PHYSICS)
+@*        COLTABLEENTRY(Pole,Player,CI_PHYSICS,CI_PHYSICS)
+        COLTABLEENTRY(StatPlat,Missile,CI_NOTHING,CI_SPECIAL)
+@*        COLTABLEENTRY(Pole,Missile,CI_NOTHING,CI_SPECIAL)
+        COLTABLEENTRY(Player,Player,CI_PHYSICS,CI_PHYSICS)
+        COLTABLEENTRY(Player,Missile,CI_NOTHING,CI_SPECIAL)
+@*	COLTABLEENTRY(Player,Continue,CI_PHYSICS,CI_SPECIAL)
+	COLTABLEENTRY(Camera,Platform,CI_SPECIAL,CI_NOTHING)
+	COLTABLEENTRY(Camera,StatPlat,CI_SPECIAL,CI_NOTHING)
+	COLTABLEENTRY(Camera,Spike,CI_SPECIAL,CI_NOTHING)
+@*	COLTABLEENTRY(Missile,Missile,CI_SPECIAL,CI_SPECIAL)
+@*        COLTABLEENTRY(Warp,Player,CI_SPECIAL,CI_NOTHING)
+@*        COLTABLEENTRY(Warp,Enemy,CI_SPECIAL,CI_NOTHING)
+@*        COLTABLEENTRY(Warp,Spike,CI_SPECIAL,CI_NOTHING)
+@*        COLTABLEENTRY(Warp,Platform,CI_SPECIAL,CI_NOTHING)
+@*        COLTABLEENTRY(Warp,Missile,CI_SPECIAL,CI_NOTHING)
+@*        COLTABLEENTRY(Warp,Explode,CI_SPECIAL,CI_NOTHING)
+@*        COLTABLEENTRY(File,Player,CI_PHYSICS,CI_PHYSICS)
+COLTABLEFOOTER
+
+@*============================================================================

@@ -1,0 +1,20 @@
+#ifndef UTIL_H
+#define UTIL_H
+
+#include <cstdio>
+#include <attrib/types.hp>
+
+char* strchrs( const char* s, const char* charset );
+bool fileExists( const char* );
+
+#include <windows.h>
+
+#ifndef max
+#define max(a,b)            (((a) > (b)) ? (a) : (b))
+#endif
+
+#ifndef min
+#define min(a,b)            (((a) < (b)) ? (a) : (b))
+#endif
+
+#endif

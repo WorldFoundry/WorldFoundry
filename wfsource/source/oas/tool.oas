@@ -1,0 +1,42 @@
+@*============================================================================
+@* tool.oas
+@*============================================================================
+
+@*============================================================================
+@* Platform definition
+
+@define DEFAULT_VISIBILITY	0
+@define DEFAULT_MODEL_TYPE	3
+@define DEFAULT_TEMPLATE        1
+
+TYPEHEADER(Tool)
+    @include actor.inc
+
+	PROPERTY_SHEET_HEADER(Tool,1)
+@*	----------------------
+	TYPEENTRYXDATA_CONVERT(Activation Script,,"Cave Logic Studios AI [Script]||..\\scripts\\default.s",XDATA_NOT_REQUIRED,,,,,XDATA_SCRIPT)
+
+	TYPEENTRYOBJREFERENCE(Object To Throw)
+	TYPEENTRYINT32(Activation Cost,,0, 100, 1, "", SHOW_AS_SLIDER)
+	TYPEENTRYBOOLEAN(Autofire,,0)
+	TYPEENTRYINT32(Moving Throw Percentage,Moving Throw %,0, 100, 25, "", SHOW_AS_SLIDER)
+
+	TYPEENTRYINT32(Type,,0, 3, 1, "Beam Weapon|Projectile Weapon|Shield|Script Only", SHOW_AS_DROPMENU )
+	TYPEENTRYINT32(Activation Button,,0,7,1,"A|B|C|X|Y|Z|Left Shift|Right Shift",SHOW_AS_DROPMENU)
+
+	TYPEENTRYFIXED32(Recharge,Recharge Delay,FIXED32(0),FIXED32(100),FIXED32(0.2))
+
+	TYPEENTRYFIXED32(Horiz Speed,,FIXED32(0.0),FIXED32(360.0),FIXED32(1.0))
+	TYPEENTRYFIXED32(Vert Speed,,FIXED32(0.0),FIXED32(360.0),FIXED32(1.0))
+
+@*	TYPEENTRYFIXED32(Delay,,FIXED32(0),FIXED32(10),FIXED32(0.2))
+
+	GROUP_START(Needle Gun,550)
+	TYPEENTRYFIXED32(Max Range,,FIXED32(0),FIXED32(10000),FIXED32(800))
+	TYPEENTRYFIXED32(Beam Spread Angle,Spread Angle,FIXED32(0),FIXED32(1),FIXED32(0.125))
+	GROUP_STOP()
+	PROPERTY_SHEET_FOOTER
+
+TYPEFOOTER
+
+@*============================================================================

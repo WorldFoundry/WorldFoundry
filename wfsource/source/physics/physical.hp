@@ -1,0 +1,182 @@
+//==============================================================================
+// physical.hp:
+// Copyright ( c ) 1996,1997,1999,2000,2002,2003 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//=============================================================================
+// Description: The PhysicalAttributes class encapsulates the objects position
+//   and orientation, collision boxes, and velocity vectors
+// Original Author: Kevin T. Seghetti / Phil Torre
+//==============================================================================
+
+#ifndef _PHYSICAL_HP
+#define _PHYSICAL_HP
+
+#include <pigsys/pigsys.hp>
+#include <physics/colspace.hp>
+#include <math/euler.hp>
+#include <timer/clock.hp>
+#include <oas/levelcon.h>
+
+//#define PHYSICAL_INTERNAL_MATRIX
+#define PHYSICAL_INTERNAL_EULER
+ 
+#if defined(PHYSICAL_INTERNAL_EULER)
+#elif defined(PHYSICAL_INTERNAL_MATRIX)
+#include <math/matrix34.hp>
+#else
+#error PHYSICAL_INTERNAL not defined
+#endif
+
+#if defined PHYSICS_ENGINE_ODE
+#include "ode/ode.hp"
+#endif
+
+//==============================================================================
+
+class PhysicalAttributes
+{
+public:
+	// C++ functions (constructors, assignment, etc.)
+   PhysicalAttributes();
+    PhysicalAttributes(const Vector3& position,
+                      const Euler& euler,
+                      const Vector3& minPoint, const Vector3& maxPoint,
+                      Scalar slopeA=Scalar::zero,
+                      Scalar slopeB=Scalar::zero,
+                      Scalar slopeC=Scalar::zero,
+                      Scalar slopeD=Scalar::zero);
+
+	~PhysicalAttributes();
+
+	inline void Construct(
+                     const Vector3& position,
+                     const Euler& euler,
+                     const Vector3& minPoint, const Vector3& maxPoint,
+							Scalar slopeA=Scalar::zero,
+							Scalar slopeB=Scalar::zero,
+							Scalar slopeC=Scalar::zero,
+							Scalar slopeD=Scalar::zero);
+
+	// validation functions
+   void Validate() const;
+
+	// accessor functions
+	inline const Vector3& Position() const;
+	inline void SetPosition(const Vector3& position);
+	Euler Rotation() const;
+	void SetRotation(const Euler& newRot);
+    void AddRotation(const Euler rotation);
+	void RotateAboutAxis( const Vector3& axis, const Angle rotation );
+
+   const Matrix34 Matrix() const;              // returns a 3x4 matrix representing current state
+   void SetMatrix(const Matrix34& matrix);      // not a good idea if PHYSICAL_INTERNAL_EULER
+
+	const Vector3& LinVelocity() const;		// Returns instantaneous velocity
+	void SetLinVelocity(const Vector3& newLinVelocity);
+   void AddLinVelocity(const Vector3& addedLinVelocity);
+
+	const ColSpace& GetColSpace() const;
+	inline void SetColSpace(const Vector3& minPoint, const Vector3& maxPoint);
+
+	Vector3 Min() const;		// Return min in global coordinates
+	Vector3 Max() const;		// Return max in global coordinates
+
+	bool FullCollisionCheck(const PhysicalAttributes& other, const Clock& clock) const;	// returns true if objects hit each other
+	bool CheckCoarseCollision(const PhysicalAttributes& other) const;	// returns true if any portion overlaps in 3space
+
+	bool CheckCollision(const PhysicalAttributes& other) const;	// returns true if any portion overlaps in 3space
+	bool CheckCollision(const Vector3& other) const;			// returns true if the given point is inside our colBox
+
+   void Update();
+
+	inline bool PremoveCollisionCheck(const PhysicalAttributes& other) const;	// Do pre-movement collision check
+	inline bool ContainsSlope() const;
+	inline Scalar TimeToHitSlope(const PhysicalAttributes& other, Scalar deltaT) const;
+	inline const Vector3& SlopeNormal() const;
+	inline const Vector3& PredictedPosition() const;
+	inline void SetPredictedPosition(const Vector3& newPosition);
+	const Vector3 GetDeltaPos() const;	    // Returns change in position since last frame
+	inline const Vector3& OldLinVelocity() const;	// Returns velocity from last frame
+	inline void SetOldLinVelocity(const Vector3& velocity);
+	inline Vector3 MeanVelocity() const;	// returns average of oldLinVelocity and LinVelocity
+
+    bool HasRunPredictPosition() const;
+    void HasRunPredictPosition(bool);
+    bool HasRunUpdate() const;
+    void HasRunUpdate(bool);
+
+#if SW_DBSTREAM >= 1
+	friend std::ostream& operator << ( std::ostream& s, const PhysicalAttributes& pa );
+#endif
+
+private:
+	bool CheckSurrounds(const PhysicalAttributes& other) const;	// returns true if other is entirely inside of this
+	bool ThirdCollisionCheck(const PhysicalAttributes& other, Scalar deltaT) const;	// Do "third tier" collision check
+	bool ThirdCollisionCheckWithSlope(const PhysicalAttributes& other) const;
+	void ComputeOverlapTimes(Scalar actor1MinEdge, Scalar actor1MaxEdge,
+							 Scalar actor2MinEdge, Scalar actor2MaxEdge, Scalar relativeVelocity,
+							 Scalar& overlapStartTime, Scalar& overlapEndTime, Scalar deltaT) const;
+
+
+#if defined(PHYSICAL_INTERNAL_EULER)
+	Euler _orientation;									// orientation
+	Vector3 _position;									// position
+#elif defined(PHYSICAL_INTERNAL_MATRIX)
+    Matrix34 _matrix;                           // position and rotation matrix
+#else
+#error PHYSICAL_INTERNAL not defined
+#endif
+
+	Vector3	_predictedPosition;
+	ColSpace _colSpace;
+	Vector3 linVelocity;
+	Vector3 oldLinVelocity;		// Velocity from last frame, kept around for interpolating
+								// position between frames.
+
+    unsigned 				_hasRunPredictPosition : 1;
+    unsigned 				_hasRunUpdate : 1;
+
+#if defined PHYSICS_ENGINE_ODE
+   ode::dBodyID _body;			// the body
+   ode::dGeomID _geom;		// geometries representing this body
+#elif defined PHYSICS_ENGINE_WF
+#else
+#error physics engine not defined! 
+#endif
+};
+
+//============================================================================
+
+#if 0
+class PhysicalAttributesIterator 
+{
+public:
+    virtual PhysicalAttributes& operator*() = 0;
+    virtual void operator++() = 0;
+    virtual bool operator==(const PhysicalAttributesIterator&) = 0;
+    bool operator!=(const PhysicalAttributesIterator& other) { return !(*this == other); }
+private:
+};
+#endif
+
+//==============================================================================
+#include "physical.hpi"	// include all inline definitions as appropriate
+//==============================================================================
+#endif
+//==============================================================================

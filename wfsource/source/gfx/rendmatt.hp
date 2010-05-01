@@ -1,0 +1,73 @@
+//=============================================================================
+// Rendmatt.hp: render matte (2d scrolling background)
+// Copyright ( c ) 1998,99 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description:
+//
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+#ifndef _RENDMATT_HP
+#define _RENDMATT_HP
+
+
+#include <gfx/display.hp>
+#include <gfx/material.hp>
+
+//=============================================================================
+
+class ViewPort;
+
+//=============================================================================
+
+struct TileMap
+{
+	int32 xSize;
+	int32 ySize;
+	char map;			                // map starts here
+};
+
+//=============================================================================
+
+class ScrollingMatte
+{
+public:
+	ScrollingMatte(const char* textureName, const Texture& texture, int32 userData, const GfxCallbacks& callbacks, int depth);
+	void Render(ViewPort& vp, const TileMap& map,int xOffset, int yOffset);
+	enum { TILE_SIZE  = 16 };
+private:
+	enum {
+		MATTE_XSIZE = 22,		                // screen size + 2 tiles
+		MATTE_YSIZE  = 17
+	};
+
+	const Texture& _texture;
+#if defined(USE_ORDER_TABLES)
+	SPRT_16 mem[ORDER_TABLES][MATTE_XSIZE][MATTE_YSIZE];
+	DR_MODE dr_mode[ORDER_TABLES]; 		//mode primitive
+#else
+   const PixelMap* texturePixelMap;
+#endif
+	int _depth;
+};
+
+//=============================================================================
+#endif
+//=============================================================================

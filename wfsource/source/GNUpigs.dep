@@ -1,0 +1,148 @@
+# wfsource/source/GNUpigs.dep
+# TODO:
+#       simple macro like "PIGS_LIBS = hal anim gfx, ..." which adds the fully
+#           qualified filenames to the standard "LIBS" macro
+#       It'd be nice if this list can be generated automatically, too.
+
+#!error pigs.dep
+
+ifeq ((PIGS_DIR),)
+PIGS_DIR = $(WF_DIR)/source
+endif
+
+#%ECHO $(PIGS_LIB_DIR)
+
+$(PIGS_LIB_DIR)libanim.a  :
+	@echo GNUpigs.dep building anim
+	@cd $(PIGS_DIR)/anim ; make FORCEBUILDMODE=$(BUILDMODE)
+
+$(PIGS_LIB_DIR)libattrib.a  :
+	@echo attrib 
+	@cd $(PIGS_DIR)/attrib ; make FORCEBUILDMODE=$(BUILDMODE)
+
+$(PIGS_LIB_DIR)libaudio.a  :
+	@echo audio
+	@cd $(PIGS_DIR)/audio ;  make FORCEBUILDMODE=$(BUILDMODE)
+
+#$(PIGS_LIB_DIR)libaudiofmt.a  :
+#	@echo audiofmt
+#	@cd $(PIGS_DIR)/audiofmt ; make FORCEBUILDMODE=$(BUILDMODE)
+
+$(PIGS_LIB_DIR)libbootscrn.a  :
+	@echo bootscrn
+	@cd $(PIGS_DIR)/bootscrn ; make FORCEBUILDMODE=$(BUILDMODE)
+
+$(PIGS_LIB_DIR)libconsole.a  :
+	@echo console
+	@cd $(PIGS_DIR)/console	; make FORCEBUILDMODE=$(BUILDMODE)
+
+$(PIGS_LIB_DIR)libcpplib.a  :
+	@echo cpplib
+	@cd $(PIGS_DIR)/cpplib ; make FORCEBUILDMODE=$(BUILDMODE)
+#	@cd $(CWD)
+
+$(PIGS_LIB_DIR)libeval.a  :
+	@echo eval
+	@cd $(PIGS_DIR)/eval ; make FORCEBUILDMODE=$(BUILDMODE)
+	@cd $(CWD)
+
+$(PIGS_LIB_DIR)libgfx.a  :
+	@echo gfx
+	@cd $(PIGS_DIR)/gfx ; make FORCEBUILDMODE=$(BUILDMODE)
+	@cd $(CWD)
+
+#$(PIGS_LIB_DIR)libgfxfmt.a  :
+#	@echo gfxfmt
+#	@cd $(PIGS_DIR)/gfxfmt ; make FORCEBUILDMODE=$(BUILDMODE)
+#	@cd $(CWD)
+
+$(PIGS_LIB_DIR)libhal.a  :
+	@echo hal
+	@cd $(PIGS_DIR)/hal ; make FORCEBUILDMODE=$(BUILDMODE)
+
+$(PIGS_LIB_DIR)libiff.a  :
+	@echo iff
+	@cd $(PIGS_DIR)/iff ; make FORCEBUILDMODE=$(BUILDMODE)
+
+$(PIGS_LIB_DIR)libiffwrite.a  :
+	@echo iffwrite
+	@cd $(PIGS_DIR)/iffwrite ; make FORCEBUILDMODE=$(BUILDMODE)
+
+$(PIGS_LIB_DIR)libinput.a  :
+	@echo input
+	@cd $(PIGS_DIR)/input ; make FORCEBUILDMODE=$(BUILDMODE)
+
+$(PIGS_LIB_DIR)libloadfile.a  :
+	@echo loadfile
+	@cd $(PIGS_DIR)/loadfile ; make FORCEBUILDMODE=$(BUILDMODE)
+
+$(PIGS_LIB_DIR)libmath.a  :
+	@echo math
+	@cd $(PIGS_DIR)/math ; make FORCEBUILDMODE=$(BUILDMODE)
+
+$(PIGS_LIB_DIR)libmemory.a  :
+	@echo memory
+	@cd $(PIGS_DIR)/memory ; make FORCEBUILDMODE=$(BUILDMODE)
+
+$(PIGS_LIB_DIR)libmenu.a  :
+	@echo menu
+	@cd $(PIGS_DIR)/menu ; make FORCEBUILDMODE=$(BUILDMODE)
+	@cd $(CWD)
+
+$(PIGS_LIB_DIR)libmidi.a  :
+	@echo midi
+	@cd $(PIGS_DIR)/midi ; make FORCEBUILDMODE=$(BUILDMODE)
+
+$(PIGS_LIB_DIR)libmovie.a  :
+	@echo movie
+	@cd $(PIGS_DIR)/movie ; make FORCEBUILDMODE=$(BUILDMODE)
+
+$(PIGS_LIB_DIR)libpclib.a  :
+	@echo pclib
+	@cd $(PIGS_DIR)/pclib ; make FORCEBUILDMODE=$(BUILDMODE)
+	@cd $(CWD)
+
+$(PIGS_LIB_DIR)libpigsys.a  :
+	@echo GNUpigs.dep building pigsys
+	@cd $(PIGS_DIR)/pigsys ; make FORCEBUILDMODE=$(BUILDMODE) 
+
+$(PIGS_LIB_DIR)libprofile.a  :
+	@echo profile
+	@cd $(PIGS_DIR)/profile ; make FORCEBUILDMODE=$(BUILDMODE)
+
+$(PIGS_LIB_DIR)librecolib.a  :
+	@echo recolib
+	@cd $(PIGS_DIR)/recolib	; make FORCEBUILDMODE=$(BUILDMODE)
+
+$(PIGS_LIB_DIR)libregexp.a  :
+	@echo regexp
+	@cd $(PIGS_DIR)/regexp ; make FORCEBUILDMODE=$(BUILDMODE)
+
+#$(PIGS_LIB_DIR)libregistry.a  :
+#	@echo registry
+#	@cd $(PIGS_DIR)/registry ; make FORCEBUILDMODE=$(BUILDMODE)
+
+$(PIGS_LIB_DIR)libsavegame.a  :
+	@echo savegame
+	@cd $(PIGS_DIR)/savegame ; make FORCEBUILDMODE=$(BUILDMODE)
+
+$(PIGS_LIB_DIR)libstreams.a  :
+	@echo streams
+	@cd $(PIGS_DIR)/streams ; make FORCEBUILDMODE=$(BUILDMODE)
+
+#!if defined( PIGS_TOOL )
+$(PIGS_LIB_DIR)libtoolstub.a  :
+	@echo toolstub
+	@cd $(PIGS_DIR)/toolstub ; make FORCEBUILDMODE=$(BUILDMODE)
+	
+
+$(PIGS_LIB_DIR)libini.a  :
+	@echo ini
+	@cd $(PIGS_DIR)/ini ; make FORCEBUILDMODE=$(BUILDMODE)
+#!endif
+
+$(PIGS_LIB_DIR)libversion.a  :
+	@echo version
+	@cd $(PIGS_DIR)/version ; make FORCEBUILDMODE=$(BUILDMODE)
+	
+

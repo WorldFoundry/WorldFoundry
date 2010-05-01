@@ -1,0 +1,124 @@
+//=============================================================================
+// math/euler.hp:
+// Copyright(c) 1996,1997,1998,1999,2000,2002 World Foundry Group.  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//=============================================================================
+
+#ifndef _EULER_HP
+#define _EULER_HP
+
+//-----------------------------------------------------------------------------
+
+//#include "anmswtch.hp"
+#include <pigsys/pigsys.hp>
+#include <math/angle.hp>
+#include <streams/binstrm.hp>
+//#include <mem/newmacro.hp>
+
+// ------------------------------------------------------------------------
+// Euler Angle Class, Always XYZ_S
+// ------------------------------------------------------------------------
+
+class Vector3;
+class Matrix34;
+
+class Euler
+{
+  public:
+	// construct/destruct
+	Euler( const Angle a, const Angle b, const Angle c );
+	Euler();	// identity
+//	Euler( const Matrix34& matrix34 );
+	Euler( binistream& binis );
+	~Euler();
+
+   void Validate() const;
+
+	// reset
+	void Construct( const Angle a, const Angle b, const Angle c );
+	void ConstructIdentity();
+//	void ConstructMatrix34( const Matrix34& matrix34 );
+
+	// typed new and delete operators
+//	DECLARE_TYPED_NEW_AND_DELETE( Euler )
+//	DECLARE_PLACEMENT_NEW( Euler )
+
+	// set/get angles
+	INLINE void SetA( const Angle& a );
+	INLINE void SetB( const Angle& b );
+	INLINE void SetC( const Angle& c );
+	INLINE const Angle& GetA() const;
+	INLINE const Angle& GetB() const;
+	INLINE const Angle& GetC() const;
+
+	void SetLookAt( const Vector3& lookAt );
+
+	// arithmetic
+	INLINE Euler	operator + ( const Euler& other ) const;
+	INLINE Euler	operator - ( const Euler& other ) const;
+	INLINE Euler	operator * ( const Scalar& other ) const;
+	INLINE Euler	operator / ( const Scalar& other ) const;
+
+    INLINE Euler&    operator += ( const Euler& );
+    INLINE Euler&    operator -= ( const Euler& );
+    INLINE Euler&    operator *= ( const Scalar& );
+    INLINE Euler&    operator /= ( const Scalar& );
+
+	// Comparison Methods
+    inline int         operator !=	( const Euler& ) const;
+    inline int         operator ==	( const Euler& ) const;
+
+	// binary io stream support
+	friend binistream& operator >> ( binistream&, Euler& );
+#if defined( WRITER )
+	friend binostream& operator << ( binostream&, const Euler& );
+#endif
+
+	// debug output stream support
+  #if DO_IOSTREAMS
+	friend std::ostream& operator << ( std::ostream&, const Euler& );
+  #endif
+
+	// assert that this object is still valid
+	// call using the ValidateObject and ValidateObjectPtr macros
+	void Validate( const char * file, const int line ) const;
+
+	static const Euler zero;
+  protected:
+	INLINE void Read( binistream& binis );
+
+	Angle _a;
+	Angle _b;
+	Angle _c;
+};
+
+// ------------------------------------------------------------------------
+
+Vector3& operator*=(Vector3& vect, const Euler& euler);
+Vector3 operator*(const Vector3& vect, const Euler& euler);
+
+// ------------------------------------------------------------------------
+
+#if	USE_INLINE_DEFS || defined(_EULER_CC)
+#include <math/euler.hpi>
+#endif
+
+//=============================================================================
+#endif // _EULER_HP
+//=============================================================================

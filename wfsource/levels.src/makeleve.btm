@@ -1,0 +1,12 @@
+@echo off
+
+..\bin\nmake /nologo LEVEL_LIST
+
+if "%1" != "" goto level_selected
+select ..\bin\nmake /nologo /f levels.mak (level*.)
+goto end
+
+:level_selected
+..\bin\nmake /nologo /f levels.mak level%1
+
+:end

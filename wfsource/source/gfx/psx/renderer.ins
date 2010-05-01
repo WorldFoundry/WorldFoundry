@@ -1,0 +1,28 @@
+@*=============================================================================
+@* Renderer.ins: source file for renderer.inc
+@*=============================================================================
+
+@define RENDERER_ENTRY(name, poly,polylower,filename,gouraudFlag, textureFlag, prelitFlag) void Subdivide2D@+name(ViewPort& vp,Primitive& poly,int z);
+@include renderer.s
+@undef RENDERER_ENTRY
+
+@define RENDERER_ENTRY(name, poly,polylower,filename,gouraudFlag, textureFlag, prelitFlag) void Subdivide3D@+name(ViewPort& vp, POLYVECT& gteVect,Primitive& primitive);
+@include renderer.s
+@undef RENDERER_ENTRY
+
+@define RENDERER_ENTRY(name, poly,polylower,filename,gouraudFlag, textureFlag, prelitFlag) void Clip3D@+name(ViewPort& vp, POLYVECT& gteVect,POLYVECT& xformedVect, Primitive& primitive);
+@include renderer.s
+@undef RENDERER_ENTRY
+
+@define RENDERER_ENTRY(name, poly,polylower,filename,gouraudFlag, textureFlag, prelitFlag) void RenderPoly3D@+name(POLYVECT& gteVect,Primitive& primitive);
+@include renderer.s
+@undef RENDERER_ENTRY
+
+@define RENDERER_ENTRY(name, poly,polylower,filename,gouraudFlag, textureFlag, prelitFlag) void _RenderPoly3D@+name(Primitive& primitive);
+@include renderer.s
+@undef RENDERER_ENTRY
+
+@define RENDERER_ENTRY(name, poly,polylower,filename,gouraudFlag, textureFlag, prelitFlag) int RenderPoly3D@+name(Primitive* primitive);
+@include renderer.s
+@undef RENDERER_ENTRY
+

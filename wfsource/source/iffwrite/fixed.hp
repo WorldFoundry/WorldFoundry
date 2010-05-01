@@ -1,0 +1,37 @@
+// fixed.hp
+
+#ifndef IFFWRITE_FIXED_HP
+#define IFFWRITE_FIXED_HP
+
+class _IffWriter;
+class IffWriterText;
+class IffWriterBinary;
+
+struct size_specifier
+{
+//	size_specifier()	{}
+//	size_specifier( int s, int w, int f )	{ sign = s; whole = w; fraction = f; }
+	int sign;
+	int whole;
+	int fraction;
+};
+
+extern size_specifier fp_1_15_16;
+
+class Fixed
+{
+public:
+	Fixed( size_specifier ss, double val );
+
+	friend std::ostream& operator << ( std::ostream& s, const Fixed& f );
+	friend _IffWriter& operator << ( _IffWriter& iff, const Fixed& f );
+
+    //PrintF print() const;
+
+protected:
+public:
+	size_specifier _ss;
+	double _val;
+};
+
+#endif	// IFFWRITE_FIXED_HP

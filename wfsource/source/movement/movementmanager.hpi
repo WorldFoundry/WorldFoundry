@@ -1,0 +1,85 @@
+//==============================================================================
+// movementmanager.hpi:
+// Copyright ( c ) 2002 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+//===========================================================================
+
+inline MovementHandlerData*
+MovementManager::GetMovementHandlerData()
+{
+   // kts it is OK to return NULL
+   //assert(ValidPtr(_movementHandlerData));
+	return _movementHandlerData;
+}
+
+inline const MovementHandlerData*
+MovementManager::GetMovementHandlerData() const
+{
+   // kts it is OK to return NULL
+   //assert(ValidPtr(_movementHandlerData));
+	return _movementHandlerData;
+}
+
+//==============================================================================
+
+inline const _Movement*
+MovementManager::MovementBlock() const
+{
+   assert(ValidPtr(_movementBlock));
+   return _movementBlock;
+}
+
+//==============================================================================
+
+inline MovementHandler&
+MovementManager::GetMovementHandler(MovementObject& movementObject) 
+{
+   if ( !_currentMovementHandler )
+   	InitMovementHandler(movementObject);
+   assert(ValidPtr(_currentMovementHandler));
+	return *_currentMovementHandler;
+}
+
+//==============================================================================
+
+inline const MovementHandler&
+MovementManager::GetMovementHandler(const MovementObject& /*s*/) const
+{
+   assert(ValidPtr(_currentMovementHandler));
+	return *_currentMovementHandler;
+}
+
+//==============================================================================
+
+#if SW_DBSTREAM
+
+inline std::ostream&
+operator << ( std::ostream& s, const MovementManager& mm )
+{
+	if ( &mm )
+   {
+      s << "Movement Manager" << std::endl;
+      // kts add some printing here
+   }
+	return s;
+}
+
+#endif
+
+//==============================================================================
+

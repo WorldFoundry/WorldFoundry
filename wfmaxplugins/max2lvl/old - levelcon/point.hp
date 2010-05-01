@@ -1,0 +1,69 @@
+//============================================================================
+// Point.hp:
+// Copyright(c) 1995 Cave Logic Studios / PF.Magic
+//============================================================================
+/* Documentation:
+
+	Abstract:
+			3D Points and vectors
+	History:
+			Created	07-31-95 02:11pm Kevin T. Seghetti
+
+	Class Hierarchy:
+			none
+
+	Dependancies:
+		PIGS, BRender, STDIO
+	Restrictions:
+
+	Example:
+*/
+//============================================================================
+// use only once insurance
+
+#ifndef _Point_HP
+#define _Point_HP
+
+//============================================================================
+
+#include "global.hp"
+
+#include <brender.h>
+#include <iostream.h>
+#include "pigtool.h"
+
+//============================================================================
+
+class QPoint
+{
+public:
+	QPoint();
+	~QPoint();
+	QPoint( br_scalar newX, br_scalar newY, br_scalar newZ);
+
+	br_scalar x(void) const { return(_x); }
+	br_scalar x(br_scalar x)  { _x = x; return(_x); }
+	br_scalar y(void) const { return(_y); }
+	br_scalar y(br_scalar y) { _y = y; return(_y); }
+	br_scalar z(void) const { return(_z); }
+	br_scalar z(br_scalar z) { _z = z; return(_z); }
+
+	// Added for colbox rotation
+	void Rotate(float rotation, QPoint& axis);
+
+	// Printing
+	friend ostream& operator<<(ostream& s, const QPoint &o);
+
+	QPoint  operator+(const QPoint& a) const { QPoint res = a; res += *this; return res; }
+	QPoint  operator-(const QPoint& a) const { QPoint res = a; res -= *this; return res; }
+
+	QPoint& operator+=(const QPoint& left);
+	QPoint& operator-=(const QPoint& left);
+	operator==(const QPoint& left) const;
+private:
+	br_scalar _x,_y,_z;
+};
+
+//============================================================================
+#endif
+//============================================================================

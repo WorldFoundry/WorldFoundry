@@ -1,0 +1,2 @@
+#!/bin/bash
+../../objdebugglglwffixedss.linux/game/game -rate20 &

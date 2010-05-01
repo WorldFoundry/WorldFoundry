@@ -1,0 +1,237 @@
+//=============================================================================
+// display.hp: display hardware abstraction class
+// Copyright ( c ) 1997,1998,1999,2000,2001,2002 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description: The Display class encapsulates data and behavior for a single
+//	 hardware screen
+// Original Author: Kevin T. Seghetti
+//============================================================================
+// terminology:
+
+//	Order Table ready to be cleared and filled with primitives: Construction Order Table
+//	Order Table ready to be drawn/rendered by gpu: Render Order Table
+//	Display Buffer ready to be drawn/rendered into: Draw Page
+//  Display Buffer currently on screen : Display Page
+//==============================================================================
+
+#ifndef _dISPLAY_H
+#define _dISPLAY_H
+
+//============================================================================
+// Includes
+//============================================================================
+
+#include <pigsys/pigsys.hp>
+#include "color.hp"
+#include "otable.hp"
+#include "renderer.hp"
+
+#if defined(__LINUX__)
+#include <sys/time.h>
+#endif
+
+
+class Scalar;
+class Matrix34;
+class Memory;
+class PixelMap;
+
+//#define VIDEO_MEMORY_IN_ONE_PIXELMAP 
+
+
+#if defined(RENDERER_PIPELINE_GL)
+#define GFX_ZBUFFER
+#else
+//#define GFX_ZBUFFER
+#endif
+
+
+#if defined(RENDERER_GL)
+void LoadGLMatrixFromMatrix34(const Matrix34& matrix);
+#endif
+
+#if defined(VIDEO_MEMORY_IN_ONE_PIXELMAP)
+#if defined(RENDERER_GL)
+#   include <GL/gl.h>
+const int VRAM_WIDTH = 1024;
+const int VRAM_HEIGHT = 512;
+const float VRAM_WIDTHF = float( VRAM_WIDTH );
+const float VRAM_HEIGHTF = float( VRAM_HEIGHT );
+
+
+#endif          // RENDERER_GL
+
+#if defined(RENDERER_XWINDOWS)
+#   include <GL/gl.h>
+const int VRAM_WIDTH = 1024;
+const int VRAM_HEIGHT = 512;
+const float VRAM_WIDTHF = float( VRAM_WIDTH );
+const float VRAM_HEIGHTF = float( VRAM_HEIGHT );
+#endif          // RENDERER_XWINDOWS
+
+#else
+//#error not yet!
+#endif
+
+//============================================================================
+// Class and Structure Prototypes
+//============================================================================
+
+class Display
+{
+public:
+	enum
+	{
+		DISPLAY_PAGES=2				// double buffering is usually all that is needed
+	};
+
+	// define the size & shape of video ram for this platform
+	enum
+	{
+		VRAMWidth		= 1024,
+		VRAMHeight		= 512
+	};
+
+	Display(int orderTableSize, int xPos, int yPos, int xSize, int ySize,Memory& memory, bool interlace=false);
+	~Display();
+	void SetBackgroundColor(const Color& color);	// set color to clear page to
+
+	void RenderBegin();
+	void RenderEnd();
+
+	Scalar PageFlip();					// switch to other page, and start rendering, returns how much real-time passed since last call
+	void ResetTime();					// used to reset delta timer for PageFlip
+
+	int XSize() const;					// get x size of display
+	int YSize() const;					// get y size of display
+
+	void Validate() const;
+
+#if defined(VIDEO_MEMORY_IN_ONE_PIXELMAP)
+    PixelMap& GetVideoMemoryPixelMap();
+#endif
+
+#if defined(USE_ORDER_TABLES)
+	int GetConstructionOrderTableIndex() const;					// returns whch order table is available for gpu drawing
+	void AddConstructionOrderTable(OrderTable& orderTable,int depth);   	// add an order table to the current draw queue, temporary, only lasts until the next call to PageFlip
+#endif
+
+#if defined(DO_SLOW_STEREOGRAM)
+#if !defined(USE_ORDER_TABLES)
+#error must use order tables for stereogram
+#endif
+#if !defined(__PSX__)
+#error stereogram only works on psx
+#endif
+	int GetDrawPageIndex() const;						// returns whch page is available for drawing
+#endif
+
+#if !defined(DO_SLOW_STEREOGRAM)
+private:
+#endif
+
+#if defined(__PSX__)
+	int VideoSync();				    // components of PageFlip, public if stereogram, private otherwise
+	void UnSyncedPageFlip();
+	void ClearConstructionOrderTable();
+	void RenderOrderTable();
+#endif
+
+#if defined(USE_ORDER_TABLES)
+	void SetRenderOrderTableIndex(int index);
+	void SetConstructionOrderTableIndex(int index);
+#endif			                        // USE_ORDER_TABLES
+
+private:
+	// functions
+#if defined(USE_ORDER_TABLES)
+	int GetRenderOrderTableIndex() const;					// returns whch order table is available for renderer/gte
+#endif
+
+	// data
+	int _drawPage;					// which page is available to issue draw commands into
+	Color _backgroundColor;			// color to clear display to
+#if defined(USE_ORDER_TABLES)
+	OrderTable* _orderTable[ORDER_TABLES];			// master order table all primitives end up in
+	int _constructionOrderTableIndex;			// ready for renderer code/gte
+	int _renderOrderTableIndex;			// ready for gpu
+#endif
+	int _xPos;						// x & y position of display
+	int _yPos;
+
+	int _xSize;						// x & y size of display
+	int _ySize;
+#if defined ( __PSX__)
+	DISPENV _dispEnv[DISPLAY_PAGES];
+	DRAWENV _drawEnv[DISPLAY_PAGES];
+	RECT bg[DISPLAY_PAGES];
+	bool _resetClock;
+#elif defined( __WIN__ )
+	float _backgroundColorRed;
+	float _backgroundColorGreen;
+	float _backgroundColorBlue;
+	unsigned long _clockLastTime;
+#elif defined( __LINUX__ )
+	float _backgroundColorRed;
+	float _backgroundColorGreen;
+	float _backgroundColorBlue;
+    struct timeval _clockLastTime;
+#else
+#error platform not defined
+#endif
+	Memory&     _memory;
+#if defined(VIDEO_MEMORY_IN_ONE_PIXELMAP)
+	PixelMap*	_videoMemory;
+#endif
+
+#if defined(DO_SLOW_STEREOGRAM)
+	friend Scalar VSyncCallBackReadVSyncCount();
+#endif
+	ASSERTIONS( bool _rendering; )
+};
+
+//============================================================================
+
+#if defined(DO_SLOW_STEREOGRAM)
+struct VSyncCallbackInterface
+{
+	int orderTableOffset;
+	int renderLock;				// which order table is currently rendering
+	int constructLock;			// which order table is currently being constructed
+	int pagesDirty[Display::DISPLAY_PAGES];
+	int vsyncCount;
+	Display* _display;
+};
+
+extern volatile VSyncCallbackInterface vsyncCallbackInterface;
+
+Scalar VSyncCallBackReadVSyncCount();
+
+void InitVSyncCallback(Display& display);
+
+void UnInitVSyncCallback();
+
+#endif
+
+//============================================================================
+#include "display.hpi"		// include all inline definitions as appropriate
+//=============================================================================
+#endif
+//=============================================================================

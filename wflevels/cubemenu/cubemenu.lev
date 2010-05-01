@@ -1,0 +1,1105 @@
+
+{ 'LVL' 
+	{ 'OBJ' 
+		{ 'NAME' "room1" 
+		}
+		{ 'VEC3' 
+			{ 'NAME' "Position" 
+			}
+			{ 'DATA' 33.68717575073242(1.15.16) 46.56344604492188(1.15.16) -457.7194519042969(1.15.16)  //x,y,z
+					
+			}
+		}
+		{ 'EULR' 
+			{ 'NAME' "Orientation" 
+			}
+			{ 'DATA' 0.0000000000000000(1.15.16) 0.0000000000000000(1.15.16) 0.0000000000000000(1.15.16)  //a,b,c
+					
+			}
+		}
+		{ 'BOX3' 
+			{ 'NAME' "Global Bounding Box" 
+			}
+			{ 'DATA' -500.0000000000000(1.15.16) -500.0000000000000(1.15.16) 0.0000000000000000(1.15.16) 500.0000000000000(1.15.16) 500.0000000000000(1.15.16) 1000.000000000000(1.15.16)  //min(x,y,z)-max(x,y,z)
+					
+			}
+		}
+		{ 'STR' 
+			{ 'NAME' "Class Name" 
+			}
+			{ 'DATA' "room" 
+			}
+		}
+	}
+	{ 'OBJ' 
+		{ 'NAME' "actbox01" 
+		}
+		{ 'VEC3' 
+			{ 'NAME' "Position" 
+			}
+			{ 'DATA' 33.68717575073242(1.15.16) 46.56344604492188(1.15.16) -452.7194519042969(1.15.16)  //x,y,z
+					
+			}
+		}
+		{ 'EULR' 
+			{ 'NAME' "Orientation" 
+			}
+			{ 'DATA' 0.0000000000000000(1.15.16) 0.0000000000000000(1.15.16) 0.0000000000000000(1.15.16)  //a,b,c
+					
+			}
+		}
+		{ 'BOX3' 
+			{ 'NAME' "Global Bounding Box" 
+			}
+			{ 'DATA' -495.0000000000000(1.15.16) -495.0000000000000(1.15.16) 0.0000000000000000(1.15.16) 495.0000000000000(1.15.16) 495.0000000000000(1.15.16) 990.0000000000000(1.15.16)  //min(x,y,z)-max(x,y,z)
+					
+			}
+		}
+		{ 'STR' 
+			{ 'NAME' "Class Name" 
+			}
+			{ 'DATA' "actboxor" 
+			}
+		}
+		{ 'STR' 
+			{ 'NAME' "Object" 
+			}
+			{ 'STR' "Camshot01" 
+			}
+		}
+		{ 'STR' 
+			{ 'NAME' "Activated By Actor" 
+			}
+			{ 'STR' "cube" 
+			}
+		}
+	}
+	{ 'OBJ' 
+		{ 'NAME' "Camera01" 
+		}
+		{ 'VEC3' 
+			{ 'NAME' "Position" 
+			}
+			{ 'DATA' 29.07961845397949(1.15.16) 47.17340469360352(1.15.16) -30.83105659484863(1.15.16)  //x,y,z
+					
+			}
+		}
+		{ 'EULR' 
+			{ 'NAME' "Orientation" 
+			}
+			{ 'DATA' 0.0000000000000000(1.15.16) 0.0000000000000000(1.15.16) 0.0000000000000000(1.15.16)  //a,b,c
+					
+			}
+		}
+		{ 'BOX3' 
+			{ 'NAME' "Global Bounding Box" 
+			}
+			{ 'DATA' -0.2500000000000000(1.15.16) -0.2500000000000000(1.15.16) 0.0000000000000000(1.15.16) 0.2500000000000000(1.15.16) 0.2500000000000000(1.15.16) 0.5000000000000000(1.15.16)  //min(x,y,z)-max(x,y,z)
+					
+			}
+		}
+		{ 'STR' 
+			{ 'NAME' "Class Name" 
+			}
+			{ 'DATA' "camera" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "Mobility" 
+			}
+			{ 'STR' "Camera" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "Moves Between Rooms" 
+			}
+			{ 'DATA' 0l  //False|True
+					
+			}
+			{ 'STR' "0" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "Movement Mailbox" 
+			}
+			{ 'DATA' 1l  //
+					
+			}
+			{ 'STR' "1" 
+			}
+		}
+		{ 'FILE' 
+			{ 'NAME' "Mesh Name" 
+			}
+			{ 'STR' "" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "Model Type" 
+			}
+			{ 'STR' "Box" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "FoggingColor" 
+			}
+			{ 'DATA' 5112045l  //
+					
+			}
+			{ 'STR' "5112045" 
+			}
+		}
+		{ 'FX32' 
+			{ 'NAME' "FoggingStartDistance" 
+			}
+			{ 'DATA' 50.00000000000000(1.15.16) 
+			}
+			{ 'STR' "50.0" 
+			}
+		}
+		{ 'FX32' 
+			{ 'NAME' "FoggingCompleteDistance" 
+			}
+			{ 'DATA' 100.0000000000000(1.15.16) 
+			}
+			{ 'STR' "100.0" 
+			}
+		}
+	}
+	{ 'OBJ' 
+		{ 'NAME' "Camshot01" 
+		}
+		{ 'VEC3' 
+			{ 'NAME' "Position" 
+			}
+			{ 'DATA' 27.71220397949219(1.15.16) 47.64537429809570(1.15.16) -30.51768493652344(1.15.16)  //x,y,z
+					
+			}
+		}
+		{ 'EULR' 
+			{ 'NAME' "Orientation" 
+			}
+			{ 'DATA' 0.0000000000000000(1.15.16) 0.0000000000000000(1.15.16) 0.0000000000000000(1.15.16)  //a,b,c
+					
+			}
+		}
+		{ 'BOX3' 
+			{ 'NAME' "Global Bounding Box" 
+			}
+			{ 'DATA' -0.2500000000000000(1.15.16) -0.2500000000000000(1.15.16) 0.0000000000000000(1.15.16) 0.2500000000000000(1.15.16) 0.2500000000000000(1.15.16) 0.5000000000000000(1.15.16)  //min(x,y,z)-max(x,y,z)
+					
+			}
+		}
+		{ 'STR' 
+			{ 'NAME' "Class Name" 
+			}
+			{ 'DATA' "camshot" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "Mobility" 
+			}
+			{ 'STR' "Anchored" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "Moves Between Rooms" 
+			}
+			{ 'DATA' 0l  //False|True
+					
+			}
+			{ 'STR' "0" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "Model Type" 
+			}
+			{ 'STR' "None" 
+			}
+		}
+		{ 'STR' 
+			{ 'NAME' "Target" 
+			}
+			{ 'STR' "cube" 
+			}
+		}
+		{ 'STR' 
+			{ 'NAME' "Follow" 
+			}
+			{ 'STR' "cube" 
+			}
+		}
+		{ 'FX32' 
+			{ 'NAME' "Climb Rate" 
+			}
+			{ 'DATA' 5.000000000000000(1.15.16) 
+			}
+			{ 'STR' "5.0" 
+			}
+		}
+		{ 'STR' 
+			{ 'NAME' "Track Object" 
+			}
+			{ 'STR' "cube" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "Rotation" 
+			}
+			{ 'DATA' 0l  //Fixed|Track
+					
+			}
+			{ 'STR' "Fixed" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "Position X" 
+			}
+			{ 'DATA' 0l  //Absolute|Relative
+					
+			}
+			{ 'STR' "Relative" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "Position Y" 
+			}
+			{ 'DATA' 0l  //Absolute|Relative
+					
+			}
+			{ 'STR' "Relative" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "Position Z" 
+			}
+			{ 'DATA' 0l  //Absolute|Relative
+					
+			}
+			{ 'STR' "Relative" 
+			}
+		}
+		{ 'FX32' 
+			{ 'NAME' "FOV" 
+			}
+			{ 'DATA' 50.00000000000000(1.15.16) 
+			}
+			{ 'STR' "50.0" 
+			}
+		}
+		{ 'FX32' 
+			{ 'NAME' "Roll" 
+			}
+			{ 'DATA' 0.0000000000000000(1.15.16) 
+			}
+			{ 'STR' "0.0" 
+			}
+		}
+		{ 'FX32' 
+			{ 'NAME' "Hither" 
+			}
+			{ 'DATA' 0.001000000047497451(1.15.16) 
+			}
+			{ 'STR' "0.001" 
+			}
+		}
+		{ 'FX32' 
+			{ 'NAME' "Yon" 
+			}
+			{ 'DATA' 100.0000000000000(1.15.16) 
+			}
+			{ 'STR' "100.0" 
+			}
+		}
+	}
+	{ 'OBJ' 
+		{ 'NAME' "levelobj" 
+		}
+		{ 'VEC3' 
+			{ 'NAME' "Position" 
+			}
+			{ 'DATA' -299.4524536132813(1.15.16) -388.0901794433594(1.15.16) -416.2659912109375(1.15.16)  //x,y,z
+					
+			}
+		}
+		{ 'EULR' 
+			{ 'NAME' "Orientation" 
+			}
+			{ 'DATA' 0.0000000000000000(1.15.16) 0.0000000000000000(1.15.16) 0.0000000000000000(1.15.16)  //a,b,c
+					
+			}
+		}
+		{ 'BOX3' 
+			{ 'NAME' "Global Bounding Box" 
+			}
+			{ 'DATA' -5.000000000000000(1.15.16) -5.000000000000000(1.15.16) 0.0000000000000000(1.15.16) 5.000000000000000(1.15.16) 5.000000000000000(1.15.16) 10.00000000000000(1.15.16)  //min(x,y,z)-max(x,y,z)
+					
+			}
+		}
+		{ 'STR' 
+			{ 'NAME' "Class Name" 
+			}
+			{ 'DATA' "levelobj" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "Mobility" 
+			}
+			{ 'STR' "Anchored" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "Model Type" 
+			}
+			{ 'STR' "None" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "Animation Mailbox" 
+			}
+			{ 'DATA' 1l  //
+					
+			}
+			{ 'STR' "1" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "Visibility Mailbox" 
+			}
+			{ 'DATA' 1l  //
+					
+			}
+			{ 'STR' "1" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "Number Of Mailboxes" 
+			}
+			{ 'DATA' 101l  //
+					
+			}
+			{ 'STR' "101" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "Number Of Scratch Mailboxes" 
+			}
+			{ 'DATA' 10l  //
+					
+			}
+			{ 'STR' "10" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "Number Of Temporary Objects" 
+			}
+			{ 'DATA' 200l  //
+					
+			}
+			{ 'STR' "200" 
+			}
+		}
+		{ 'FX32' 
+			{ 'NAME' "Sound Yon" 
+			}
+			{ 'DATA' 20.00000000000000(1.15.16) 
+			}
+			{ 'STR' "20.0" 
+			}
+		}
+		{ 'FILE' 
+			{ 'NAME' "MusicVh" 
+			}
+			{ 'STR' "" 
+			}
+		}
+		{ 'FILE' 
+			{ 'NAME' "MusicVb" 
+			}
+			{ 'STR' "" 
+			}
+		}
+		{ 'FILE' 
+			{ 'NAME' "MusicSeq" 
+			}
+			{ 'STR' "" 
+			}
+		}
+	}
+	{ 'OBJ' 
+		{ 'NAME' "Director" 
+		}
+		{ 'VEC3' 
+			{ 'NAME' "Position" 
+			}
+			{ 'DATA' -222.0687103271484(1.15.16) -377.4600219726563(1.15.16) -406.2659606933594(1.15.16)  //x,y,z
+					
+			}
+		}
+		{ 'EULR' 
+			{ 'NAME' "Orientation" 
+			}
+			{ 'DATA' 0.0000000000000000(1.15.16) 0.0000000000000000(1.15.16) 0.0000000000000000(1.15.16)  //a,b,c
+					
+			}
+		}
+		{ 'BOX3' 
+			{ 'NAME' "Global Bounding Box" 
+			}
+			{ 'DATA' -5.000000000000000(1.15.16) -5.000000000000000(1.15.16) 0.0000000000000000(1.15.16) 5.000000000000000(1.15.16) 5.000000000000000(1.15.16) 10.00000000000000(1.15.16)  //min(x,y,z)-max(x,y,z)
+					
+			}
+		}
+		{ 'STR' 
+			{ 'NAME' "Class Name" 
+			}
+			{ 'DATA' "director" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "Mobility" 
+			}
+			{ 'STR' "Anchored" 
+			}
+		}
+		{ 'STR' 
+			{ 'NAME' "Script" 
+			}
+			{ 'STR' "#===========================================================================\n"
+"# Director tcl script\n"
+"#===========================================================================\n"
+"\n"
+"\n"
+"	if { [read-mailbox 100] } {\n"
+"		write-mailbox $INDEXOF_CAMSHOT [ read-mailbox 100 ]\n"
+"	}\n"
+"	if { [read-mailbox 99] } {\n"
+"		write-mailbox $INDEXOF_CAMSHOT [ read-mailbox 99 ]\n"
+"	} \n"
+"	if { [read-mailbox 98] } {\n"
+"		write-mailbox $INDEXOF_CAMSHOT [ read-mailbox 98 ]\n"
+"	} \n"
+" \n"
+"\n"
+"\n"
+"\n"
+"" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "Model Type" 
+			}
+			{ 'STR' "None" 
+			}
+		}
+	}
+	{ 'OBJ' 
+		{ 'NAME' "Omni01" 
+		}
+		{ 'VEC3' 
+			{ 'NAME' "Position" 
+			}
+			{ 'DATA' 9.137287139892578(1.15.16) -281.7885742187500(1.15.16) 378.2279357910156(1.15.16)  //x,y,z
+					
+			}
+		}
+		{ 'EULR' 
+			{ 'NAME' "Orientation" 
+			}
+			{ 'DATA' 0.0000000000000000(1.15.16) 0.0000000000000000(1.15.16) 0.0000000000000000(1.15.16)  //a,b,c
+					
+			}
+		}
+		{ 'STR' 
+			{ 'NAME' "Class Name" 
+			}
+			{ 'DATA' "light" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "Mobility" 
+			}
+			{ 'STR' "Anchored" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "Model Type" 
+			}
+			{ 'STR' "None" 
+			}
+		}
+		{ 'FX32' 
+			{ 'NAME' "lightRed" 
+			}
+			{ 'DATA' 1.000000000000000(1.15.16) 
+			}
+			{ 'STR' "1.000000" 
+			}
+		}
+		{ 'FX32' 
+			{ 'NAME' "lightGreen" 
+			}
+			{ 'DATA' 1.000000000000000(1.15.16) 
+			}
+			{ 'STR' "1.000000" 
+			}
+		}
+		{ 'FX32' 
+			{ 'NAME' "lightBlue" 
+			}
+			{ 'DATA' 1.000000000000000(1.15.16) 
+			}
+			{ 'STR' "1.000000" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "lightType" 
+			}
+			{ 'DATA' 0l  //Directional|Ambient
+					
+			}
+			{ 'STR' "Ambient" 
+			}
+		}
+	}
+	{ 'OBJ' 
+		{ 'NAME' "Direct01" 
+		}
+		{ 'VEC3' 
+			{ 'NAME' "Position" 
+			}
+			{ 'DATA' -98.58898162841797(1.15.16) -156.2540893554688(1.15.16) 212.4732513427734(1.15.16)  //x,y,z
+					
+			}
+		}
+		{ 'EULR' 
+			{ 'NAME' "Orientation" 
+			}
+			{ 'DATA' 0.9098547101020813(1.15.16) 1.490116119384766e-008(1.15.16) -0.6852889060974121(1.15.16)  //a,b,c
+					
+			}
+		}
+		{ 'STR' 
+			{ 'NAME' "Class Name" 
+			}
+			{ 'DATA' "light" 
+			}
+		}
+		{ 'FX32' 
+			{ 'NAME' "lightRed" 
+			}
+			{ 'DATA' 0.7058820128440857(1.15.16) 
+			}
+			{ 'STR' "0.705882" 
+			}
+		}
+		{ 'FX32' 
+			{ 'NAME' "lightGreen" 
+			}
+			{ 'DATA' 0.7058820128440857(1.15.16) 
+			}
+			{ 'STR' "0.705882" 
+			}
+		}
+		{ 'FX32' 
+			{ 'NAME' "lightBlue" 
+			}
+			{ 'DATA' 0.7058820128440857(1.15.16) 
+			}
+			{ 'STR' "0.705882" 
+			}
+		}
+		{ 'FX32' 
+			{ 'NAME' "lightY" 
+			}
+			{ 'DATA' 0.0000000000000000(1.15.16) 
+			}
+			{ 'STR' "0.000000" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "lightType" 
+			}
+			{ 'DATA' 1l  //Directional|Ambient
+					
+			}
+			{ 'STR' "Directional" 
+			}
+		}
+	}
+	{ 'OBJ' 
+		{ 'NAME' "Direct01.Target" 
+		}
+		{ 'VEC3' 
+			{ 'NAME' "Position" 
+			}
+			{ 'DATA' 28.31329917907715(1.15.16) -1.011771202087402(1.15.16) 56.55347824096680(1.15.16)  //x,y,z
+					
+			}
+		}
+		{ 'EULR' 
+			{ 'NAME' "Orientation" 
+			}
+			{ 'DATA' 0.0000000000000000(1.15.16) 0.0000000000000000(1.15.16) 0.0000000000000000(1.15.16)  //a,b,c
+					
+			}
+		}
+	}
+	{ 'OBJ' 
+		{ 'NAME' "Direct02" 
+		}
+		{ 'VEC3' 
+			{ 'NAME' "Position" 
+			}
+			{ 'DATA' -178.1508178710938(1.15.16) 266.8701477050781(1.15.16) 48.88835525512695(1.15.16)  //x,y,z
+					
+			}
+		}
+		{ 'EULR' 
+			{ 'NAME' "Orientation" 
+			}
+			{ 'DATA' -1.556485533714294(1.15.16) -3.141592741012573(1.15.16) 0.8750371336936951(1.15.16)  //a,b,c
+					
+			}
+		}
+		{ 'STR' 
+			{ 'NAME' "Class Name" 
+			}
+			{ 'DATA' "light" 
+			}
+		}
+		{ 'FX32' 
+			{ 'NAME' "lightRed" 
+			}
+			{ 'DATA' 0.7058820128440857(1.15.16) 
+			}
+			{ 'STR' "0.705882" 
+			}
+		}
+		{ 'FX32' 
+			{ 'NAME' "lightGreen" 
+			}
+			{ 'DATA' 0.9568629860877991(1.15.16) 
+			}
+			{ 'STR' "0.956863" 
+			}
+		}
+		{ 'FX32' 
+			{ 'NAME' "lightBlue" 
+			}
+			{ 'DATA' 0.7333329916000366(1.15.16) 
+			}
+			{ 'STR' "0.733333" 
+			}
+		}
+		{ 'FX32' 
+			{ 'NAME' "lightY" 
+			}
+			{ 'DATA' 0.0000000000000000(1.15.16) 
+			}
+			{ 'STR' "0.000000" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "lightType" 
+			}
+			{ 'DATA' 1l  //Directional|Ambient
+					
+			}
+			{ 'STR' "Directional" 
+			}
+		}
+	}
+	{ 'OBJ' 
+		{ 'NAME' "Direct02.Target" 
+		}
+		{ 'VEC3' 
+			{ 'NAME' "Position" 
+			}
+			{ 'DATA' 30.08592033386231(1.15.16) 92.97901153564453(1.15.16) 52.77104568481445(1.15.16)  //x,y,z
+					
+			}
+		}
+		{ 'EULR' 
+			{ 'NAME' "Orientation" 
+			}
+			{ 'DATA' 0.0000000000000000(1.15.16) 0.0000000000000000(1.15.16) 0.0000000000000000(1.15.16)  //a,b,c
+					
+			}
+		}
+	}
+	{ 'OBJ' 
+		{ 'NAME' "Direct03" 
+		}
+		{ 'VEC3' 
+			{ 'NAME' "Position" 
+			}
+			{ 'DATA' 257.6309814453125(1.15.16) 176.4589843750000(1.15.16) -55.25085449218750(1.15.16)  //x,y,z
+					
+			}
+		}
+		{ 'EULR' 
+			{ 'NAME' "Orientation" 
+			}
+			{ 'DATA' -1.135442018508911(1.15.16) -3.141592741012573(1.15.16) -1.027606725692749(1.15.16)  //a,b,c
+					
+			}
+		}
+		{ 'STR' 
+			{ 'NAME' "Class Name" 
+			}
+			{ 'DATA' "light" 
+			}
+		}
+		{ 'FX32' 
+			{ 'NAME' "lightRed" 
+			}
+			{ 'DATA' 0.8980389833450317(1.15.16) 
+			}
+			{ 'STR' "0.898039" 
+			}
+		}
+		{ 'FX32' 
+			{ 'NAME' "lightGreen" 
+			}
+			{ 'DATA' 0.3215689957141876(1.15.16) 
+			}
+			{ 'STR' "0.321569" 
+			}
+		}
+		{ 'FX32' 
+			{ 'NAME' "lightBlue" 
+			}
+			{ 'DATA' 0.7843139767646790(1.15.16) 
+			}
+			{ 'STR' "0.784314" 
+			}
+		}
+		{ 'FX32' 
+			{ 'NAME' "lightY" 
+			}
+			{ 'DATA' 0.0000000000000000(1.15.16) 
+			}
+			{ 'STR' "0.000000" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "lightType" 
+			}
+			{ 'DATA' 1l  //Directional|Ambient
+					
+			}
+			{ 'STR' "Directional" 
+			}
+		}
+	}
+	{ 'OBJ' 
+		{ 'NAME' "Direct03.Target" 
+		}
+		{ 'VEC3' 
+			{ 'NAME' "Position" 
+			}
+			{ 'DATA' 65.95932769775391(1.15.16) 60.73268890380859(1.15.16) 48.88835525512695(1.15.16)  //x,y,z
+					
+			}
+		}
+		{ 'EULR' 
+			{ 'NAME' "Orientation" 
+			}
+			{ 'DATA' 0.0000000000000000(1.15.16) 0.0000000000000000(1.15.16) 0.0000000000000000(1.15.16)  //a,b,c
+					
+			}
+		}
+	}
+	{ 'OBJ' 
+		{ 'NAME' "cube" 
+		}
+		{ 'VEC3' 
+			{ 'NAME' "Position" 
+			}
+			{ 'DATA' 33.68717956542969(1.15.16) 46.56342697143555(1.15.16) -31.46941375732422(1.15.16)  //x,y,z
+					
+			}
+		}
+		{ 'EULR' 
+			{ 'NAME' "Orientation" 
+			}
+			{ 'DATA' 0.0000000000000000(1.15.16) 0.0000000000000000(1.15.16) 0.0000000000000000(1.15.16)  //a,b,c
+					
+			}
+		}
+		{ 'BOX3' 
+			{ 'NAME' "Global Bounding Box" 
+			}
+			{ 'DATA' -1.250000000000000(1.15.16) -1.250000000000000(1.15.16) -1.250000000000000(1.15.16) 1.250000000000000(1.15.16) 1.250000000000000(1.15.16) 1.250000000000000(1.15.16)  //min(x,y,z)-max(x,y,z)
+					
+			}
+		}
+		{ 'STR' 
+			{ 'NAME' "Class Name" 
+			}
+			{ 'DATA' "player" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "Mobility" 
+			}
+			{ 'STR' "Physics" 
+			}
+		}
+		{ 'FX32' 
+			{ 'NAME' "Falling Acceleration" 
+			}
+			{ 'DATA' 0.0000000000000000(1.15.16) 
+			}
+			{ 'STR' "0.0" 
+			}
+		}
+		{ 'FX32' 
+			{ 'NAME' "Fall Anim Threshold" 
+			}
+			{ 'DATA' 2.000000000000000(1.15.16) 
+			}
+			{ 'STR' "2.0" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "Number Of Local Mailboxes" 
+			}
+			{ 'DATA' 4l  //
+					
+			}
+			{ 'STR' "4" 
+			}
+		}
+		{ 'STR' 
+			{ 'NAME' "Script" 
+			}
+			{ 'STR' "#====================================================================================\n"
+"# Cuberotate.tcl		Cycles thru the six axis-aligned orientations in response to\n"
+"#					joystick input.\n"
+"#					Button A/B	= next/prev\n"
+"#					Button C	= reset to rotation 0,0,0\n"
+"#====================================================================================\n"
+"\n"
+"#include \"../mailbox.def\"        // handled already\n"
+"#include \"../joystick.def\"       // should be handled the same as above   \n"
+"#include \"../user.def\"           // kts make an init script which attaches to the level object which shares state with the rest of the scripts so that global variables can be set\n"
+"#include \"objects.id\"            // kts what should we do about this?\n"
+"\n"
+"\n"
+"   set ROTATION_QUANTUM 0.01001\n"
+"\n"
+"   set TARGET_INDEX 2000   ;# which face are we rotating toward?\n"
+"   set TARGET_A 2001\n"
+"   set TARGET_B 2002\n"
+"   set TARGET_C 2003\n"
+"\n"
+"# modify target index\n"
+"\n"
+"   if { [read-mailbox $INDEXOF_HARDWARE_JOYSTICK1_RAW_JUSTPRESSED] & $JOYSTICK_BUTTON_A } {\n"
+"	   write-mailbox $TARGET_INDEX { [read-mailbox $TARGET_INDEX] +  1}\n"
+"   }\n"
+"\n"
+"   if { [read-mailbox $INDEXOF_HARDWARE_JOYSTICK1_RAW_JUSTPRESSED] & $JOYSTICK_BUTTON_B } {\n"
+"	   write-mailbox $TARGET_INDEX { [read-mailbox $TARGET_INDEX] - 1}\n"
+"   }\n"
+"\n"
+"# check for over/underflow\n"
+"   if { [read-mailbox $TARGET_INDEX] == 6} {\n"
+"	write-mailbox $TARGET_INDEX 0 }\n"
+"\n"
+"   if { [read-mailbox $TARGET_INDEX] == -1} {\n"
+"	write-mailbox $TARGET_INDEX 5 }\n"
+"\n"
+"	write-mailbox $INDEXOF_LEVEL_TO_RUN { [read-mailbox $TARGET_INDEX] + 1 }\n"
+"\n"
+"\n"
+"# set target eulers to match target index\n"
+"   if { [read-mailbox $TARGET_INDEX] == 0} {\n"
+"      write-mailbox $TARGET_A 0.25 \n"
+"      write-mailbox $TARGET_B 0.0 \n"
+"      write-mailbox $TARGET_C 0.75 \n"
+"   }\n"
+"\n"
+"   if { [read-mailbox $TARGET_INDEX] == 1} {\n"
+"		write-mailbox $TARGET_A 0.75 \n"
+"		write-mailbox $TARGET_B 0.5 \n"
+"		write-mailbox $TARGET_C 0.75 \n"
+"   }\n"
+"\n"
+"   if { [read-mailbox $TARGET_INDEX] == 2} {\n"
+"		write-mailbox $TARGET_A 0.0 \n"
+"		write-mailbox $TARGET_B 0.0 \n"
+"		write-mailbox $TARGET_C 0.0 \n"
+"   }\n"
+"\n"
+"   if { [read-mailbox $TARGET_INDEX] == 3} {\n"
+"		write-mailbox $TARGET_A 0.0 \n"
+"		write-mailbox $TARGET_B 0.0 \n"
+"		write-mailbox $TARGET_C 0.5 \n"
+"   }\n"
+"\n"
+"   if { [read-mailbox $TARGET_INDEX] == 4} {\n"
+"		write-mailbox $TARGET_A 0.0 \n"
+"		write-mailbox $TARGET_B 0.0 \n"
+"		write-mailbox $TARGET_C 0.75\n"
+"   }\n"
+"\n"
+"   if { [read-mailbox $TARGET_INDEX] == 5} {\n"
+"		write-mailbox $TARGET_A 0.0 \n"
+"		write-mailbox $TARGET_B 0.0 \n"
+"		write-mailbox $TARGET_C 0.25\n"
+"   }\n"
+"\n"
+"# Slew the object's eulers if they aren't already at the target value\n"
+"   if { [read-mailbox $INDEXOF_ROTATION_A] > [read-mailbox $TARGET_A]} {\n"
+"      write-mailbox $INDEXOF_ROTATION_A { [read-mailbox $INDEXOF_ROTATION_A] - $ROTATION_QUANTUM }\n"
+"   }\n"
+"\n"
+"   if { [read-mailbox $INDEXOF_ROTATION_A] < [read-mailbox $TARGET_A]} {\n"
+"      write-mailbox $INDEXOF_ROTATION_A { [read-mailbox $INDEXOF_ROTATION_A] + $ROTATION_QUANTUM }\n"
+"   }\n"
+"\n"
+"   if { [read-mailbox $INDEXOF_ROTATION_B] > [read-mailbox $TARGET_B]} {\n"
+"      write-mailbox $INDEXOF_ROTATION_B { [read-mailbox $INDEXOF_ROTATION_B] - $ROTATION_QUANTUM }\n"
+"   }\n"
+"\n"
+"   if { [read-mailbox $INDEXOF_ROTATION_B] < [read-mailbox $TARGET_B]} {\n"
+"      write-mailbox $INDEXOF_ROTATION_B { [read-mailbox $INDEXOF_ROTATION_B] + $ROTATION_QUANTUM }\n"
+"   }\n"
+"\n"
+"   if { [read-mailbox $INDEXOF_ROTATION_C] > [read-mailbox $TARGET_C]} {\n"
+"      write-mailbox $INDEXOF_ROTATION_C { [read-mailbox $INDEXOF_ROTATION_C] - $ROTATION_QUANTUM }\n"
+"   }\n"
+"\n"
+"   if { [read-mailbox $INDEXOF_ROTATION_C] < [read-mailbox $TARGET_C]} {\n"
+"      write-mailbox $INDEXOF_ROTATION_C { [read-mailbox $INDEXOF_ROTATION_C] + $ROTATION_QUANTUM }\n"
+"   }\n"
+"\n"
+"   if { [read-mailbox $INDEXOF_HARDWARE_JOYSTICK1_RAW_JUSTPRESSED] & $JOYSTICK_BUTTON_C } {\n"
+"	write-mailbox $INDEXOF_END_OF_LEVEL 1\n"
+"   }\n"
+"\n"
+"   if { [read-mailbox $INDEXOF_HARDWARE_JOYSTICK1_RAW_JUSTPRESSED] & $JOYSTICK_BUTTON_D } {\n"
+"		write-mailbox $INDEXOF_ROTATION_A 0.0 \n"
+"		write-mailbox $INDEXOF_ROTATION_B 0.0 \n"
+"		write-mailbox $INDEXOF_ROTATION_C 0.0 \n"
+"		write-mailbox $TARGET_A 0.0 \n"
+"		write-mailbox $TARGET_B 0.0 \n"
+"		write-mailbox $TARGET_C 0.0 \n"
+"		write-mailbox $TARGET_INDEX 3 \n"
+"#		puts \"===== ROTATION RESET TO 0,0,0 =====\" \n"
+"   }\n"
+"\n"
+"\n"
+"# Now clean up the eulers since our math leaks so badly\n"
+"   if { abs(  ([read-mailbox $INDEXOF_ROTATION_A] - [read-mailbox $TARGET_A])) < $ROTATION_QUANTUM } {\n"
+"      write-mailbox $INDEXOF_ROTATION_A [read-mailbox $TARGET_A]\n"
+"   }\n"
+"\n"
+"   if { abs(  ([read-mailbox $INDEXOF_ROTATION_B] - [read-mailbox $TARGET_B])) < $ROTATION_QUANTUM } {\n"
+"      write-mailbox $INDEXOF_ROTATION_B [read-mailbox $TARGET_B]\n"
+"   }\n"
+"\n"
+"   if { abs(  ([read-mailbox $INDEXOF_ROTATION_C] - [read-mailbox $TARGET_C])) < $ROTATION_QUANTUM } {\n"
+"      write-mailbox $INDEXOF_ROTATION_C [read-mailbox $TARGET_C]\n"
+"   }\n"
+"\n"
+"\n"
+"#( if HARDWARE_JOYSTICK1\n"
+"#	( begin\n"
+"#		( write ROTATION_A )\n"
+"#		( write \", \" )\n"
+"#		( write ROTATION_B )\n"
+"#		( write \", \" )\n"
+"#		( write ROTATION_C )\n"
+"#		( write \"; index = \" )\n"
+"#		( writeln TARGET_INDEX )\n"
+"#	)\n"
+"#)\n"
+"\n"
+"" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "Script Controls Input" 
+			}
+			{ 'DATA' 1l  //False|True
+					
+			}
+			{ 'STR' "1" 
+			}
+		}
+		{ 'FILE' 
+			{ 'NAME' "Mesh Name" 
+			}
+			{ 'STR' "cube.iff" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "Model Type" 
+			}
+			{ 'STR' "Mesh" 
+			}
+		}
+	}
+	{ 'OBJ' 
+		{ 'NAME' "Matte" 
+		}
+		{ 'VEC3' 
+			{ 'NAME' "Position" 
+			}
+			{ 'DATA' 33.99397659301758(1.15.16) 60.90718078613281(1.15.16) -29.84234237670898(1.15.16)  //x,y,z
+					
+			}
+		}
+		{ 'EULR' 
+			{ 'NAME' "Orientation" 
+			}
+			{ 'DATA' 0.0000000000000000(1.15.16) 0.0000000000000000(1.15.16) 0.0000000000000000(1.15.16)  //a,b,c
+					
+			}
+		}
+		{ 'BOX3' 
+			{ 'NAME' "Global Bounding Box" 
+			}
+			{ 'DATA' -0.5000000000000000(1.15.16) -0.5000000000000000(1.15.16) 0.0000000000000000(1.15.16) 0.5000000000000000(1.15.16) 0.5000000000000000(1.15.16) 1.000000000000000(1.15.16)  //min(x,y,z)-max(x,y,z)
+					
+			}
+		}
+		{ 'STR' 
+			{ 'NAME' "Class Name" 
+			}
+			{ 'DATA' "matte" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "Model Type" 
+			}
+			{ 'STR' "Matte" 
+			}
+		}
+		{ 'I32' 
+			{ 'NAME' "Matte Type" 
+			}
+			{ 'DATA' 0l  //None|Color|Image
+					
+			}
+			{ 'STR' "Image" 
+			}
+		}
+		{ 'FILE' 
+			{ 'NAME' "Tiles" 
+			}
+			{ 'STR' "matte.tga" 
+			}
+		}
+		{ 'FILE' 
+			{ 'NAME' "Map" 
+			}
+			{ 'STR' "matte.map" 
+			}
+		}
+	}
+}

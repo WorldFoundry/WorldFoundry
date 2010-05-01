@@ -1,0 +1,79 @@
+//==============================================================================
+// rmuv.hpi:
+// Copyright ( c ) 1994,1995,1996,1997,1998,1999,2000 World Foundry Group.  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//==============================================================================
+
+inline void
+_RMUV::Validate() const
+{
+#if DO_ASSERTIONS
+	assert(nFrame < 100);			// kts arbitrary
+	assert(strlen(szTextureName) < 	TEXTURE_NAME_LENGTH+1);
+	RangeCheck(0,u,1024);
+	RangeCheck(0,v,512);
+	RangeCheck(0,w,1024);
+	RangeCheck(0,h,512);
+	if(palx != -1)
+		RangeCheck(0,palx,1024);
+	if(paly != -1)
+		RangeCheck(0,paly,512);
+#endif
+}
+
+//==============================================================================
+
+inline void
+RMUV::Validate() const
+{
+#if DO_ASSERTIONS
+	if(_nEntries)
+	{
+		RangeCheckExclusive(0,_nEntries,100);  // kts arbitrary
+		assert(ValidPtr(_tblRMUV));
+		for(int rmuvIndex=0;rmuvIndex<_nEntries;rmuvIndex++)
+		{
+			_tblRMUV[rmuvIndex].Validate();
+		}
+	}
+	else
+		assert(_tblRMUV == NULL);
+#endif
+}
+
+//==============================================================================
+
+inline
+RMUV::RMUV()
+{
+	_nEntries = 0;
+	_tblRMUV = NULL;
+	Validate();
+}
+
+//==============================================================================
+
+inline int
+RMUV::NumEntries() const
+{
+	Validate();
+	return _nEntries;
+}
+
+//==============================================================================

@@ -1,0 +1,8 @@
+joystick system
+template objects too special
+* brender
+get rid of nomesh flag
+go over all oas files
+
+
+

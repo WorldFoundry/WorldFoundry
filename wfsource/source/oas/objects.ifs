@@ -1,0 +1,30 @@
+@*============================================================================
+@* objects.ifs: creates objects.iff, an iffcomp file which includes all of the oad's
+@* run through prep to create objects.mak
+@*============================================================================
+//============================================================================
+// objects.iff:
+// created from  object.ifs,DO NOT MODIFY
+//============================================================================
+
+@define COLTABLEHEADER
+@define COLTABLEFOOTER
+@define COLTABLEENTRY(obj1,obj2,msg1,msg2)
+
+@define OBJECTSHEADER { 'OADL'
+@define OBJECTSFOOTER }
+@define OBJECTENTRY(name,collide)       [ "@+name@+.iff@+" ]
+@define OBJECTONLYTEMPLATEENTRY(name,collide) [ "@+name@+.iff@+" ]
+@define OBJECTNOACTORENTRY(name,collide) [ "@+name@+.iff@+" ]
+@define OBJECTSUBENTRY(name,parent,collide) [ "@+name@+.iff@+" ]
+
+@include objects.mac
+
+@undef OBJECTSHEADER
+@undef OBJECTSFOOTER
+@undef OBJECTENTRY
+@undef OBJECTONLYTEMPLATEENTRY
+@undef OBJECTNOACTORENTRY
+@undef OBJECTSUBENTRY
+
+//============================================================================

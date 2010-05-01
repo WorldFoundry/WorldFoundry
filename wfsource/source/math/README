@@ -1,0 +1,16 @@
+Just a note here about a point that confused me untill I seen what was being 
+done:
+
+*Most* of these directories that have sub-dirs by port name (./linux, ./win)
+rely on the "VPATH=$(WF_TARGET)" in the .env file so that make can find the 
+source files.
+
+BUT NOT THE CASE HERE!!!!!!!!!!
+
+Here you will find files in this directory with the same name as files in the 
+port directories.  The files in this directory #include the ones in the port
+directories!
+
+THUS make NEVER MESSES WITH ./$(WF_TARGET)/* !
+
+Terry

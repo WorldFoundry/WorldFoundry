@@ -1,0 +1,74 @@
+//============================================================================
+// ColBox.hp:
+// Copyright(c) 1995 Cave Logic Studios / PF.Magic
+//============================================================================
+/* Documentation:
+
+	Abstract:
+			in memory representation of level ColBoxs
+	History:
+			Created	06-14-95 05:05pm Kevin T. Seghetti
+
+	Class Hierarchy:
+			none
+
+	Dependancies:
+		PIGS, BRender, STDIO
+	Restrictions:
+
+	Example:
+*/
+//============================================================================
+// use only once insurance
+
+#ifndef _ColBox_HP
+#define _ColBox_HP
+
+//============================================================================
+
+#include "global.hp"
+#include <pclib\boolean.hp>
+#include "point.hp"
+
+#include <source\levelcon.h>		// included from velocity\source
+
+#include <stdio.h>
+#pragma pack(1);
+extern "C" {
+#include "3dsftk.h"
+};
+#pragma pack();
+
+//============================================================================
+// in memory representation of a 3D ColBox
+
+class QColBox
+{
+public:
+	QColBox();
+	QColBox(QPoint min, QPoint max);
+	~QColBox();
+	void Bound(const mesh3ds& mesh, const kfmesh3ds& kfmesh);				// read from array of 3d points, and create a bounding box
+	boolean InsideCheck(const QPoint point) const;
+	void Write(_CollisionRectOnDisk* destBuffer) const;
+	size_t SizeOfOnDisk(void) const;			// returns size in bytes of on-disk representation
+	QPoint GetMin(void) const { return _min; }
+	QPoint GetMax(void)	const { return _max; }
+	QPoint SetMin(QPoint newMin)	{ _min = newMin; return _min; }
+	QPoint SetMax(QPoint newMax)	{ _max = newMax; return _max; }
+
+	double GetVolume(void) const;					// approximatly
+	void Rotate(float angle, QPoint& axis);
+
+	// Printing
+	friend ostream& operator<<(ostream& s, const QColBox &o);
+	operator==(const QColBox& left) const;
+	QColBox& operator+=(const QPoint& offset);							// add offset to all points in colbox
+private:
+	QPoint _min;
+	QPoint _max;
+};
+
+//============================================================================
+#endif
+//============================================================================

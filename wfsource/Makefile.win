@@ -1,0 +1,67 @@
+# wfsrc/Makefile.win
+
+## C Compiler
+CC_win                              = cl /nologo -TC
+CCC_win                             = cl /nologo -TP
+CCC_OUT_win                         = -Fo
+CCCARGS_win                         += /Zp4 /Gi /G5 /YX /GX /GR
+CCCARGS_win += -DSTRICT -DNOMINMAX -DWIN32_LEAN_AND_MEAN -DD3D_OVERLOADS
+!if "$(BUILD_DO_DEBUGGING_INFO)" == "1"
+CCCARGS_win += -Yd -Zi -Gm
+!endif
+
+!if "$(BUILD_DO_OPTIMIZATIONS)" == "1"
+CCCARGS_win += -O2 -Ox -Ob2 -GA -Zd
+!endif
+
+CCCARGS_MULTITHREADED_S =
+CCCARGS_MULTITHREADED_M = -MD
+
+MSVCLIB = $(MSVCDIR)\lib\     # comment so that \ won't be the last character on the line
+
+LIBS_win += "$(MSVCLIB)user32.lib" "$(MSVCLIB)gdi32.lib" "$(MSVCLIB)winmm.lib" "$(MSVCLIB)advapi32.lib"
+LIBS_win += "$(MSVCLIB)libcp.lib"
+#LIBS_win += "$(TCLDIR)\lib\tcl83.lib"
+
+TCL_LIB = "$(TCLDIR)\lib\tcl84.lib"
+
+DIRECTX_DIR = $(DIRECTX5_DIR)
+DIRECTXLIB_DIR  =$(DIRECTX_DIR)\lib\   # comment so that \ won't be the last character on the line
+
+
+LIBS_win_gl = "$(MSVCLIB)opengl32.lib" "$(MSVCLIB)glu32.lib" "$(MSVLIB)glaux.lib"
+LIBS_win_directx = "$(DIRECTXLIB_DIR)ddraw.lib" "$(DIRECTXLIB_DIR)dxguid.lib"
+LIBS_win += $(LIBS_win_$(RENDERER))
+
+INCLUDE_win +=
+
+## Linker
+
+
+## Librarian
+AR_win = lib /nologo
+LIBOUT_win = /out:
+
+## obj files
+OBJ = .obj
+
+## Executable
+EXE_win = .exe
+RUN_win =
+
+## Resources
+RESOURCE = $(LIB_OBJ_DIR)$(TEST_PROG).res
+
+## Assembler
+AS_win = No assembler defined
+AFLAGS_win =
+
+
+## Non-standard includes useful *only* for this platform
+CCCARGS += -DWIN32
+!if "$(RENDERER)" == "directx"
+INCLUDE += -I"$(DIRECTX_DIR)\include"
+!endif
+INCLUDE += -I"$(MSVCDIR)\include"
+INCLUDE += -I"$(TCLDIR)\include"
+				 

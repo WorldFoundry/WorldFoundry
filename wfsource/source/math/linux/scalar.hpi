@@ -1,0 +1,357 @@
+// ------------------------------------------------------------------------
+// scalar.hpi
+// Copyright (c) 1997,1998,1999,2000,2001,2002 World Foundry Group   
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ------------------------------------------------------------------------
+
+// gcc register specifiers
+//a        eax
+//b        ebx
+//c        ecx
+//d        edx
+//S        esi
+//D        edi
+//I        constant value (0 to 31)
+//q,r      dynamically allocated register (see below)
+//g        eax, ebx, ecx, edx or variable in memory
+//A        eax and edx combined into a 64-bit integer (use long longs)
+
+
+INLINE Scalar
+Scalar::Invert( void ) const
+{
+	Scalar result;
+	asm (
+		"mov	$1,%%edx\n\t"
+		"xor	%%eax,%%eax\n\t"
+		"idiv	%1\n\t"
+		: "=a" (result._value)
+		: "bc" (this->_value)
+		: "%edx"
+	);
+	return(result);
+}
+
+//-----------------------------------------------------------------------------
+
+INLINE Scalar&
+Scalar::operator *= ( const Scalar& other )
+{
+	asm (
+		"imul	%2\n\t"
+		"shrd	$16,%%edx,%%eax\n\t"
+			: "=a" (this->_value)
+			: "a" (this->_value), "bc" (other._value)
+			: "%edx"
+	);
+	return (*this);
+}
+
+//=============================================================================
+
+INLINE Scalar&
+Scalar::operator /= ( const Scalar& other )
+{
+    // catch div 0
+    if(
+        (other._value == 0) ||
+        (abs(_value / other._value) > 32767)
+      )
+    {
+        //if(_value > 0)
+        //    *this = SCALAR_CONSTANT( -32000 );
+        //else
+            *this = SCALAR_CONSTANT( 32000 );
+        return *this;
+    }
+
+    MATH_DEBUG( std::cout << "Div: " << hex << _value << ", " << hex << other._value << endl; )
+
+    asm (
+        "mov	%%eax,%%edx\n\t"
+        "shl	$16,%%eax\n\t"
+        "sar	$16,%%edx\n\t"
+        "idiv	%2\n\t"
+        : "=a" (this->_value)
+        : "a" (this->_value), "bc" (other._value)
+        : "%edx"
+    );
+	return *this;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Scalar
+Scalar::MulDiv(const Scalar b, const Scalar c) const
+{
+	Scalar result;
+
+	asm (
+		"imul	%%ebx\n\t"
+		"idiv	%%ecx\n\t"
+		: "=a" (result._value)
+		: "a" (this->_value), "b" (b._value), "c" (c._value)
+		: "%edx"
+	);
+	return result;
+}
+
+//=============================================================================
+
+#if 1
+#define Multiply64(__a,__b, __m1, __m0) \
+	asm (                                \
+		"imul	%3\n\t"                     \
+		: "=a" (__m0), "=d" (__m1)        \
+		: "a" (__a), "bcd" (__b)          \
+	);                                   
+
+#else
+
+INLINE void
+Multiply64(long __a,unsigned long __b,long& __m1,unsigned long& __m0)
+{
+	asm (
+		"imul	%3\n\t"
+		: "=a" (__m0), "=d" (__m1)
+		: "a" (__a), "bcd" (__b)
+	);
+}
+
+INLINE void
+Multiply64(unsigned long __a,unsigned long __b,unsigned long& __m1,unsigned long& __m0)
+{
+	asm (
+		"imul	%3\n\t"
+		: "=a" (__m0), "=d" (__m1)
+		: "a" (__a), "bcd" (__b)
+	);
+}
+
+#endif
+
+#define MultiplyAndNop64(__a, __b, __m1, __m0) Multiply64(__a,__b,__m1,__m0)
+
+//=============================================================================
+
+#if 1
+#define AddCarry64(__a1, __a0, __b1, __b0)                  \
+	asm (                                                    \
+		"add	%2,%4\n\t"                                      \
+		"adc	%3,%5\n\t"                                      \
+		: "=r" (__a0), "=r" (__a1)                            \
+		: "g" (__b0), "g" (__b1), "0" (__a0), "1" (__a1)      \
+	);
+
+#else
+INLINE void
+AddCarry64(unsigned long& __a1, unsigned long& __a0, unsigned long __b1, unsigned long __b0)
+{
+	asm (
+		"add	%2,%4\n\t"
+		"adc	%3,%5\n\t"
+		: "=r" (__a0), "=r" (__a1)
+		: "g" (__b0), "g" (__b1), "0" (__a0), "1" (__a1)
+	);
+}
+
+//==============================================================================
+
+INLINE void
+AddCarry64( long& __a1, unsigned long& __a0, long __b1, unsigned long __b0)
+{
+	asm (
+		"add	%2,%0\n\t"
+		"adc	%3,%5\n\t"
+		: "=r" (__a0), "=r" (__a1)
+		: "r" (__b0), "r" (__b1), "0" (__a0), "1" (__a1)
+	);
+}
+#endif
+
+//=============================================================================
+// kts it is not defined whether right shift is logical or arithmatic in C
+// so we have to implement both in assembly
+
+
+#if 1
+#define ShiftRightArithmetic(__sra1, __sra0, __sran)  \
+	asm (                                              \
+		"sar	%%cl,%0"                                  \
+		: "=r" (__sra1)                                 \
+		: "0" (__sra0), "c" (__sran)                    \
+	);
+
+#else
+inline void
+ShiftRightArithmetic(long& __sra1,long __sra0,long __sran)
+{
+//	(__sra1 = WFShiftRightArithmatic(__sra0,__sran))
+	asm (
+		"sar	%%cl,%0"
+		: "=r" (__sra1)
+		: "0" (__sra0), "c" (__sran)
+	);
+}
+#endif
+
+
+
+
+#if 1
+#define ShiftRightLogical(output,input,shift) \
+   asm (                                      \
+   "shrl   %%cl,%1\n\t"                        \
+   : "=g" (output)                            \
+   : "0" (input), "c" (shift)                 \
+   : "cc"                                     \
+   );
+#else
+INLINE void
+ShiftRightLogical(long& __srl1,unsigned long __srl0,long __srln)
+{
+	asm (
+		"shrl	%%cl,%1\n\t"
+		: "=g" (__srl1)
+		: "0" (__srl0), "c" (__srln)
+   : "cc"                                       
+	);
+}
+
+INLINE void
+ShiftRightLogical(unsigned long& __srl1,unsigned long __srl0,long __srln)
+{
+//	(__srl1 = WFShiftRightLogical(__srl0,__srln))
+	asm (
+		"shrl	%%cl,%1\n\t"
+		: "=g" (__srl1)
+		: "0" (__srl0), "c" (__srln)
+   : "cc"                                       
+	);
+}
+#endif
+
+#define ShiftRightLogicalVar ShiftRightLogical
+
+//=============================================================================
+
+// kts new version
+// result a1:a0 = a1:a0 << shift
+
+#define ShiftLeft64(__a1, __a0, __shift)              \
+{                                                     \
+	__a1 <<= __shift;                                  \
+                                                      \
+	unsigned long temp;                                \
+	ShiftRightLogicalVar(temp,__a0,32 - __shift);      \
+                                                      \
+	__a1 |= temp;                                      \
+	__a0 <<= __shift;                                  \
+}
+
+//=============================================================================
+
+// result a1:a0 = a1:a0 >> shift
+#define ShiftRight64(__a1, __a0, __shift)                                                       \
+{                                                                                               \
+   MATH_DEBUG( std::cout << "ShiftRight64:" << endl; )                                               \
+   MATH_DEBUG( std::cout << " before ShiftRightLogicalVar:" << __a0 << ", " << __shift << endl; )    \
+	ShiftRightLogicalVar(__a0,__a0,__shift);                                                     \
+   MATH_DEBUG( std::cout << " after ShiftRightLogicalVar :" << __a0 << ", " << __shift << endl; )    \
+                                                                                                \
+	register long temp;                                                                          \
+	temp = __a1 << (32-__shift);                                                                 \
+	__a0 |= temp;                                                                                \
+   MATH_DEBUG( std::cout << " before ShiftRightLogicalVar1:" << __a1 << ", " << __shift << endl; )   \
+	ShiftRightLogicalVar(__a1,__a1,__shift);                                                     \
+   MATH_DEBUG( std::cout << " after ShiftRightLogicalVar1 :" << __a1 << ", " << __shift << endl; )   \
+}
+
+//==============================================================================
+
+INLINE long
+JoinHiLo(long a, unsigned long b)
+{
+	int result;
+
+	asm (
+		"shld	$16,%2,%0\n\t"
+		: "=g" (result)
+		: "0" (a), "r" (b)
+	);
+	return result;
+	// returns result in eax
+}
+
+//==============================================================================
+
+INLINE
+int32
+FixedMac3(int32 a, uint32 b, int32 c, uint32 d, int32 e, uint32 f)
+{
+   	unsigned long out0;
+	long out1;
+	unsigned long out2;
+	long out3;
+
+	// result = a*b + c*d + e*f
+	MultiplyAndNop64(a,b,out1,out0);
+
+	Multiply64(c,d,out3,out2);
+
+	AddCarry64(out1,out0,out3,out2);
+
+	Multiply64(e,f,out3,out2);
+
+	AddCarry64(out1,out0,out3,out2);
+
+	return JoinHiLo(out1,out0);
+}
+
+//=============================================================================
+// aa1:aa0 = aa1:aa0 + bb1:bb0
+
+#if 1
+#define SubCarry64(__aa1, __aa0, __bb1, __bb0)                    \
+	asm (                                                          \
+		"sub	%2,%0\n\t"                                            \
+		"sbb	%3,%1\n\t"                                            \
+		: "=r" (__aa0), "=r" (__aa1)                                \
+		: "g" (__bb0), "g" (__bb1), "0" (__aa0), "1" (__aa1)        \
+	);                                                             
+
+
+#else
+
+INLINE void
+SubCarry64(long& __aa1, long& __aa0, long __bb1, long __bb0)
+{
+//		__aa0 = WFSubCarry(__aa1,__aa0,__bb1,__bb0);	
+//		__aa1 = __upperResult
+	asm (
+		"sub	%2,%0\n\t"
+		"sbb	%3,%1\n\t"
+		: "=r" (__aa0), "=r" (__aa1)
+		: "g" (__bb0), "g" (__bb1), "0" (__aa0), "1" (__aa1)
+	);
+}
+#endif
+
+//==============================================================================
+

@@ -1,0 +1,62 @@
+<html>
+
+<head>
+<title>Memory Analysis</title>
+<meta name="GENERATOR" content="William B. Norris IV">
+<style>
+	.thd { color: "#0000FF"; background: "#808000"; font-weight: "bold"; cursor: "s-resize" }
+</style>
+</head>
+
+<script language="JavaScript">
+function sort()
+{
+	var curElement = event.srcElement;
+	if ( curElement.id != "" )
+	{
+		if ( texturetbl.lastElement )
+			texturetbl.lastElement.style.color = "blue";
+		stocklist.Sort = curElement.id;
+		curElement.style.color = "red";
+		stocklist.Reset();
+		texturetbl.lastElement = curElement;
+	}
+}
+</script>
+
+<body>
+
+<h1><img src="ram.gif" width="100" height="57">Memory Analysis</h1>
+
+<object id="stocklist" width="0" height="0" classid="clsid:333C7BC4-460F-11D0-BC04-0080C7055A83">
+	<param name="DataURL" value="memory.dat">
+	<param name="FieldDelim" value=",">
+	<param name="TextQualifier" value="">
+	<param name="UseHeader" value="True">
+</object>
+
+<div align="left">
+<table id="texturetbl" datasrc="#stocklist" border=1>
+<thead>
+	<tr onclick=sort()>
+		<td class=thd><div id=Total>Total</div></td>
+		<td class=thd><div id=Largest>Largest</div></td>
+		<td class=thd><div id=Level>Level</div></td>
+		<td class=thd><div id=File>File</div></td>
+		<td class=thd><div id=numAllocations># allocations</div></td>
+	</tr>
+</thead>
+<tbody>
+<tr>
+	<td><div datafld="Total"></div></td>
+	<td><div datafld="Largest"></div></td>
+	<td><div datafld="Level"></div></td>
+	<td><div datafld="File"></div></td>
+	<td><div datafld="numAllocations"></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,37 @@
+// clock.hpi
+
+inline Scalar
+Clock::operator()() const
+{
+	return _nWallClock;
+}
+
+
+inline Scalar
+Clock::Current() const
+{
+	return _nWallClock;
+}
+
+
+inline Scalar
+Clock::Delta() const
+{
+	return _deltaClock;
+}
+
+
+inline Scalar
+Clock::LastDelta() const
+{
+	return _lastDeltaClock;
+}
+
+
+inline void
+Clock::reset()
+{
+	_nWallClock =
+	_deltaClock =
+	_lastDeltaClock = Scalar::zero;
+}

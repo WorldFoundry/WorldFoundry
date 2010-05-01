@@ -1,0 +1,105 @@
+// ------------------------------------------------------------------------
+// Copyright(c) 1997,1998,1999,2000 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ------------------------------------------------------------------------
+
+#ifndef _VECTOR2_HP
+#define _VECTOR2_HP
+
+// ------------------------------------------------------------------------
+// 2D Vector Class
+// ------------------------------------------------------------------------
+
+//#include "anmswtch.hp"
+#include <math/euler.hp>
+#include <math/scalar.hp>
+
+// ------------------------------------------------------------------------
+// Class Declaration
+// ------------------------------------------------------------------------
+
+class Vector2
+{
+  public:
+	// construct/destruct
+	INLINE Vector2();
+	INLINE Vector2( const Scalar x, const Scalar y );
+	INLINE Vector2( const Vector2& );
+
+	// conversion operators
+	INLINE Scalar& operator [] ( int i );
+		// read/write access to elements, i: 0..2
+	INLINE const Scalar& operator [] ( int i ) const;
+		// read-only access to elements, i: 0..2
+
+	// query methods
+	INLINE const Scalar& X() const;
+	INLINE const Scalar& Y() const;
+
+	// assignment/set methods
+	INLINE Vector2& operator = ( const Vector2& );
+	INLINE void SetX( const Scalar& x );
+	INLINE void SetY( const Scalar& y );
+
+	INLINE void rotate(Angle x);
+
+	// arithmetic operators
+	INLINE bool		operator == ( const Vector2& ) const;
+	INLINE Vector2		operator - () const;
+	INLINE Vector2		operator += ( const Vector2& b );
+	INLINE Vector2		operator + ( const Vector2& ) const;
+	INLINE Vector2		operator -= ( const Vector2& b );
+	INLINE Vector2		operator - ( const Vector2& ) const;
+	INLINE Vector2		operator *= ( const Scalar mult );
+	INLINE Vector2		operator * ( const Scalar mult ) const;
+	INLINE Vector2		operator /= ( const Scalar div );
+	INLINE Vector2		operator / ( const Scalar div ) const;
+
+	INLINE void		Normalize();
+	INLINE void		NormalizeQuick();
+
+	Scalar		Length() const;
+	Scalar		RLength() const;
+
+#if DO_IOSTREAMS
+	friend std::ostream& operator << ( std::ostream&, const Vector2& );
+#endif
+
+#if defined( WRITER )
+	friend binostream& operator << ( binostream&, const Vector2& );
+#endif
+	friend binistream& operator >> ( binistream&, Vector2& );
+
+	// static data members
+	static const Vector2 zero;
+	static const Vector2 one;
+	static const Vector2 unitX;
+	static const Vector2 unitY;
+	static const Vector2 unitNegativeX;
+	static const Vector2 unitNegativeY;
+
+  private:
+	Scalar _arrScalar[2];
+};
+
+#include <math/vector2.hpi>	// include all inline definitions as appropriate
+
+//==============================================================================
+#endif // _Vector2_HP
+//==============================================================================

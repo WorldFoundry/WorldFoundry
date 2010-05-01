@@ -1,0 +1,12 @@
+// asset.txt: file containing enumeration of asset file extensions
+
+
+.tga			// image
+.bmp			// image
+.pf3			// model
+.avi			// movie
+.ruv			// texture metamap coordinates
+.wid			// font width table
+
+
+

@@ -1,0 +1,200 @@
+//=============================================================================
+// savegame.hp: Interface to save game files
+// by William B. Norris IV
+// Copyright ( c ) 1997,98,99 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//=============================================================================
+
+
+#ifndef SAVEGAME_HP
+#define SAVEGAME_HP
+
+#include <streams/binstrm.hp>
+#include <math/scalar.hp>
+
+// TODO: move to a more general place (pigsys?, maybe)
+inline size_t ROUND( size_t n, size_t size )
+{
+	return ( ( n + size - 1 ) / size ) * size;
+}
+
+class saveistream : public binios
+{
+public:
+	enum
+	{
+#if defined( __PSX__ )
+		default_buffer_size		= 128			// Must be 128 on PlayStation!
+#else
+		default_buffer_size		= 512
+#endif
+	};
+
+	saveistream
+	(
+		char const* name,
+		const size_t bufsz					= default_buffer_size,
+		const alignment align8				= native_align8,
+		const alignment align16				= native_align16,
+		const alignment align32				= native_align32,
+		const alignment alignobject		  	= native_alignobject,
+		const word_order order				= native_word_order,
+		const scalar_type sc_type			= native_scalar_type
+	);
+#if 0
+	// allocate a sub-stream, destructor updates parent
+	saveistream
+	(
+		saveistream& parent,
+		binios::streampos nbytes
+	);
+#endif
+
+	~saveistream();
+
+	saveistream& operator>>( char& c );
+//	saveistream& operator>>( uint8& i );
+//	saveistream& operator>>( int8& i );
+//	saveistream& operator>>( uint16& i );
+//	saveistream& operator>>( int16& i );
+	saveistream& operator>>( uint32& i );
+	saveistream& operator>>( int32& i );
+//	saveistream& operator>>( saveistream &(*f)( saveistream & ) );
+	saveistream& operator>>( char* str );
+	saveistream& operator>>( Scalar& scalar );
+
+//	streampos getFilelen();
+
+	saveistream& read( char * buf, int len );
+	saveistream& readHeader( const uint32 blocktype, const uint32 blocksize );
+//	saveistream& seekg( streampos position );
+//	saveistream& seekg( streamoff offset, seekdir direction );
+
+	int			aligned( const size_t pow2_boundary ) const;
+	saveistream& align( const int pow2_boundary );
+	inline void Validate( const char * file, const int line ) const;
+
+protected:
+	void reset();					// reset to beginning of file
+	bool pagein();
+	int32 checksum();				// TODO: return error code(?)
+
+	// Hide implementation differences between platforms
+	saveistream& readHeader();		// identifies game; use to validate if save file for this game
+	int openSaveFile( const char* name );
+	void closeSaveFile() const;		// _fh no longer valid
+	int readSaveFile();				// reads _buf
+
+	streampos tellg() const;			// returns offset within buffer
+
+#if 0
+	saveistream *	_parent;
+#endif
+
+	int32 _filesize;
+	const char* _buf;				// temporary buffer used to store incoming data before commited
+	size_t _bufsz;					// size of temporary buffer
+	const char* _end;				// end of buffer ( = _buf + _bufsz )
+	char* _cur;						// current position in buffer
+
+	int _fh;
+	char* _name;
+};
+
+// ------------------------------------------------------------------------
+
+class saveostream : public binios
+{
+public:
+	enum
+	{
+#if defined( __PSX__ )
+		default_buffer_size		= 128			// Must be 128 on PlayStation!
+#else
+		default_buffer_size		= 512
+#endif
+	};
+
+	saveostream
+	(
+		char const* name,
+		const size_t filesize,
+		const size_t bufsz					= default_buffer_size,
+		const alignment align8				= native_align8,
+		const alignment align16				= native_align16,
+		const alignment align32				= native_align32,
+		const alignment alignobject		  	= native_alignobject,
+		const word_order order				= native_word_order,
+		const scalar_type sc_type			= native_scalar_type
+	);
+	~saveostream();
+
+	saveostream& operator <<( const char c );
+//	saveostream& operator <<( const uint8 i );
+//	saveostream& operator <<( const int8 i );
+//	saveostream& operator <<( const uint16 i );
+//	saveostream& operator <<( const int16 i );
+	saveostream& operator <<( const uint32 i );
+	saveostream& operator <<( const int32 i );
+//	saveostream& operator <<( saveostream& (*f)( saveostream& ) );
+	saveostream& operator <<( const char* str );
+	saveostream& operator <<( const Scalar scalar );
+
+	saveostream& write( char const * buf, int len );
+
+//	saveostream& seekp( streampos position );
+//	saveostream& seekp( streamoff offset, seekdir direction );
+
+	int	aligned( const size_t pow2_boundary ) const;
+	saveostream& align( const int pow2_boundary );
+
+	inline void Validate( const char * file, const int line ) const;
+
+protected:
+	// Hide implementation differences between platforms
+	saveostream& writeHeader();		// identifies game; use to validate if save file for this game
+	int createSaveFile( const char* name );
+	void closeSaveFile() const;		// _fh no longer valid
+	int writeSaveFile() const;		// writes _buf
+
+	saveostream& flush();			// commits entire buffer and resets buffer (INTERNAL)
+	INLINE streampos tellp() const;	// offset from beginning of buffer (INTERNAL)
+
+	const char* _buf;				// temporary buffer used to store incoming data before commited
+	size_t _bufsz;					// size of temporary buffer
+	const char* _end;				// end of buffer ( = _buf + _bufsz )
+	char* _cur;						// current position in buffer
+
+	int32 _filesize;				// maximum number of bytes for the saved game file
+	int32 _filesizeRounded;		// rounded up to _bufsz increments
+	int _nBlocks;					// number of 8K blocks
+	int _fh;
+	int _cbWritten;
+
+	int32 _checksum;
+	int32 checksum( size_t );
+};
+
+#if	USE_INLINE_DEFS || defined( _SAVEGAME_CC )
+#include <savegame/savegame.hpi>
+#endif
+
+//=============================================================================
+#endif // SAVEGAME_HP
+//=============================================================================

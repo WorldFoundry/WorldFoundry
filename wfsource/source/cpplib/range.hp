@@ -1,0 +1,139 @@
+//==============================================================================
+// range.hp:
+// Copyright 1998,1999,2000 World Foundry Group.  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+//==============================================================================
+
+#ifndef RANGE_HP
+#define RANGE_HP
+
+//==============================================================================
+#include <pigsys/assert.hp>
+//==============================================================================
+
+class Range
+{
+public:
+	Range( int min, int max )
+	{
+		_val = _min = min;
+		_max = max;
+		Validate();
+	}
+	Range( const Range& r )
+	{
+		_min = r._min;
+		_max = r._max;
+		_val = r._val;
+	}
+	virtual ~Range()
+	{
+		Validate();
+	}
+	virtual void Validate() const
+	{
+		RangeCheckInclusive( _min, _val, _max );
+	}
+
+	virtual int operator++() = 0;
+	virtual int operator--() = 0;
+
+	int operator()() const
+	{
+		Validate();
+		return _val;
+	}
+	int operator=( int val )
+	{
+		Validate();
+		_val = val;
+		Validate();
+		return _val;
+	}
+
+	int min() const
+	{
+		Validate();
+		return _min;
+	}
+	int max() const
+	{
+		Validate();
+		return _max;
+	}
+
+	// STL
+	int start() const		{ return _min; }
+	int end() const			{ return _max+1; }
+
+protected:
+	int _min;
+	int _max;
+	int _val;
+};
+
+
+class Range_Wrap : public Range
+{
+public:
+	Range_Wrap( int min, int max ) : Range( min, max )	{ }
+#if 0
+	Range_Wrap( const Range& r )
+	{
+		_min = r._min;
+		_max = r._max;
+		_val = r._val;
+	}
+#endif
+	~Range_Wrap()	{ }
+
+	int operator=( int val )
+	{
+		Validate();
+		_val = val;
+		Validate();
+		return _val;
+	}
+
+	virtual int operator++();
+	virtual int operator--();
+};
+
+
+class Range_NoWrap : public Range
+{
+public:
+	Range_NoWrap( int min, int max ) : Range( min, max )	{ }
+#if 0
+	Range_NoWrap( const Range& r )
+	{
+		_min = r._min;
+		_max = r._max;
+		_val = r._val;
+	}
+#endif
+	~Range_NoWrap()	{ }
+
+	virtual int operator++();
+	virtual int operator--();
+};
+
+//==============================================================================
+#endif	// RANGE_HP
+//==============================================================================
+

@@ -1,0 +1,90 @@
+
+#ifndef _QUAT_HP
+#define _QUAT_HP
+
+// ------------------------------------------------------------------------
+// Copyright (c) 1997, PF. Magic, Inc.  
+//
+// This is UNPUBLISHED PROPRIETARY SOURCE CODE of PF. Magic, Inc.;
+// The contents of this file may not be disclosed to third parties, copied
+// or duplicated in any form, in whole or in part, without the prior
+// written permission of PF. Magic, Inc.
+// ------------------------------------------------------------------------
+
+#include <xbr/xbr.hp>
+
+// ------------------------------------------------------------------------
+// Quaternion Class
+// ------------------------------------------------------------------------
+
+class Scalar;
+class Euler;
+class Quaternion;
+class Matrix34;
+#if defined( __PSX__ )
+class Matrix3t;
+#endif
+
+class binistream;
+#if defined( WRITER )
+class binostream;
+#endif
+
+DBSTREAM1( class ostream; )
+
+class Quaternion
+{
+public:
+	INLINE Quaternion();
+		// sets to identity
+	INLINE Quaternion( const Scalar x, const Scalar y, const Scalar z, const Scalar w );
+	INLINE Quaternion( const Euler& euler );
+	INLINE Quaternion( const Matrix34& matrix34 );
+#if defined( __PSX__ )
+	INLINE Quaternion( const Matrix3t& matrix3t );
+#endif
+	// default copy constructor, assignment, and destructor are fine
+
+	// initialization methods
+	void Construct( const Scalar x, const Scalar y, const Scalar z, const Scalar w );
+	void ConstructIdentity();
+	void ConstructEuler( const Euler& euler );
+	void ConstructMatrix34( const Matrix34& matrix34 );
+#if defined( __PSX__ )
+	void ConstructMatrix3t( const Matrix3t& matrix3t );
+#endif
+
+	// access/manipulate data members
+	INLINE void SetX( Scalar x );
+	INLINE void SetY( Scalar y );
+	INLINE void SetZ( Scalar z );
+	INLINE void SetW( Scalar w );
+	INLINE Scalar GetX() const;
+	INLINE Scalar GetY() const;
+	INLINE Scalar GetZ() const;
+	INLINE Scalar GetW() const;
+
+	// ostream support
+#if DO_IOSTREAMS
+	friend ostream& operator << ( ostream&, const Quaternion& );
+#endif
+
+	// binary io stream support
+	friend binistream& operator >> ( binistream& binis, Quaternion& x );
+#if defined( WRITER )
+	friend binostream& operator << ( binostream& binos, const Quaternion& x );
+#endif
+
+//	// BRender accessor (use only if absolutely necessary)
+//	INLINE br_quat* BrQuatPtr();
+//	INLINE const br_quat* BrQuatPtr() const;
+
+private:
+//	br_quat _quat;
+};
+
+//=============================================================================
+#include <math/quat.hpi>	// include all inline definitions as appropriate
+//=============================================================================
+#endif // _QUAT_HP
+//=============================================================================

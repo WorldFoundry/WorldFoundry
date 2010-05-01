@@ -1,0 +1,310 @@
+//==============================================================================
+// level.hp:
+// Copyright ( c ) 1994,1995,1996,1997,1999,2000,2001,2002,2003 World Foundry Group.  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description: The Level class encapsulates data and behavior for a level
+//              in the game.
+// Original Author: Ann Mei Chang
+//============================================================================
+
+#ifndef _LEVEL_HP
+#define _LEVEL_HP
+
+//============================================================================
+// ideas for reducing the size of Level:
+//	seperate mailbox class (handles scratch, etc.)
+// move global channel constructor into channel.*
+// seperate class describing the game's usage of VRAM (perm x,y etc.)
+// oad and common block classes
+// template actor managment class
+// general joystick class, hiding the joystick record/playback code
+
+//============================================================================
+// Includes
+//============================================================================
+
+#include <pigsys/pigsys.hp>
+#include <hal/diskfile.hp>
+#include <timer/clock.hp>
+#include <math/scalar.hp>
+#include <cpplib/array.hp>
+#include <cpplib/pointercontainer.hp>
+#include <input/inputdig.hp>
+#include <scripting/scriptinterpreter.hp>
+#include <oas/levelcon.h>
+#include <asset/assets.hp>
+#include <mailbox/mailbox.hp>
+#include <physics/physical.hp>
+#include <physics/colbox.hp>
+#include <audio/device.hp>
+#include <audio/buffer.hp>
+#include <gfx/display.hp>
+#include <gfx/viewport.hp>
+#include <gfx/rendmatt.hp>
+#include <gfx/vmem.hp>
+#include <anim/channel.hp>
+#include <room/room.hp>
+#include <room/actrooms.hp>
+#include <oas/objectstartupdata.hp>
+#include "mailbox.hp"
+#include "actor.hp"
+
+//============================================================================
+// Class and Structure Prototypes
+//============================================================================
+
+class Camera;
+class Path;
+class Level;
+class Director;
+class LevelRoomCallbacks;
+
+struct _LevelObj;
+
+//==============================================================================
+// callback inteface to assets class to interface it to the room class
+
+class AssetCallbackRoom : public AssetCallback
+{
+public:
+   AssetCallbackRoom(const LevelRooms& rooms);
+   virtual int GetSlotIndex(int roomIndex);
+private:
+   const LevelRooms& _rooms;
+};
+
+//==============================================================================
+
+class WorldFoundryMailboxesManager : public MailboxesManager
+{
+public:
+    WorldFoundryMailboxesManager(BaseObjectList& objects, Mailboxes& mailboxes);  // mailboxes get returned if the object index is 0
+    ~WorldFoundryMailboxesManager();
+    virtual Mailboxes& LookupMailboxes(int objectIndex);
+private:    
+    BaseObjectList&         _objects;
+    Mailboxes& _mailboxes;
+};
+
+//============================================================================
+// External Variables
+//============================================================================
+
+extern Level* theLevel;
+
+//============================================================================
+// FIX - level id will be by asset eventually
+
+//typedef const char* LevelID;
+
+//============================================================================
+
+class Level
+{
+  public:
+	// construction/deletion
+	Level
+	(
+		_DiskFile* _diskFile
+		,ViewPort& _viewPort
+        ,VideoMemory& videoMemory
+        ,Mailboxes* parentMailboxes
+	);
+	~Level();
+
+	// initialization methods
+	Actor* ConstructTemplateObject(int32 templateObjectIndex, int32 idxCreator, Vector3 position=Vector3::zero, Vector3 velocity=Vector3::zero);
+
+	inline void Validate() const;
+	// miscellaneous query methods
+	inline const _LevelOnDisk& GetLevelData() const;       // return LevelOnDisk structure
+	inline int GetMaxObjectIndex() const;
+	inline Camera * camera() const;
+	inline const _LevelObj& GetLevelOAD() const;
+	inline ViewPort& GetViewPort();
+	inline int GetActiveRoomIndex(int roomIndex) const;  // converts level room index into active room index (handles perm index as well)
+	inline AssetManager& GetAssetManager();
+	inline const ActiveRooms& GetActiveRooms() const;
+	inline const LevelRooms& GetLevelRooms() const;
+	inline LevelRooms& GetMutableLevelRooms();
+	inline const CommonBlock& GetCommonBlock() const;
+	inline Memory& GetMemory();
+
+	// main character query, set, and update
+	inline PhysicalObject* mainCharacter() const;
+	inline void setMainCharacter( PhysicalObject* newMainCharacter );
+	inline void updateMainCharacter();
+
+	// update and render methods
+	void update(Scalar deltaTime);
+	void RenderScene();
+	inline bool done() const;                          // returns false when level ends
+	void reset( );
+
+	// object add and remove methods
+	void AddObject( BaseObject* object, const Vector3& posStartAt );	// add to level
+	void SetPendingRemove( const BaseObject* object );
+
+	// object <-> index
+	inline Actor* GetActorNoTemplate( int idxActor ) const;
+	inline Actor* getActor( int idxActor ) const;
+	BaseObject* GetObject( int idxObject ) const;
+	int GetObjectIndex( const BaseObject* object );
+
+   BaseObjectList& GetObjectList();
+
+	// mailbox methods
+	void WriteSystemMailbox( int boxnum, Scalar value );
+	Scalar ReadSystemMailbox( int boxnum ) const;
+    Mailboxes& GetMailboxes();
+
+   const Clock& LevelClock() const;
+
+	// miscellaneous public methods - not sure how to categorize
+	inline const SObjectStartupData* FindTemplateObjectData( int32 objectIndex ) const;
+
+	Scalar EvalScript( const void* , int objectIndex);
+
+	SoundDevice*					_theSoundDevice;
+	SoundBuffer*					_sfx[ 128 ];
+
+private:
+   // private functions
+  void initLevelOad();
+  void initModels();
+  void ConstructStartupData( SObjectStartupData&, _ObjectOnDisk*, int index );
+  void constructObject( SObjectStartupData& startupData, int index );
+
+	void updateSound();
+	void detectCollision();
+
+	// Checks for things that have moved between rooms
+	void updateRoomContents();
+	void removePendingObjects();
+
+	// level data load methods
+	void LoadLevelData();				// assumes _levelFile already set to valid DiskFile
+
+	// data members initialized before constructor body
+	ViewPort&						_viewPort;
+	// data members initialized in constructor body
+	void*							_levelOnDiskMemory;  // actual _levelData allcation address
+	_LevelOnDisk *					_levelData;
+   const CommonBlock*      _commonBlock;
+	_LevelObj*					_levelOad;
+	LevelRooms*				    	_theLevelRooms;
+	ActiveRooms*					_theActiveRooms;  // needs to be after _numRooms
+   BaseObjectList             _actors;
+	AssetManager* _theAssetManager;
+	_DiskFile* _levelFile;
+	QInputDigital*		_hardwareInput1;		// actually attached to the joystick
+	QInputDigital*		_hardwareInput2;		// actually attached to the joystick
+	QInputDigital*		_hardwareInput3;		// actually attached to the joystick
+	QInputDigital*		_hardwareInput4;		// actually attached to the joystick
+#if defined(JOYSTICK_RECORDER)
+	InputScript* _joystickPlaybackInput;		// Used to playback a joystick record file
+	std::ofstream*	 _joystickOutputFile;			// Used to output a joystick record file
+#endif
+
+	bool							_done;
+
+   // special Actors we need to refer to
+	Director *						_director;
+	Camera *						_camera;
+	PhysicalObject* 						_mainCharacter;
+#pragma message( __FILE__ ": remove _idealMainCharacter" )
+	PhysicalObject*							_idealMainCharacter;
+
+#if 0	//msvc
+#if defined( TASKER )
+	IMessagePort					_port;
+#endif	// TASKER
+#endif
+
+  #if defined( MIDI_MUSIC )
+	Sound*							_theSound;
+  #endif
+
+	Clock levelClock;
+
+	// object list variables
+	int32 							_toBeRemovedObjects[100];
+	int 							_numToBeRemovedObjects;
+
+	// template object variables
+	SObjectStartupData **		_templateObjects;						// pointer to array of template object pointers, in levelcon order
+	int							_numTemplateObjects;
+	// system mailboxes requiring storage
+	long						_camRollMailBox;						// kts is there a better way?
+	long						_camShotMailBox;						// kts is there a better way?
+
+   PointerContainer<Memory> _memory;
+
+   MailboxesWithStorage         _scratchMailboxes;            
+   LevelMailboxes               _mailboxes;            
+   WorldFoundryMailboxesManager  _mailboxesManager;            
+   
+   ScriptInterpreter*  _interpreter;
+
+	// Memory configuration [only valid during constructor]
+	struct levelMemoryConfiguration
+	{
+		uint32 tagRam;
+		uint32 cbRamChunk;
+			uint32 tagObjects;	uint32 cbObjectsDRam;
+			uint32 tagPerm;		uint32 cbPerm;
+			uint32 tagRoom;		uint32 cbRoom;
+			uint32 tagFlags;
+				uint32 doomStickFlag;		// if set, doom style joystick, otherwise alone in the dark style
+				uint32 bungeeCamFlag;		// if set, elastic camera, otherwise, alone in the dark style
+	};
+   LevelRoomCallbacks* _roomCallbacks;
+   AssetCallbackRoom* _assetCallbackRoom;
+#if SW_DBSTREAM
+	friend std::ostream& operator <<( std::ostream& s, const Level& level );
+	std::ostream& _print( std::ostream& s ) const;
+#endif
+};
+
+//==============================================================================
+
+class LevelRoomCallbacks : public RoomCallbacks
+{
+public:
+   LevelRoomCallbacks(Level* level);
+   virtual ~LevelRoomCallbacks();
+   virtual void SetPendingRemove( const BaseObject* object );
+
+protected:
+   virtual void _Validate() const;
+private:
+   LevelRoomCallbacks(LevelRoomCallbacks* other);        // prevent copy constructor calls
+   Level* _level;
+};
+
+//==============================================================================
+
+int32 ObjectIsInWhichRoom( int32 idxObject, const _LevelOnDisk* _levelData );
+
+//============================================================================
+#include "level.hpi"	// include all inline definitions as appropriate
+//============================================================================
+#endif // !_LEVEL_HP
+//============================================================================

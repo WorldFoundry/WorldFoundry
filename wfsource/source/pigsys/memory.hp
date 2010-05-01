@@ -1,0 +1,234 @@
+//===========================================================================*/
+// memory.hp:
+// Copyright ( c ) 1997,98,99 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//=============================================================================
+//===========================================================================
+// Description: The base header for all memory systems
+// Original Author: Kevin T. Seghetti
+//===========================================================================
+
+#ifndef	_MEMORY_HP
+#define	_MEMORY_HP
+
+//===========================================================================
+
+//#if defined(__WIN__)
+//#include <new.h>
+//#include <crtdbg.h>
+//void * operator new[] (size_t size);
+//#endif
+
+//===========================================================================
+// kts temp
+// kts I am attempting to document this, this data may be incorrect */
+// switch definitions for memory tracking:
+// DEBUG_MEMORY enables any memory tracking system (if not defined, there is no memory tracking)
+// PIGS_USE_MEMCHECK enables memcheck memory tracking on the pc
+
+
+#define DEBUG_MEMORY 0
+
+#ifndef PIGS_USE_MEMCHECK
+#ifndef NOMEMCHECK
+//#define PIGS_USE_MEMCHECK DEBUG
+//#define PIGS_USE_MEMCHECK 1
+#define PIGS_USE_MEMCHECK 0
+#else
+#define PIGS_USE_MEMCHECK 0
+#endif
+#endif
+
+//===========================================================================
+
+#define AssertMemoryAllocation( mem ) if(!mem) {printf("memory allocation failure! " __FILE__ ",%d", __LINE__); exit(1);}
+
+//===========================================================================
+//===========================================================================
+// too tricky to wrap these, because of delicate flow-control issues,
+// besides not much useful could be checked...
+
+#if DEBUG_MEMORY
+#include <pigsys/psysmem.h>
+#else
+#if defined( __WIN__ )
+
+#define InMappedMemory(ptr) 1
+#define CodeAlignedPtr(ptr) 1
+#define AlignedPtr( ptr )			( ( (long)ptr & 1 ) == 0 )
+//#define ValidPtr( ptr )			    ( ( ptr ) )
+//#define ValidPtr( ptr )			    ( ( ptr ) && ( AlignedPtr( ptr ) ) )
+//#define ValidPtr( ptr )			    ( ( ptr ) && ( AlignedPtr( ptr ) ) && ( !IsBadReadPtr( ptr, 1 ) ) )
+
+#elif defined( __PSX__ )
+
+//==============================================================================
+// Valid Memory Map:
+//	0x00000000 - 0x007fffff
+//  0x1f800000 - 0x1f8003ff
+//	0x80000000 - 0x807fffff
+//	0xa0000000 - 0xa07fffff
+// 	assert not between main ram and scratch ram
+//	and not between scratch ram and main ram with cache
+//	and not between main ram at 8 and main ram at a
+//	and not between past main ram at a
+
+inline bool 
+InMappedMemory(const void* ptr)
+{
+	const void* mainRamTop 					= (void*)0x007fffff;
+	const void* scratchRamBottom 			= (void*)0x1f800000;
+	const void* scratchRamTop 				= (void*)0x1f8003ff;
+	const void* cachedMainRamBottom			= (void*)0x80000000;
+	const void* cachedMainRamTop 			= (void*)0x807fffff;
+	const void* secondCachedMainRamBottom 	= (void*)0xa0000000;
+	const void* secondCachedMainRamTop 		= (void*)0xa07fffff;
+
+	return
+	   ( !( ( (ptr) > mainRamTop ) && ( (ptr) < scratchRamBottom ) ) )
+	&& ( !( ( (ptr) > scratchRamTop ) && ( (ptr) < cachedMainRamBottom ) ) )
+	&& ( !( ( (ptr) > cachedMainRamTop) && ( (ptr) < secondCachedMainRamBottom ) ) )
+	&& ( !(   (ptr) > secondCachedMainRamTop ) );
+}
+
+//==============================================================================
+
+inline bool
+AlignedPtr( const void* ptr )
+{
+	return ( (long)(ptr) & 3 ) == 0;
+}
+
+#define CodeAlignedPtr(ptr) 1
+
+inline int
+wasteTime()
+{
+	int i;
+	i = 10;
+	return i;
+}
+
+#elif defined( __LINUX__ )
+// linux allows any alignedment
+#define AlignedPtr( ptr )			( 1 )
+#define CodeAlignedPtr( ptr )			( 1 )
+// kts for now
+#define InMappedMemory( ptr )	( 1 ) 		
+#else
+#error "Unknown pointer alignment"
+#endif
+
+
+inline bool
+ValidCodePtr(const void* ptr)
+{
+	if(ptr)
+	{
+		if(CodeAlignedPtr(ptr))
+		{
+			if(InMappedMemory(ptr))
+			{
+				return true;
+			}
+		}
+	}
+
+	printf( "ValidPtr( %p ) failed\n", ptr );
+//	assert(0);
+#if defined(__PSX__)
+	for(int index=0;index < 1000; index++)
+		wasteTime();
+#endif
+	return false;
+}
+
+
+
+inline bool
+ValidPtr(const void* ptr)
+{
+	if(ptr)
+	{
+		if(AlignedPtr(ptr))
+		{
+			if(InMappedMemory(ptr))
+			{
+				return true;
+			}
+		}
+	}
+
+	printf( "ValidPtr( %p ) failed\n", ptr );
+//	assert(0);
+#if defined(__PSX__)
+	for(int index=0;index < 1000; index++)
+		wasteTime();
+#endif
+	return false;
+}
+
+#if defined( __cplusplus )
+//#	if PIGS_USE_MEMCHECK
+//		void * operator new( size_t _sz, char * file, int line );
+//		void * operator new[]( size_t _sz, char * file, int line );
+//#		define NEW( X )					( _mcsl_new( __FILE__, __LINE__ ), new X )
+//#		define NEW_ARRAY( X )			NEW( X )
+//#		define PLACEMENT_NEW( addr, X )	( _mcsl_new( __FILE__, __LINE__ ), new( addr ) X )
+//#		define DELETE_CLASS( X )		( _mcsl_delete( __FILE__, __LINE__ ), delete X )
+//#		define DELETE_ARRAY( X )		( _mcsl_delete( __FILE__, __LINE__ ), delete [] X )
+//#	else // !PIGS_USE_MEMCHECK
+
+//#if 0 	// kts clean this crap up
+//		void * operator new ( size_t _sz, char * file, int line );
+//		void * operator new [] ( size_t _sz, char * file, int line );
+
+//#		define NEW( X )					new ( __FILE__, __LINE__ ) X
+//#		define NEW_ARRAY( X )			NEW( X )
+//#		define PLACEMENT_NEW( addr, X )	new( addr ) X
+//#		define DELETE_CLASS( X )		delete X
+//#		define DELETE_ARRAY( X )		delete [] X
+//#else
+//#		define NEW( X )					new X
+//#		define NEW_ARRAY( X )			NEW( X )
+//#		define PLACEMENT_NEW( addr, X )	new( addr ) X
+//#		define DELETE_CLASS( X )		delete X
+//#		define DELETE_ARRAY( X )		delete [] X
+//#endif
+
+//#	endif // !PIGS_USE_MEMCHECK
+#endif // __cplusplus
+
+#define	_SYS_ALIGNMENT		sizeof(uint32)
+#define MEMORY_REGISTER(x,y)
+#define MEMORY_UNREGISTER(x)
+#define MEMORY_IS_REGISTERED(x) 1
+#endif
+
+
+#if PIGS_USE_MEMCHECK
+#	define NO_CPP			//  the default cpp macros bite and are rewritten below
+#	include "mc21/source/memcheck.h"
+#	undef sprintf
+#endif
+
+
+//===========================================================================
+#endif
+//===========================================================================

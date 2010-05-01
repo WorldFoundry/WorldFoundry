@@ -1,0 +1,22 @@
+@*============================================================================
+@* pole.oas
+@*============================================================================
+
+@*============================================================================
+@* Pole definition
+
+TYPEHEADER(Pole)
+	@include actor.inc
+
+	PROPERTY_SHEET_HEADER(Pole,1)
+@*	------------------------
+        TYPEENTRYFIXED32(Swing Push,,FIXED32(-100),FIXED32(100),FIXED32(1.5))
+	GROUP_START(Momentum Transfer Ratio)
+        TYPEENTRYFIXED32(Mount Ratio,Mount,FIXED32(-100),FIXED32(100),FIXED32(1.0),,"He said mount huh huh")
+        TYPEENTRYFIXED32(Dismount Ratio,Dismount,FIXED32(-100),FIXED32(100),FIXED32(1.0))
+	GROUP_STOP()
+	PROPERTY_SHEET_FOOTER
+
+TYPEFOOTER
+
+@*============================================================================

@@ -1,0 +1,114 @@
+//==============================================================================
+// colspace.hp:
+//==============================================================================
+// Copyright (c) 1997,99 World Foundry Group, 
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+//
+//==============================================================================
+//
+// Description: The ColSpace class encapsulates an Actor's collision space, and
+//              offers methods to check collision at both fine (axis aligned box)
+//				and coarse levels of detail.  The only fine-grained collision
+//				space representation currently supported is a planar sloped surface.
+//
+// Original Author: Phil Torre, 07/03/97
+//
+//==============================================================================
+
+#ifndef _COLSPACE_HP
+#define _COLSPACE_HP
+
+//==============================================================================
+
+#include <pigsys/pigsys.hp>
+
+#include <math/scalar.hp>
+#include <math/vector3.hp>
+#include <math/plane.hp>
+
+#include <physics/colbox.hp>
+//#include "gamestrm.hp"
+
+//==============================================================================
+
+class ColSpace
+{
+public:
+	ColSpace();
+	ColSpace(const ColBox& coarseSpace);
+	ColSpace(const Vector3& min, const Vector3& max);
+	~ColSpace() { };
+
+	// coarse colbox boundaries in local coordinates
+	INLINE Vector3 Min() const;
+	INLINE Vector3 Max() const;
+	INLINE Vector3 UnExpMin() const;
+	INLINE Vector3 UnExpMax() const;
+
+	// Expanded coarse colbox boundaries in global coordinates given current position in world
+	INLINE Vector3 Min(const Vector3& curpos) const;
+	INLINE Vector3 Max(const Vector3& curpos) const;
+
+	INLINE void Expand(const Vector3& delta);		// extend coarse colbox it by passed in vector (used to generate colboxes
+		   											// which contain starting and endposition of a moving object)
+
+	// UNexpanded coarse colbox boundaries in global coordinates given current position in world
+	INLINE Vector3 UnExpMin(const Vector3& curpos) const;
+	INLINE Vector3 UnExpMax(const Vector3& curpos) const;
+
+	INLINE Vector3 GetCenter( const Vector3& posCurrent ) const;
+
+	INLINE void	SetBox(const Vector3& min, const Vector3& max);
+	INLINE void SetSlope( Scalar slopeA, Scalar slopeB, Scalar slopeC, Scalar slopeD );
+
+	INLINE bool CheckCollision(const Vector3& mypos, const ColSpace& object, const Vector3& objpos) const;
+	INLINE bool CheckCollision(const Vector3& mypos, const Vector3& endpoint1, const Vector3& endpoint2) const;
+	INLINE bool CheckCollision(const Vector3& mypos, const Vector3& endpoint) const;
+	INLINE bool CheckCoarseCollision(const Vector3& mypos, const ColSpace& object, const Vector3& objpos) const;
+	INLINE bool CheckSurrounds(const Vector3& mypos, const ColSpace& object, const Vector3& objpos) const;	// returns true if object2 is entirely contained in object1
+	INLINE bool PremoveCollisionCheck(const Vector3& mypos, const ColSpace& object, const Vector3& objpos) const;
+	INLINE bool ContainsSlope() const;
+
+	// The inlined collision check methods above will fall thru to these if a slope is detected
+	bool CheckCollisionWithSlope(const Vector3& mypos, const ColSpace& object, const Vector3& objpos) const;
+	bool CheckCollisionWithSlope(const Vector3& mypos, const Vector3& endpoint1, const Vector3& endpoint2) const;
+	bool CheckCollisionWithSlope(const Vector3& mypos, const Vector3& endpoint) const;
+	bool PremoveCollisionCheckWithSlope(const Vector3& mypos, const ColSpace& object, const Vector3& objpos) const;
+	Scalar TimeToHitSlope(const Vector3& mypos, const ColSpace& object, const Vector3& objpos, const Vector3& objVel, const Scalar deltaT) const;
+	INLINE const Vector3& SlopeNormal() const;
+	INLINE const Scalar SlopeOffset() const;
+
+	// KTS this is not a good idea
+	INLINE int	CheckBelow(const Vector3& mypos, const ColSpace& object, const Vector3& objpos) const;
+
+#if SW_DBSTREAM >= 1
+	friend std::ostream& Print ( std::ostream& s, const ColSpace& space, const Vector3& Position );
+	friend std::ostream& operator << ( std::ostream& s, const ColSpace& space );
+#endif
+
+private:
+	ColBox	_coarseColBox;
+	ColBox	_coarseExpandedColBox;
+	Plane	_slope;
+};
+
+//==============================================================================
+#include "colspace.hpi"	// include all inline definitions as appropriate
+//==============================================================================
+#endif // !_COLSPACE_HP
+//==============================================================================

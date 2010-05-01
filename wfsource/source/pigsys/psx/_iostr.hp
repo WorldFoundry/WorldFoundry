@@ -1,0 +1,105 @@
+//=============================================================================
+// _iostr.hp: should only be included by iostream.cc, private header file
+// Copyright ( c ) 1995,96,97,98,99 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//=============================================================================
+// Description:
+// 	definition of classes which actually do the I/O
+//
+// Original Author: Brad McKee
+// Since then: Kevin T. Seghetti
+// ------------------------------------------------------------------------
+
+#ifndef __IOSTR_HP
+#define __IOSTR_HP
+
+//=============================================================================
+
+#include <pigsys\psx\iostream.h>
+#if DO_IOSTREAMS
+
+class StreamOutput_null : public StreamOutput
+{
+	virtual void OutputChars(const char* /*string*/,int /*len*/) { }
+};
+
+//-----------------------------------------------------------------------------
+
+class StreamOutput_stdout : public StreamOutput
+{
+	virtual void OutputChars(const char* string,int length);
+};
+
+//-----------------------------------------------------------------------------
+
+class StreamOutput_screen : public StreamOutput
+{
+public:
+	virtual void OutputChars(const char* string,int length);
+};
+
+//-----------------------------------------------------------------------------
+
+class StreamOutput_screen_flush : public StreamOutput
+{
+public:
+	StreamOutput_screen_flush() { firstTime = 1; }
+	virtual void OutputChars(const char* string,int length);
+	virtual void Flush();
+private:
+	bool firstTime;
+};
+
+//-----------------------------------------------------------------------------
+
+class StreamOutput_file : public StreamOutput
+{
+public:
+	StreamOutput_file(const char* filename);
+	virtual ~StreamOutput_file();
+	virtual void OutputChars(const char* string,int len);
+private:
+	StreamOutput_file();						// cannot construct without a filename
+	int _fh;
+};
+
+//=============================================================================
+
+class StreamInput_null : public StreamInput
+{
+	virtual void InputChars(char* /*string*/,int /*len*/) { }
+};
+
+//-----------------------------------------------------------------------------
+
+class StreamInput_file : public StreamInput
+{
+public:
+	StreamInput_file(const char* filename);
+	virtual ~StreamInput_file();
+	virtual void InputChars(char* string,int len);
+private:
+	StreamInput_file();						// cannot construct without a filename
+	int _fh;
+};
+
+//=============================================================================
+#endif
+#endif
+//=============================================================================

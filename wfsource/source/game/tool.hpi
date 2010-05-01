@@ -1,0 +1,93 @@
+//============================================================================
+// Tool.hpi:
+// Copyright ( c ) 1996,1997,1999,2000,2003 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//=============================================================================
+//	Abstract: Tool Header file
+//	History:
+//			Created	from object.hpis using prep
+//
+//	Class Hierarchy:
+//			none
+//
+//	Dependancies:
+//
+//	Restrictions:
+//
+//	Example:
+//
+//============================================================================
+
+#ifndef _Tool_HPI
+#define _Tool_HPI
+
+#include "level.hp"
+
+//============================================================================
+
+inline void
+Tool::Validate() const
+{
+#if DO_VALIDATION
+	assert( _objectToGenerate != 0 );
+	ValidatePtr(_memory);
+	_memory->Validate();
+//	assert( _owner != 0 );
+#endif
+}
+
+//============================================================================
+
+inline const _Tool*
+Tool::getOad() const
+{
+	return (const _Tool*)_oadData;
+}
+
+//============================================================================
+
+inline void
+Tool::PickedUpBy(int32 newOwner)		// actor index
+{
+	assert(newOwner);
+	assert(theLevel->GetObject(newOwner));
+	_owner = newOwner;
+}
+
+//============================================================================
+
+inline void
+Tool::PutDownOn(int32 newOwner)
+{
+	PickedUpBy(newOwner);
+}
+
+//============================================================================
+
+#if DO_ASSERTIONS
+inline int32
+Tool::Owner() const
+{
+	return(_owner);
+}
+#endif
+
+//============================================================================
+#endif // !_Tool_HPI
+//============================================================================

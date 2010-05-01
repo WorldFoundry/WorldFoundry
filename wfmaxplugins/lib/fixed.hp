@@ -1,0 +1,26 @@
+// fixed.hp
+
+#ifndef IFFWRITE_FIXED_HP
+#define IFFWRITE_FIXED_HP
+
+class _IffWriter;
+class IffWriterText;
+class IffWriterBinary;
+
+
+
+class Fixed
+{
+public:
+	Fixed( size_specifier ss, double val );
+
+	friend ostream& operator << ( ostream& s, const Fixed& f );
+	friend _IffWriter& operator << ( _IffWriter& iff, const Fixed& f );
+
+protected:
+public:
+	size_specifier _ss;
+	double _val;
+};
+
+#endif	// IFFWRITE_FIXED_HP

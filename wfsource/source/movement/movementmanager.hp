@@ -1,0 +1,97 @@
+//============================================================================
+// movementmanager.hp:
+// Copyright (c) 2002,2003 World Foundry Group.  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//============================================================================
+// Description: MovementManager keeps track of which MovementHandler is current
+//============================================================================
+
+#ifndef _MOVEMENTMANAGER_HP
+#define _MOVEMENTMANAGER_HP
+
+//============================================================================
+
+#include <memory/memory.hp>
+#include <math/scalar.hp>
+#include <movement/movementobject.hp>
+#include <timer/clock.hp>
+#include <baseobject/baseobject.hp>
+
+class MovementHandler;
+struct MovementHandlerData;
+struct _Movement;
+
+//==============================================================================
+
+class MovementManager
+{
+public:
+   MovementManager(const _Movement* moveBlock);
+   ~MovementManager();
+
+   void Validate() const;
+	// movement handler
+
+   const _Movement* MovementBlock() const;
+
+	void InitMovementHandler(MovementObject& movementObject);
+	void SetMovementHandler(MovementHandler* newHandlerAddr, MovementObject& movementObject);
+	MovementHandler& GetMovementHandler(MovementObject& movementObject);
+	const MovementHandler& GetMovementHandler(const MovementObject& movementObject) const;
+	// movement handler data
+	MovementHandlerData* InitMovementHandlerData(Memory& memory);
+	MovementHandlerData* SetMovementHandlerData(MovementHandlerData* handlerData);
+	MovementHandlerData* GetMovementHandlerData();
+	const MovementHandlerData* GetMovementHandlerData() const;
+
+   // forwarded calls
+	void init(MovementObject& movementObject );
+	bool check();
+	bool update(MovementObject& movementObject, const BaseObjectList& baseObjectList );
+	void predictPosition(MovementObject& movementObject,const Clock& currentTime, const BaseObjectList& baseObjectList);
+	void SetStunTime(Scalar duration,const Clock& currentTime);
+
+#if SW_DBSTREAM
+   friend std::ostream& operator << ( std::ostream& s, const MovementManager& mm );
+#endif
+private:
+   const _Movement*     _movementBlock;
+   MovementHandler*		_currentMovementHandler;
+   MovementHandlerData*	_movementHandlerData;
+   size_t               _movementDataSize;
+   static Memory*       _memory;
+};
+                         
+//==============================================================================
+
+struct MovementHandlerEntry
+{
+   int mobility;                    // mapped to the mobility enum at the top of oas/movement.h
+   MovementHandler* handler;        // pointer to movement handler to use for this mobility type
+};
+
+// this table must be provide by the client, it is used by the movement system to select movement handlers for each object
+extern MovementHandlerEntry MovementHandlerArray[];
+
+//==============================================================================
+#include "movementmanager.hpi"	// include all inline definitions as appropriate
+//==============================================================================
+#endif // !_MOVEMENTMANAGER_HP
+//==============================================================================
+                        

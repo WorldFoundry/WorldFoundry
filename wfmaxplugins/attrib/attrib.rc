@@ -1,0 +1,449 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include "windows.h"
+#undef APSTUDIO_HIDDEN_SYMBOLS
+
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""windows.h""\r\n"
+    "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+1 DIALOG DISCARDABLE  0, 0, 108, 10
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+2 DIALOG DISCARDABLE  0, 0, 108, 24
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+3 DIALOG DISCARDABLE  0, 0, 108, 36
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+4 DIALOG DISCARDABLE  0, 0, 108, 48
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+5 DIALOG DISCARDABLE  0, 0, 108, 60
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+6 DIALOG DISCARDABLE  0, 0, 108, 71
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+7 DIALOG DISCARDABLE  0, 0, 108, 84
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+8 DIALOG DISCARDABLE  0, 0, 108, 96
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+9 DIALOG DISCARDABLE  0, 0, 108, 107
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+10 DIALOG DISCARDABLE  0, 0, 108, 118
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+11 DIALOG DISCARDABLE  0, 0, 108, 129
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+12 DIALOG DISCARDABLE  0, 0, 108, 140
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+13 DIALOG DISCARDABLE  0, 0, 108, 152
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+14 DIALOG DISCARDABLE  0, 0, 108, 164
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+15 DIALOG DISCARDABLE  0, 0, 108, 176
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+16 DIALOG DISCARDABLE  0, 0, 108, 188
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+17 DIALOG DISCARDABLE  0, 0, 108, 200
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+18 DIALOG DISCARDABLE  0, 0, 108, 212
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+19 DIALOG DISCARDABLE  0, 0, 108, 224
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+20 DIALOG DISCARDABLE  0, 0, 108, 236
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+21 DIALOG DISCARDABLE  0, 0, 108, 248
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+22 DIALOG DISCARDABLE  0, 0, 108, 260
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+23 DIALOG DISCARDABLE  0, 0, 108, 272
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+24 DIALOG DISCARDABLE  0, 0, 108, 284
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+25 DIALOG DISCARDABLE  0, 0, 108, 296
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+26 DIALOG DISCARDABLE  0, 0, 108, 308
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+27 DIALOG DISCARDABLE  0, 0, 108, 320
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+28 DIALOG DISCARDABLE  0, 0, 108, 332
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+29 DIALOG DISCARDABLE  0, 0, 108, 344
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+30 DIALOG DISCARDABLE  0, 0, 108, 356
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+31 DIALOG DISCARDABLE  0, 0, 108, 368
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+32 DIALOG DISCARDABLE  0, 0, 108, 380
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+33 DIALOG DISCARDABLE  0, 0, 108, 392
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+34 DIALOG DISCARDABLE  0, 0, 108, 404
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+35 DIALOG DISCARDABLE  0, 0, 108, 416
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+36 DIALOG DISCARDABLE  0, 0, 108, 428
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+IDD_CLASSNAME DIALOG DISCARDABLE  0, 0, 108, 51
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "Copy",IDC_COPY,4,2,50,18,BS_CENTER | BS_VCENTER | 
+                    BS_MULTILINE
+    PUSHBUTTON      "Paste",IDC_PASTE,55,2,50,18,BS_CENTER | BS_VCENTER | 
+                    BS_MULTILINE
+    PUSHBUTTON      "«",IDC_PREVIOUS,3,35,11,12,BS_CENTER | BS_VCENTER
+    COMBOBOX        IDC_OBJECT_NAME,15,35,76,253,CBS_DROPDOWN | WS_VSCROLL | 
+                    WS_TABSTOP
+    PUSHBUTTON      "»",IDC_NEXT,92,35,11,12,BS_CENTER | BS_VCENTER
+    COMBOBOX        IDC_CLASS_NAME,3,21,101,254,CBS_DROPDOWNLIST | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_HDUMP DIALOG DISCARDABLE  0, 0, 439, 323
+STYLE DS_MODALFRAME | DS_CENTER | WS_CAPTION | WS_SYSMENU
+CAPTION "hdump"
+FONT 8, "Courier New"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,382,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,382,24,50,14
+    LISTBOX         IDC_LIST1,7,7,368,309,LBS_USETABSTOPS | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_EDIT1,400,52,8,14,ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_EDIT2,408,52,8,14,ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_EDIT3,416,52,8,14,ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_EDIT4,424,52,8,14,ES_AUTOHSCROLL | WS_DISABLED
+END
+
+IDD_MULTI_PASTE DIALOG DISCARDABLE  60, 50, 123, 87
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Attributes - Paste"
+FONT 8, "MS Sans Serif"
+BEGIN
+    ICON            IDI_PASTE,IDC_STATIC,7,7,20,20
+    LTEXT           "Multiple objects are selected.  Do you want to paste Attributes to:",
+                    IDC_STATIC,37,7,79,27,NOT WS_GROUP
+    DEFPUSHBUTTON   "",IDC_OBJECT,7,35,109,14
+    PUSHBUTTON      "",IDC_ALLSELECTED,7,51,109,14
+    PUSHBUTTON      "Cancel",IDCANCEL,7,67,109,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_CLASSNAME, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 47
+    END
+
+    IDD_HDUMP, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 432
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 316
+    END
+
+    IDD_MULTI_PASTE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 116
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 80
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,3
+ PRODUCTVERSION 1,0,0,3
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "World Foundry Group\0"
+            VALUE "FileDescription", "attrib\0"
+            VALUE "FileVersion", "1, 0, 0, 4\0"
+            VALUE "InternalName", "attrib\0"
+            VALUE "LegalCopyright", "Copyright © 1997-1998 World Foundry Group.  All Rights Reserved.\0"
+            VALUE "LegalTrademarks", "World Foundry is a trademark of World Foundry Group.\0"
+            VALUE "OriginalFilename", "attrib.dlu\0"
+            VALUE "ProductName", "World Foundry attrib\0"
+            VALUE "ProductVersion", "1, 0, 0, 4\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+#endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_PASTE               ICON    DISCARDABLE     "icon1.ico"
+IDI_WF                  ICON    DISCARDABLE     "Factory.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDM_RMENU MENU DISCARDABLE 
+BEGIN
+    POPUP ""
+    BEGIN
+        MENUITEM "&Enable",                     IDM_ENABLE
+    END
+END
+
+IDM_RMENU_INT MENU DISCARDABLE 
+BEGIN
+    POPUP ""
+    BEGIN
+        MENUITEM "&Enable",                     IDM_ENABLE
+        MENUITEM SEPARATOR
+        POPUP "&Show As"
+        BEGIN
+            MENUITEM "Combo Box",                   IDM_COMBOBOX
+            MENUITEM "Cycle Button",                IDM_CYCLEBUTTON
+            MENUITEM "Slider",                      IDM_SLIDER
+        END
+    END
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

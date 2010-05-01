@@ -1,0 +1,28 @@
+//=============================================================================
+// global.hp:
+// By Kevin T. Seghetti
+// Copyright (c) 1995 Cave Logic Studios, Ltd
+//=============================================================================
+
+#ifndef _global_hp
+#define _global_hp
+
+#define SYS_TOOL 1
+
+//=============================================================================
+
+#if DEBUG > 0
+#define SW_DBSTREAM 3
+#else
+#define SW_DBSTREAM 0
+//#define NDEBUG
+#endif
+
+#include <pigsys/assert.hp>
+#include <streams/dbstrm.hp>
+
+#include <string>
+
+//=============================================================================
+#endif
+//=============================================================================

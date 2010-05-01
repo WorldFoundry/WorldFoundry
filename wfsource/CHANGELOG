@@ -1,0 +1,622 @@
+---------------------------------------------------------------------------
+* As always, a bit of cleanup here and there (QS_ONE_LS -> SCALAR_ONE_LS,
+  removed QSCALAR)
+* Fixed div 0 / int overflow exceptions (in a non-optimal way by detecting
+  if the are going to occur before the divide).
+* Fixed bug in keyboard joystick emulation where pressing 4 would abort
+  the level
+
+---22 Sept 1999----------------------------------------------------------------
+
+This hasn't been kept up to date for a few years, now that I am doing releases
+I will start to update it again.
+
+2nd GPL'ed Release:
+	* Re-worked GL interface to be double buffered (and work with 3dfx)
+	* lots of cleanup here and there (didn't keep track)
+	* Added several text files: COPYING, README.linux, README.windows, etc.
+	* Worked on make system so that it is possible to build from scratch
+	  without already having prep (but it still requires too many steps).
+	* More tools now build.
+
+---21 Sep 97-------------------------------------------------------------------
+* LevelCon now deselects all objects before export (so user doesn't manually
+  have to do so)
+* LevelCon has an interface which can be called from a Utility, therefore,
+  ToolBar has been updated (the Make button now works)
+
+* Created wf2txt, a MAX file exports the OAD data for each object in a level
+* Updated the companion program (formerly wflvlimp) txt2wf, to read the
+  revised format of the wf2txt exporter
+
+
+---20 Sep 97-------------------------------------------------------------------
+
+Textile
+* 24-bit .tga and .bmp files now supported (automatically reduced to 16-bit)
+
+Attrib
+* Changed BUTTON_INT32 and BUTTON_FIXED32 to store string values instead of
+  binary numbers.
+
+LevelCon
+* Changed BUTTON_INT32 and BUTTON_FIXED32 to store string values instead of
+  binary numbers.
+* Changed to call "aicomp.exe" instead of "aicomp2"
+* Implemented "shortcut" class
+
+Importers / Exporters
+* Created World Foundry Object Attributes Text File exporter
+* Update importer to new ordering of data, handle strings as button types
+
+
+
+
+---11 Aug 97-------------------------------------------------------------------
+Building new release
+
+
+---24 Jul 97-------------------------------------------------------------------
+
+Scripting language changes:
+* Treat mailboxes as variables
+* Replace read-mailbox (dot operator)
+* Replace write-mailbox with set!
+* added ( define mailbox <variable_name> <value> )
+* removed "run-to" command
+* made else optional, i.e., this code now works:
+	( if 1
+		( writeln "then" )
+	)
+
+
+---16 Jul 97-------------------------------------------------------------------
+
+* "select" saves columns in registry
+* "colour" saves class vs. colour values in registry on "Apply"
+
+
+---15 Jul 97-------------------------------------------------------------------
+
+* Removed "anim_v2" directory (mostly)
+
+
+---14 Jul 97-------------------------------------------------------------------
+
+* Removed VisualScarecrow, VisualMesh, VisualLevelOfDetail
+
+
+----7 Jul 97-------------------------------------------------------------------
+
+* Updated tail to print filename before each file being tail'ed
+
+* Finished stream builder (initial implementation).
+
+
+----2 Jul 97-------------------------------------------------------------------
+
+* Added "enabled" expression for oad fields
+
+* Updated all oad files to use "enabled" expression
+
+
+----1 Jul 97-------------------------------------------------------------------
+
+* Added file specification support for BUTTON_MESHNAME and
+  BUTTON_FILENAME.  Updated all .oad's to specify filespec
+  for each asset field.
+
+* Fixed "Object Reference" fields to allow user to type into
+  field (instead of requiring the browse button) after learning
+  more about MAX API.
+
+* Added name of object.
+
+
+----22 Jun 97------------------------------------------------------------------
+
+* Made ( self.OAD_Member ) work
+
+
+----18 Jun 97------------------------------------------------------------------
+
+* Fixed colour picker in Attrib
+
+* Changed stream files from "str#p.psx" or "str#p.win" to "level#.wf"
+
+----15 Jun 97------------------------------------------------------------------
+
+* LevelObj contains sound and music information (applicable to PlayStation
+  only at this point).  User can specify .vh and .vb for sound effects, .vh,
+  .vb, and .seq for music.  I am currently unable to test multiple .vab's
+  since without the sound tools, I don't have good samples (two .vab's which
+  fit into Sound RAM 512K).  Due to a bug in levelcon, the user must put a
+  space after the .vh and .vb filenames (to pad out extension to three
+  characters.)
+
+* Play a sound effect by writing to an actor's SOUND mailbox.
+
+* Can start the song by writing to the MIDI mailbox.  In the future, the
+  number used will start the specified song, but since we don't have any .sep
+  assets (multiple .seq packaged; i.e., multiple songs) writing any non-zero
+  value just starts *the* song.
+
+
+----14 Jun 97------------------------------------------------------------------
+
+* oad .def files can be used to read OAD data from an object.  The code looks
+  very much like reading a member from a structure in C or Pascal.
+
+  ^ Example:
+
+	include "objects.id" 			; contains definition for "Cyberthug"
+	include "../oad/player.def"
+
+	( write "InitialGold:Minimum=" )
+	( writeln ( fixed Cyberthug.OAD_MinimumInitialGold ) )
+	( write "InitialGold:Maximum=" )
+	( writeln ( fixed Cyberthug.OAD_MaximumInitialGold ) )
+
+  The examples converts the two OAD fields into fixed point from INT32.
+  Remember, the only number system in the scripting language is fixed point.
+  Everything is fixed point.
+
+
+----13 Jun 97------------------------------------------------------------------
+
+* Fixed bug and fully debugged use of handles (four character ID's) from
+  within the scripting language.
+
+
+----11 Jun 97------------------------------------------------------------------
+
+* Tool objects now have an Activation Script which runs when the Tool is
+  activated.
+
+* Tools now also have a pull-down list of behaviours:
+  Beam Weapon (formerly known as Needle Gun)
+  Projectile Weapon (formerly missile/grenade/guided missile)
+  Shield (same as it ever was)
+  Script Only (Run the Tool's Activation Script when triggered, but don't
+			   execute any special game code).
+
+----18 Feb 97------------------------------------------------------------------
+
+* Moved build for mailbox .def files et al from levels/ to source/
+
+* "RunTo" for spike and gold should work now.
+
+* z-sort is default
+
+* Game runs the LevelObj's script (called Startup Script) at end of level
+  construction
+
+-------------------------------------------------------------------------------
+
+* Rearranged and cleaned up .oad files
+
+-------------------------------------------------------------------------------
+
+* Changed default model type to none for several classes (actbox, actboxor,
+  target, and others).
+
+* Changed default mass of target to 0.0
+
+* Timeporters as continuation markers
+
+* listmesh doesn't assert out when it hits an object without any XDATA
+
+* bug fixes
+
+* Multiple timeporters.  Timeporters should no longer be set to Template
+  Object, but instead are regular objects.  Timeporters are basically
+  continuation markers and whichever one you touch last is the one you're
+  reset to.
+
+-------------------------------------------------------------------------------
+
+* Added "Script" column to List By Class
+
+* Added ability to specify what field name should be displayed in 3D Studio
+  differently than the variable name.  We want to clean up some OAD field
+  names without invalidating existing data and without adjusting existing
+  code.
+
+* Made rooms PlugIn work for the revised (smaller) level data
+
+* Changed default class from "platform" to "statplat" (lstcls, attrib)
+
+* OAD_DIR environment variable not required to end in a trailing backslash.
+
+* Added Left Shift and Right Shift for tools
+
+* Added random displacement fields for generator (like 3DS MAX emitters)
+  NEEDS TO BE TESTED!
+
+----1/03/97--------------------------------------------------------------------
+
+changed the ANIMAION_INDEX mailbox to be a scratch mailbox, this means you
+cannot set it one frame, and expect valid results the next, you have to set it
+each time you want to use it.
+
+moved the visiblity and animation mailboxes from the movement page to the mesh
+page
+
+new animation manager (in progress)
+
+----12/28/97-------------------------------------------------------------------
+
+renamed "Velocity" to "Player", the type "Velocity" still works, but is
+discouraged (we will remove at some point)
+
+renamed "_Missile" to "Missile", you will have to change all references.
+lots of misc cleanup
+
+----12/17/96-------------------------------------------------------------------
+
+[brm 12/17/96 12:59PM begin]
+
+vrml2pf3.exe replaces wrl2win.exe, wrl2psx.exe, and winprev.exe.  This
+source to this tool is now checked into the veltools delta project, along with
+qvdos - the VRML parsing library.  vrml2pf3.exe should be added to the
+velocity project at the next release.
+
+[one used to type] = [now one types]
+	winprev = vrml2pf3 -Twin -view
+	wrl2win = vrml2pf3 -Twin -convert
+	wrl2psx = vrml2pf3 -Tpsx -convert
+
+VELOCITY_DIR\levels\3ds\makedep.pl and VELOCITY_DIR\levels\alias\makedep.pl
+were changed to accomodate this new tool.  These should be updated in the
+velocity project at the next release.
+
+VELOCITY_DIR\levels\makepf3.pl was added to build pf3s for scarecrows.  The
+wrl files are placed in VELOCITY_DIR\levels\level[0-9]+.
+VELOCITY_DIR\levels\makedep.pl had to be modified to call this perl script.
+makedep.pl should be updated and makepf3.pl should be added to the velocity
+project at the next release.
+
+The Scarecrow VRML template file VELOCITY_DIR\levels\oad\scare.wrs was added
+for compatibility with future versions of levelcon.exe.  It should be added to
+the velocity project at the next release.
+
+[brm 12/17/96 12:59PM end]
+
+* levels, levels/3ds, and levels/alias use nmake instead of wmake
+
+----12/16/96-------------------------------------------------------------------
+
+standarized rocket board script per Dave's request, new rocketboard script in
+level100 needs to be pasted into each rocket board object.
+
+
+----12/10/96-------------------------------------------------------------------
+
+CONTEXTUAL ANIMATION
+
+Contextual animation was checked in.  Here's an example on how to create a
+contextual animation for velocity that replaces a particular velocity
+animation when velocity is in a particular actbox:
+
+(1) Make sure that the animation that will be contextual has the
+contextual flag set in the %VELOCITY_DIR\levels\alias\velocity.ali contains
+the contextual flag.  If the explode animation is contextual, change the line:
+
+	EXPLODE_FRONT     	velocity/vel_xpl.wrl
+
+to
+	EXPLODE_FRONT     	velocity/vel_xpl.wrl contextual
+
+(2) Choose which rooms the contextual animation can be played in.  Add this
+animation to the "Contextual Animations" XDATA field of these rooms'
+attributes. For example, to cause the explode animation to be loaded in a
+particular room, add the line:
+
+	velocity-vel_xpl.pf3 velocity.pf3
+
+to the "Contextual Animations" XDATA field of the room.
+
+(3) Create a new actbox in the same room that the "Contextual Animations" field
+was modified. Set up the following fields:
+
+	Common::NumberOfLocalMailboxes = 5
+	ActBox::ActivatedBy = Actor
+	ActBox::ActivatedByActor = Velocity
+	ActBox::ClearOnExit = TRUE
+	ActBox::Activation Mailbox = 1
+
+(4) Now, add a script to the new actbox that contains the lines:
+
+(
+	include "../anim.def"
+	( define srcIndex EXPLODE_FRONT )
+	( define dstIndex JUMP )
+	include "../scripts/cntxanim.s"
+)
+
+This script will map the EXPLODE_FRONT animation to JUMP; when the
+player hits the jump button within this actbox, velocity should play the
+explode animation.  If other animation remappings are desired, the
+enumeration of all possible animations is in %VELOCITY_DIR\levels\anim.def.
+
+
+* Deleted dog, oscillator, and rocketboard oas
+
+* Added mesh page
+
+* Added shadow page (need more description)
+
+* Dependencies for PlayStation (currently only in Velocity -- need to add to
+  PIGS).  Additionally, it's not quite complete -- you need to have a file
+  called depend.mak in order for the make to work.
+
+* (Lost my local changes to changes.txt--will update later).  --Bill
+
+
+
+SCARECROW - first pass [brm 12/13/96 5:15PM], modified [brm 12/19/96 10:14AM]
+
+I hooked the scarecrow button to scarecrow code.  To create a scarecrow:
+
+Create a new box.  Give it a name that would be a valid 8 character windows
+filename.  Set its class appropriately and modify the following fields:
+
+	Mesh::Mesh Name = tga or bmp file (4, 8, or 15-bit) in the
+		VELOCITY_DIR\levels\material or
+		VELOCITY_DIR\levels\material\level[0-9]+ directory.  The .tga
+		or .bmp must be one of the sizes that is appropriate for
+		texture mapping (see previous email to designers and artists).
+
+	Note: bmp is 4 or 8 bit (and of course you can't use 4 bit)
+	tga is 8, 16, or 32 bit (32 bit for translucency)
+
+	Mesh::Mesh Type = Scarecrow
+
+The size of the object in the y-direction determines the width of the
+scarecrow.  The size of the object in the z-direction determines the height of
+the scarecrow.  The center of the scarecrow is placed at the exact center of
+the object in 3D Studio, so run cent3ds on the object, if it is not appearing
+where you would like it to.
+
+----12/08/96-------------------------------------------------------------------
+
+The 'swing from poles' feature is checked in.  There is a test level in
+velsrc\levels\level910 which has a couple of poles in it you can try out.
+Here's how to create poles in your own level:
+   A pole is just a Platform that has its "Can Swing From" flag set to
+   TRUE (on the OAD Movement page).  It must have one dimension that is
+   larger than the other two (so that the game can figure out which way
+   the pole is oriented); poles must be axis aligned, and the long axis must
+   be along either X or Y.  Vertical poles are not currently supported.
+   To test, fling Velocity at the pole while holding the Jump button.
+   Once she grabs the pole, pushing the joypad left/right (or up/down,
+   depending on how the camshot is oriented) will make her start to swing
+   back and forth.  Releasing the Jump button will make her fly off at a
+   tangent.  Note, all of the parameters like how hard she 'swings' are
+   currently hard-coded; they will need to be tweeked once someone starts
+   using them.  (Or added to OADs, if necessary.)
+Also note:  While Velocity is swinging around a pole, her collision
+detection is turned OFF.  It is the designer's responsibility to place
+poles such that Velocity can't hit anything while swinging, or when
+dismounting.  If the dismount puts her into a wall, you'll get the
+"objects already inside of each other" assertion failure.
+
+----12/06/96-------------------------------------------------------------------
+
+the rocket board script has been written, it can be found in level 100.
+It consists of two objects, RocketBrd & RBActBox, they must be used together.
+The RBActBox is on a path so it will move relative to the RocketBrd, but
+the path has no motion in it.  When you move the rocketboard you must delete
+and re-copy the key frame for RBActBox from frame 0 to frame 10 or so.
+There may currently be only one rocket board per level, if more is desired,
+come see Kevin and I will show you how to do it.
+
+a new mailbox type called scratch has been added, it is for temporary storage
+(only valid from within a script)
+
+Several mailboxes have been added, there is now a local system mailbox which
+indicates the kind of object it is, there is also a scratch system mailbox
+which indicates how many collisions occured to the current object (only
+valid from within a script)
+
+-----------11/18/96-----------------------------------------------
+
+* Added who built the executable in addition to the date and time.
+
+* Since the script affects Velocity's input, the "Script Controls Input" must
+  be checked for Velocity.
+
+* Added diagnostics for explosion.  The mass of the explosion can be 0 only if
+  "Health Modifier" is also 0.  The mass of the explosion must be non-zero if
+  "Health Modifier" is non-zero.
+
+* Added exit function to the scripting language.  This is just a convenience
+  until the scripting language has block structures.  Once block structures
+  are in, this function will be taken out.
+
+You may have seen problems with explosions damaging other objects (such as
+platforms).  Let me explain what is happening and how you should adjust your
+levels:
+
+The problem exists because there is an assumption in the code which we are
+making in order to get more speed.  The assumption is that two non-moving
+(anchored) objects don't need to bother checking to see if they hit each
+other.  They clearly can't since they aren't moving and even if they were,
+there would be no way to move one out of the way of the other.  The default
+project files have explosions set to anchored.  The problem with the explosion
+comes in when the colliding object is set to "Anchored".  Since both objects
+are anchored, no collision detection is done.  Since no collision detection is
+done, no collision is detected, and no damage is done to the box.
+
+Therefore, to get a collision because the explosion and another object, one of
+the objects need to be set to "Moveable".  Since there are far fewer
+explosions than statplat/platforms, we should change the explosions because 1)
+there are fewer things for the level designers to change and 2) Anchored
+objects can run faster than Moveable objects so its better to have more
+Anchored objects than more Moveable objects.
+
+Therefore, change all of your explosions to "Moveable" and set their falling
+acceleration to 0 so that it doesn't fall.
+
+In summary, the Golden Rule is:
+  Anchored objects don't check against other Anchored objects to see if
+  they've collided.
+
+Corollary:
+  Objects with a mass of zero don't check against any other objects to see if
+  they've collided.
+
+
+
+ai compiler is now run from levelcon instead of in 3ds.  This means it is now
+possible to include objects.id and get an up-to-date enumeration of the
+objects in the game. This means the test button will not longer properly test
+the ai script, you will have to wait until level conversion.  However, if you
+get a script error during level conversion, you can cd into the level
+directory, and the problem script will be contained in a file called
+"xdata.ai", if you type "aicomp2 xdata.ai", the compiler will be run, you can
+then edit xdata.ai until it works, running the compiler to test. Once you have
+repaired the script, you should go back into 3dstudio, open the script editor
+on the offending script, and load "xdata.ai" back into it.
+
+mailbox.hp has been automated using mailbox.inc, which is also used to create
+mailbox.def in the levels directory.
+
+I have added several files which can be included from scripts:
+	"objects.id"		allows you to refer to objects by name
+				in the level
+	"../mailbox.def"	defines all of the system mailboxes
+	"../joystick.def"	defines all of the joystick buttons
+	"../user.def"		place your own game-wide definitions here
+
+Use of these definitions greatly enhances the readability (and portability) of
+the scripts.  The quoted include directive is relative to the directory the
+.prj file is in, so if you wanted to add a file which was used by several
+scripts in only one level, create it in the level directory containing the prj
+file.  If you want to have a file which is included by several levels, place
+it in the directory above (levels) and use ../ before its name in the include
+
+Objects created by tools now have a mailbox they can read which contains the
+actor index of the actor owning the tool called GENERATOR (this allows the
+guided missile script to communicate with Velocity)
+
+hardware joystick is no longer connected to the logical joystick, must use a
+	script in main character to copy it.
+		( write-to-mailbox self INPUT
+			( read-mailbox self HARDWARE_JOYSTICK1 )
+		)
+
+CamShot targets (and follows) may now be animated at run time (major changes
+to the way levelcon and the game communicate about cameras)
+		(if you do, make sure they are in an active room, so they run)
+(note: the target itself hasn't changed, just the way the camera reads them,
+so if you want to animate a target (move it along a path, for example), don't
+use class target, make the target a regular game object, like a platform )
+
+added model type None to all actors. (option is there, not working yet)
+
+Track Object now works in CamShot (now required)
+	camera used to always track velocity, now can track any object
+
+* Gold writes to local mailbox 2000 with actor it collided with.  Gold script
+  has to add gold to object it collided with (see level914)
+* [Revised] Gold writes to local mailbox 2000 if it exists.  Gold object code
+  adds the specified amount of gold to the object which picked it up.
+
+* Meter needs to know if the value it is displaying is a QScalar or Integer.
+
+* fixed and int conversion operators inside World Foundry Scheme
+
+* else portion of ( if ) now requires much more complex expressions to fail
+
+* Scheme compiler prints out line of error (the actual script code)  Yah!
+
+* or, and, ||, &&, ^ potentially broken in scripts because of C
+  short-circuiting.  Now fixed.
+
+* else and nested if's also bronken sometimes because of same problem.  May be
+  fixed -- needs more testing.
+
+* "AI Movement Script" is now gone.  If you have a script attached to that
+  button, move it to the "Script" button on the common page.  This is a
+  definite change for Director--there may be others.
+
+* Shield fixed/updated to reflect other changes made in the game framework.
+
+targets now return false to renderAndUpdate
+
+Track Object in Cam Shot now defaults to "Velocity"
+
+Added "Track Object Mailbox" field to camshot, if non-zero, overrides the
+"Track Object" and instead reads the object to track from the mailbox
+indicated.
+
+The guided missile has been added to level100, it uses several objects to
+function:
+
+	GMACamShot		used by the aiming code
+	GMACamTar
+	GMACamFol
+
+	TGMiss01	        guided missile tool
+	GDMissile01		guided missile itself
+
+	GMCamShot		CamShot used by the guided missile
+	GMCamTar
+
+	There is also a script on velocity which is used for aiming, and
+	actually spawns the missile, so to add Guided Missile to a level, you
+	need to copy all of the objects above, and velocity as well.
+
+	Press C to activate aim mode, press up/down/left/right to aim,
+	then press A to abort, or B to fire the missile,
+	then press up/down/left/right to steer the missile, press B to cancel
+	missile control (the missile will continue on its current path until it
+	hits something)
+
+* "Model Type" = "None" enables user to have an object which has no visual
+  representation.  This should be used instead of empty.wrl which
+  shouldn't be used and isn't guaranteed to work.
+
+* Template objects can now be set to "Model Type" = "Mesh".  You no longer
+  have to set them to "Box" in order to use template objects.
+
+* Both a mesh and a box or two boxes were being created for each object.  Now
+  only one or the other (whatever is specified in the "Model Type" button) is
+  created.  This should result in a return of the framerate to previous
+  levels.
+
+* Argonaut appears to have fixed a clipping bug.  This means that boxes which
+  go partially off-screen don't draw incorrectly and crash the system.  This
+  also means that all crashes (with the debug version) should be reported
+  immediately and are of great concern since remaining crashes are likely to
+  be our code and not BRender.
+
+* Since statplats can all be collected into a single mesh for increased
+  speed in rendering, you are not able to modify an individual statplat's mesh
+  during game execution.  Therefore, all statplat's hp's need to be set to
+  indestructible (32767).  If you want to be able to "kill" a statplat,
+  move it, or really do anything interesting, change its class to "platform".
+
+* Added global mailboxes GOLD_MULTIPLIER (50), TIME (1006), and DELTA_TIME
+  (1007).
+
+--Inside MeterHP:  pointing to 3004 but should be 3000.  Incorrect # results
+in "unimplemented read alive" error message.
+
+* Shield no longer requires specifying the "-rate" command
+
+* Shield parameters have changed.  There "Blink Frequency" has a default of
+  0.2 seconds and indicates how long the shield should be visible/be
+  invisible, and so on.  "Shield Purchase Display" indicates how many seconds
+  the shield should blink when purchased or upgraded.  "Invulnerability
+  Display" indicates how long the shield should blink when you get hit.  This
+  length is how long the character is invulnerable.
+
+* DOS is Dead.
+
+* Level-specific "Loading..." screens.  You must place a load#.tga file in
+  levels/level# where # is the number of the level.
+
+* Added scripts/ directory to levels/.  Use it!!!
+

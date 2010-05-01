@@ -1,0 +1,79 @@
+SOX
+===
+
+Formats
+-------
+8svx.c		Amiga IFF 8SVX
+aiff.c		Apple IFF
+au.c		Sun
+cdr.c		CD-R
+dat.c		Text
+g72x.c, g711.c, g721.c, g723_24.c, g723_40.c
+libst.c		Tables for above
+hcom.c		Macintosh HCOM
+maud.c
+raw.c		RAW file format [including .ub, .uw, .sb, .sw, and .ul formats
+sf.c		IRCAM SoundFile
+skel.c
+smp.c		SampleVision format
+voc.c		Creative Labs format
+wav.c		Windows WAVE [.wav]
+wve.c		Psion wve format, based on the au format file
+
+Effects
+-------
+avg.c
+band.c		Bandpass filter
+copy.c
+cut.c		Cut [more description] [not finished yet]
+dyn.c		Compresses or expands dynamic range [doesn't work]
+echo.c
+highp.c		High-pass filter
+lowp.c		Low-pass filter
+map.c		Print out map of sound file instrument specifications
+mask.c		Masking noise
+pred.c		Sound Tools prediction-correction compression effect file. Experiment with various simple equation systems [NOT DONE]
+
+rate.c		Rate change
+resample.c	Rate change via Smith & Wesson Bandwidth-Limited Interpolation
+reverse.c	Reverse
+skeleff.c
+stat.c		Build various statistics on file and print them
+
+vibro.c		Vibrato
+
+????????
+--------
+pick.c		Creates a 1 channel file by selecting a single channel from a 2 or 4 channel file.  Does not currently allow creating a 2 channel file by selecting 2 channels from a 4 channel file
+split.c		Splits 1 channel file to 2 channels (stereo), or 4 channels (quad); or splits a 2 channel file to 4 channels.
+
+SOX utility modules
+-------------------
+misc.c		read/write basic types, rand() functions
+util.c		Logging
+
+SOX conversion program
+----------------------
+auto.c
+handlers.c
+sox.c
+
+Other tools
+-----------
+sndrtool.c
+sound2su.c
+
+Application Libraries
+---------------------
+getopt.c
+
+Porting
+-------
+amiga.c		tmpnam(), tmpfile() C library functions
+armceil.c
+armfloor.c
+
+Other
+-----
+
+sbdsp.c		Direct to Sound Blaster device driver

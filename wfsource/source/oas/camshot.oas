@@ -1,0 +1,58 @@
+@*============================================================================
+@* camshot.oas: camera control activation box
+@*============================================================================
+
+@*============================================================================
+
+@define DEFAULT_VISIBILITY	0
+@define DEFAULT_MODEL_TYPE	3
+
+TYPEHEADER(Camera Shot,CamShot)
+	@include actor.inc
+
+	PROPERTY_SHEET_HEADER(CamShot,1)
+@*	--------------------------------
+	TYPEENTRYCAMERA(Camera,,"Target")
+
+	LEVELCONFLAGEXTRACTCAMERANEW
+
+	TYPEENTRYOBJREFERENCE(Target,Look At,,,,,,SHOW_AS_VECTOR)
+	TYPEENTRYOBJREFERENCE(Follow,,,,,,,SHOW_AS_VECTOR)
+
+	GROUP_START(Bungee-Cam,256)
+	TYPEENTRYFIXED32(Climb Rate,,FIXED32(0),FIXED32(100),FIXED32(5))
+	TYPEENTRYFIXED32(Elasticity,,FIXED32(1),FIXED32(100),FIXED32(10))
+	GROUP_STOP()
+
+	GROUP_START(Tracking Object,256)
+	TYPEENTRYINT32(Track Object Mailbox,Object Mailbox, 0, 3999, 0,, SHOW_AS_NUMBER, "Mailbox to read Track Object index from (mutually exclusive with next field)")
+	TYPEENTRYOBJREFERENCE(Track Object,,"Object to move camera in relation to(mutually exclusive with prev field)",,,,"Player01",SHOW_AS_VECTOR)
+	GROUP_STOP()
+	GROUP_START(Tracking Type,256)
+	TYPEENTRYBOOLEANTOGGLE(Rotation,,0,, "Fixed|Track" )
+
+	TYPEENTRYBOOLEANTOGGLE(Position X,, 1,, "Absolute|Relative" )	// absolute or relative position switches, for each axis
+	TYPEENTRYBOOLEANTOGGLE(Position Y,, 1,, "Absolute|Relative" )
+	TYPEENTRYBOOLEANTOGGLE(Position Z,, 1,, "Absolute|Relative" )
+@*	TYPEENTRYBOOLEANTOGGLE(Focus,, 0,, "Absolute|Relative")	// absolute or relative rotation switches, for each axis
+	GROUP_STOP()
+	TYPEENTRYFIXED32(FOV,, FIXED32(1),FIXED32(180),FIXED32(50),,,,24,282)
+	TYPEENTRYFIXED32(Roll,,FIXED32(0),FIXED32(32000),FIXED32(0))
+	GROUP_START(Mode: Switching Camshots,256)
+	TYPEENTRYFIXED32(Pan Time In Seconds,Pan Time,FIXED32(0),FIXED32(10),FIXED32(1))
+	GROUP_STOP()
+	GROUP_START(Mode: Tracking,256)
+@*	TYPEENTRYFIXED32(XSlew,Maximum X Slew,FIXED32(0),FIXED32(32767),FIXED32(32767),,"how many meters per second the camera is allowed to move")
+@*	TYPEENTRYFIXED32(YSlew,Maximum Y Slew,FIXED32(0),FIXED32(32767),FIXED32(32767),,"how many meters per second the camera is allowed to move")
+@*	TYPEENTRYFIXED32(ZSlew,Maximum Z Slew,FIXED32(0),FIXED32(32767),FIXED32(32767),,"how many meters per second the camera is allowed to move")
+	GROUP_STOP()
+
+	GROUP_START(Clipping Planes,256)
+	TYPEENTRYFIXED32(Hither,,FIXED32(0),FIXED32(1000),FIXED32(0.1))
+	TYPEENTRYFIXED32(Yon,,FIXED32(0),FIXED32(1000),FIXED32(100))
+	GROUP_STOP()
+	PROPERTY_SHEET_FOOTER
+
+TYPEFOOTER
+
+@*============================================================================

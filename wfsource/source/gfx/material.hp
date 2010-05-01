@@ -1,0 +1,193 @@
+//=============================================================================
+// Material.hp:
+// Copyright ( c ) 1997,1998,1999,2000,2001,2002 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description: describes polygon attributes
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+#ifndef _Material_H
+#define _Material_H
+
+//============================================================================
+// Includes
+//============================================================================
+
+#include <pigsys/pigsys.hp>
+#include <gfx/color.hp>
+#include <gfx/vertex.hp>
+#include <gfx/rmuv.hp>
+
+//============================================================================
+
+enum
+{
+	TEXTURE_MODE_4BIT_CLUT,
+	TEXTURE_MODE_8BIT_CLUT,
+	TEXTURE_MODE_16BIT_DIRECT
+};
+
+class RenderObject2D;
+class RenderObject3D;
+class ViewPort;
+class Vector2;
+class Matrix34;
+class Primitive;
+class _IffWriter;
+class PixelMap;
+
+#include <gfx/math.hp>
+
+#include <gfx/renderer.hp>
+
+
+typedef void (RenderObject3D::* pRenderObj2DFunc)(ViewPort& vp,const Vector2& position, int depth);
+typedef int (RenderObject3D::* pRenderObj3DFunc)(Primitive* primitive);
+
+//============================================================================
+// Class and Structure Prototypes
+//============================================================================
+
+const int MATERIAL_NAME_LEN = 256;
+
+struct _MaterialOnDisk
+{
+	int32 _materialFlags;
+	Color _color;
+//	int32 _opacity;					// actually a fixed32
+	char textureName[MATERIAL_NAME_LEN];
+};
+
+//============================================================================
+// kts made to match _RMUV struct to make it easier
+
+//typedef _RMUV Texture;
+#define Texture _RMUV
+
+extern Texture emptyTexture;
+
+//============================================================================
+// so far, the default assignment operator will work
+
+class Material
+{
+public:
+	Material();
+	Material(Color color, int materialType,const Texture& texture, const PixelMap* texturePixelMap);
+	Material(const _MaterialOnDisk& mod,const Texture& texture, const PixelMap* texturePixelMap);
+	const Color& GetColor() const;
+	const Color& SetColor(const Color& color);
+
+	inline int32 GetMaterialFlags() const;
+	int32 SetMaterialFlags(int32 materialType);
+
+	INLINE void Validate() const;
+	// bits controlling what type of material this is,
+	// set up so that 0 is the simplest default: flat shaded color
+	enum
+	{
+		// bits which change which renderer runs
+		FLAT_SHADED = 0,
+		GOURAUD_SHADED = 1,
+
+		SOLID_COLOR = 0,
+		TEXTURE_MAPPED = 2,
+
+		LIGHTING_LIT = 0,
+		LIGHTING_PRELIT = 4,
+
+		SINGLE_SIDED = 0,
+		DOUBLE_SIDED = 8,
+
+		POLYGON_TYPE_FLAGS	= GOURAUD_SHADED | TEXTURE_MAPPED,
+
+		RENDERER_SELECTION_MASK = POLYGON_TYPE_FLAGS | LIGHTING_PRELIT,
+
+		// bits which don't
+
+		// kts can only control translucency on textures, or globaly, so for now, only on textures
+		// with these set, any pixel in the texture with the topmost bit set will be drawn translucent
+		TEXTURE_TRANSLUCENCY_OFF = 0,
+		TEXTURE_TRANSLUCENCY_ON = 4<<8,
+		TEXTURE_TRANSLUCENCY_HALF_BACK_HALF_PRIMITIVE = 1<<8|TEXTURE_TRANSLUCENCY_ON,
+		TEXTURE_TRANSLUCENCY_ONE_BACK_ONE_PRIMITIVE = 2<<8|TEXTURE_TRANSLUCENCY_ON,
+		TEXTURE_TRANSLUCENCY_ONE_BACK_NEGATIVE_ONE_PRIMITIVE = 3<<8|TEXTURE_TRANSLUCENCY_ON,
+		TEXTURE_TRANSLUCENCY_ONE_BACK_QUARTER_PRIMITIVE = 4<< 8|TEXTURE_TRANSLUCENCY_ON,
+		// bit 10 indicates on/off, bits 8-9 indicate rate
+
+		MATERIAL_FLAGS_MASK=RENDERER_SELECTION_MASK|TEXTURE_TRANSLUCENCY_HALF_BACK_HALF_PRIMITIVE|TEXTURE_TRANSLUCENCY_ONE_BACK_ONE_PRIMITIVE|TEXTURE_TRANSLUCENCY_ONE_BACK_NEGATIVE_ONE_PRIMITIVE|TEXTURE_TRANSLUCENCY_ONE_BACK_QUARTER_PRIMITIVE
+	};
+
+#if DO_IOSTREAMS
+	INLINE friend std::ostream& operator<<(std::ostream& out, const Material& mat);
+#endif
+protected:
+private:
+	void Construct();					// called by all constructors
+
+	pRenderObj3DFunc Get3DRenderObjectPtr() const;
+
+	friend class RenderObject3D;
+	friend _IffWriter& operator << ( _IffWriter& iff, const Material& mat );
+
+	pRenderObj3DFunc Get3DRenderer() const;
+	void InitPrimitive(Primitive& prim, const Vertex3D& vertex0, const Vertex3D& vertex1, const Vertex3D& vertex2) const;
+#if defined(RENDERER_PIPELINE_DIRECTX)
+	void InitPrimitive(TriFace& face, const Vertex3D& vertex0, const Vertex3D& vertex1, const Vertex3D& vertex2) const;
+#endif
+
+	pRenderObj2DFunc _renderer2D;
+	pRenderObj3DFunc _renderer3D;
+	P_CODE	_cdColor;				    // color plus poly code
+	Color _color;
+	int _materialFlags;
+	Texture _texture;
+    const PixelMap* _texturePixelMap;
+};
+
+//============================================================================
+// kts experiment in using derived classes to provide interfaces for specific other classes
+
+#if 0
+class Material_RendPolyInterface : public Material
+{
+private:					// only has private functions, whcih RenderObject3D can access
+	friend class RenderObject3D;
+
+	int SizeOfPoly();					// returns the size of a single poly using this material
+	void InitPolyArray(void* polyArray,int count);			// initializes an array of polys for this material
+};
+#endif
+
+//============================================================================
+
+#pragma message(__FILE__ " KTS: MAX_RENDERERS hard coded to 8 to prevent cyclic dependencies, consider moving renderers into Material")
+ //#define ValidateRenderMask(materialFlags) RangeCheck(0,(materialFlags&RENDERER_SELECTION_MASK),RenderObject3D::MAX_RENDERERS)
+ #define ValidateRenderMask(materialFlags) RangeCheck(0,(materialFlags&RENDERER_SELECTION_MASK),8)
+
+//============================================================================
+
+#if		USE_INLINE_DEFS || defined( _Material_CC )
+#include <gfx/material.hpi>		// include all inline definitions as appropriate
+#endif
+
+//=============================================================================
+#endif
+//=============================================================================

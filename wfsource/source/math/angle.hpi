@@ -1,0 +1,327 @@
+//==============================================================================
+// angle.hpi:
+// Copyright (c) 1996,1997,1999,2000,2002 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//==============================================================================
+// Original Author: Kevin T. Seghetti
+//==============================================================================
+
+#include <math/scalar.hp>
+
+#ifndef PI
+#define PI		3.14159265358979323846
+#endif
+
+// ------------------------------------------------------------------------
+// Constructors
+// ------------------------------------------------------------------------
+
+INLINE
+Angle::Angle()
+{
+}
+
+// ------------------------------------------------------------------------
+
+INLINE
+Angle::Angle( const Angle& x )
+	:
+	_value( x._value )
+{
+}
+
+// ------------------------------------------------------------------------
+
+INLINE
+Angle::Angle( const uint16 value )
+	:
+	_value( value )
+{
+}
+
+// ------------------------------------------------------------------------
+
+INLINE
+Angle::Angle( const Scalar& revolutions )
+	: _value( revolutions.AsUnsignedFraction() )
+{
+   revolutions.Validate();
+}
+
+// ------------------------------------------------------------------------
+// static functions
+// ------------------------------------------------------------------------
+
+INLINE Angle
+Angle::Revolution( const Scalar& x )
+{
+   x.Validate();
+	return Angle( x.AsUnsignedFraction() );
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Angle
+Angle::Radian( const Scalar& x )
+{
+   x.Validate();
+	return Angle( (x * SCALAR_CONSTANT(0.5/PI)).AsUnsignedFraction() );
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Angle
+Angle::Degree( const Scalar& x )
+{
+   x.Validate();
+	return Angle( (x / SCALAR_CONSTANT(360)).AsUnsignedFraction()  );
+}
+
+//==============================================================================
+
+inline void 
+Angle::Validate() const
+{
+// kts when this becomes a float then it can be validated
+#if defined(SCALAR_TYPE_FLOAT) || defined(SCALAR_TYPE_DOUBLE)
+   //assert(!isnan(_value));    
+#endif
+}
+
+// ------------------------------------------------------------------------
+// Assignment Operator
+// ------------------------------------------------------------------------
+
+INLINE Angle&
+Angle::operator = ( const Angle& b )
+{
+	_value = b._value;
+	return *this;
+}
+
+// ------------------------------------------------------------------------
+// Explicit Conversion Methods
+// ------------------------------------------------------------------------
+
+INLINE uint16
+Angle::AsUInt16() const
+{
+	return _value;
+}
+
+// ------------------------------------------------------------------------
+
+#if 0
+INLINE Scalar
+Angle::AsScalar() const
+{
+	return Scalar( 0,_value );
+}
+#endif
+
+// ------------------------------------------------------------------------
+
+INLINE Scalar
+Angle::AsDegree() const
+{
+	return AsRevolution() * SCALAR_CONSTANT(360);
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Scalar
+Angle::AsRadian() const
+{
+	return AsRevolution() * SCALAR_CONSTANT(2.0*PI);
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Scalar
+Angle::AsRevolution() const
+{
+	return Scalar( 0, _value );
+}
+
+// ------------------------------------------------------------------------
+// Numerical Methods
+// ------------------------------------------------------------------------
+
+INLINE Angle
+Angle::operator - () const
+{
+	int32 localone = 65536;
+
+	int32 result = localone - (int32)_value;
+
+	return Angle( (uint16)(result) );
+//	return Angle( (uint16)(-_value) );
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Angle&
+Angle::operator += ( const Angle b )
+{
+	_value += b._value;
+	return *this;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Angle&
+Angle::operator *= ( const Scalar& b )
+{
+   b.Validate();
+	_value = ( Scalar(0,_value) * b).AsUnsignedFraction();
+	return *this;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Angle&
+Angle::operator /= ( const Scalar& b )
+{
+   b.Validate();
+	_value = ( Scalar(0,_value) / b).AsUnsignedFraction();
+	return *this;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Angle
+Angle::operator * ( const Scalar& b ) const
+{
+   b.Validate();
+	Angle result(*this);
+	result *= b;
+	return result;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Angle
+Angle::operator / ( const Scalar& b ) const
+{
+   b.Validate();
+	Angle result(*this);
+	result /= b;
+	return result;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Angle&
+Angle::operator -= ( const Angle b )
+{
+	_value -= b._value;
+	return *this;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Angle
+Angle::operator + ( const Angle b ) const
+{
+	Angle result( *this );
+	result += b;
+	return(result);
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Angle
+Angle::operator - ( const Angle b ) const
+{
+	Angle result(*this);
+	result -= b;
+	return result;
+}
+
+// ------------------------------------------------------------------------
+// Comparison Methods
+// ------------------------------------------------------------------------
+
+INLINE int
+Angle::operator >= ( const Angle b ) const
+{
+	return ( _value >= b._value );
+}
+
+// ------------------------------------------------------------------------
+
+INLINE int
+Angle::operator <= ( const Angle b ) const
+{
+	return ( _value <= b._value );
+}
+
+// ------------------------------------------------------------------------
+
+INLINE int
+Angle::operator != ( const Angle b ) const
+{
+	return ( _value != b._value );
+}
+
+// ------------------------------------------------------------------------
+
+INLINE int
+Angle::operator == ( const Angle b ) const
+{
+	return ( _value == b._value );
+}
+
+// ------------------------------------------------------------------------
+
+INLINE int
+Angle::operator > ( const Angle b ) const
+{
+	return ( _value > b._value );
+}
+
+// ------------------------------------------------------------------------
+
+INLINE int
+Angle::operator < ( const Angle b ) const
+{
+	return ( _value < b._value );
+}
+
+// ------------------------------------------------------------------------
+// Trigonometric Methods
+// ------------------------------------------------------------------------
+
+INLINE Scalar
+Angle::Sin() const
+{
+	Scalar temp(int16(0),_value);
+	return(temp.Sin());
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Scalar
+Angle::Cos() const
+{
+	Scalar temp(int16(0),_value);
+	return(temp.Cos());
+}
+
+// ------------------------------------------------------------------------

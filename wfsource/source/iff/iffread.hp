@@ -1,0 +1,143 @@
+//=============================================================================
+// IFFRead.hp: IFF Reader class
+// Copyright ( c ) 1997,99 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description: The IFFRead
+//
+
+//	IFFRead
+//	IFFChunkIter is an iterator class that iterates over a single chunk of data
+//	it has several operator<< functions, for strings and int32 and fixed32, etc.
+//	It also has an IFFChunkIter constructor, which allows for reading nested chunks.
+
+
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+#ifndef _IFFRead_H
+#define _IFFRead_H
+
+//============================================================================
+// Includes
+//============================================================================
+
+#include <pigsys/pigsys.hp>
+#include <streams/binstrm.hp>
+class Memory;
+
+//==============================================================================
+// used to create 4 character iff tags
+
+#define IFFTAG(a,b,c,d)            \
+(                                  \
+ ( ((uint32)((d)&0xff)) << 24) |   \
+ ( ((uint32)((c)&0xff)) << 16) |   \
+ ( ((uint32)((b)&0xff)) <<  8) |   \
+ ( ((uint32)((a)&0xff))      )     \
+)
+
+//============================================================================
+// Class and Structure Prototypes
+//============================================================================
+
+INLINE bool
+ValidChar(char c)
+{
+	return(
+		(c >= ' ' && c < 127) ||
+		c == 0
+		);
+}
+
+class ChunkID
+{
+public:
+	ChunkID() { _chunkID = 0; }
+	explicit ChunkID(int32 chunkID) { _chunkID = chunkID; }
+
+	void Validate() const { assert(Valid()); }
+	int Valid() const
+	{
+		char* cid = (char*)&_chunkID; return(
+			ValidChar(cid[0]) && ValidChar(cid[1]) &&
+			ValidChar(cid[2]) && ValidChar(cid[3])
+			);
+	}
+	// accessors
+	int32 ID() const { assert(Valid()); return(_chunkID); }
+	int operator!=(const ChunkID& left) const { return (_chunkID != left._chunkID); }
+	int operator==(const ChunkID& left) const { return (_chunkID == left._chunkID); }
+#if DO_IOSTREAMS
+//	friend ostream& operator<<(ostream& s, const ChunkID &a) { char* cid= (char*)&a._chunkID; return s << "ChunkID = " << (char)cid[0] << (char)cid[1] << (char)cid[2] << (char)cid[3]; }
+	friend std::ostream& operator<<(std::ostream& s, const ChunkID &a);
+#endif
+	friend binistream& operator>>(binistream& s, ChunkID &a) 	{		s >> a._chunkID;		return s;	}
+	// mutators
+	int32 ID(int32 newID) { assert(newID); _chunkID = newID; assert(Valid()); return(_chunkID); }
+	ChunkID& operator=(const ChunkID& left) { _chunkID = left._chunkID; return *this; }
+
+private:
+	int32 _chunkID;
+};
+
+//============================================================================
+
+class IFFChunkIter
+{
+public:
+	IFFChunkIter(const IFFChunkIter& rhs);
+	IFFChunkIter(binistream& stream);
+	~IFFChunkIter();
+	int Size() const;					// total size of chunk
+	int BytesLeft() const;			// # of bytes left to read from this chunk
+
+	ChunkID GetChunkID() const;
+	ChunkID GetSwappedChunkID() const;	// returns ID of correct endiannes for this platform
+
+	void Validate() const;
+
+	void ReadBytes(void* buffer, int count);
+	void SkipBytes(int count);
+
+	IFFChunkIter* GetChunkIter(Memory& memory);
+
+	// returns internal memory pointer and advances count bytes
+	const char*	GetMemoryPtr(int count);		// kts hack to allow texture loading to not use another buffer
+										// think of a better way
+private:
+	void Advance(int bytes);
+	binistream& _stream;
+	ChunkID _chunkID;
+	int32 _chunkSize;
+	int32 _bytesLeft;
+	int32 _extraBytesToRead;
+	bool _locked;
+	IFFChunkIter* _parent;
+};
+
+//=============================================================================
+
+#if	USE_INLINE_DEFS || defined(_IFFREAD_CC)
+#include <iff/iffread.hpi>
+#endif
+
+//=============================================================================
+#endif
+//=============================================================================

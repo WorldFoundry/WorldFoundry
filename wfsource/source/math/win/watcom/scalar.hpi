@@ -1,0 +1,277 @@
+// ------------------------------------------------------------------------
+// scalar.hpi
+// Copyright (c) 1997, World Foundry Group   
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ------------------------------------------------------------------------
+
+extern long __upperResult;
+
+// ------------------------------------------------------------------------
+
+//long WFMul(long a, long b);
+//#pragma aux WFMul = \
+//	"imul	ebx" \
+//	"shrd	eax,edx,16" \
+//	parm nomemory [eax] [ebx] \
+//	modify nomemory [edx] \
+//	value [eax];
+
+long WFMul(long a, long b);
+#pragma aux WFMul = \
+	"imul	ebx" \
+	"shrd	eax,edx,16" \
+	parm nomemory [eax] [ebx] \
+	modify nomemory [edx] ;
+
+INLINE Scalar
+Scalar::operator * ( const Scalar& b ) const
+{
+	return Scalar( WFMul( _value, b._value ) );
+}
+
+// ------------------------------------------------------------------------
+
+long WFDiv(long a, long b);
+#pragma aux WFDiv = \
+	"mov	eax,edx" \
+	"shl	eax,16" \
+	"sar	edx,16" \
+	"idiv	ebx" \
+	parm nomemory [edx] [ebx] \
+	modify nomemory [eax] \
+	value [eax];
+
+INLINE Scalar
+Scalar::operator / ( const Scalar& b ) const
+{
+	return Scalar( WFDiv( _value, b._value ) );
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Scalar&
+Scalar::operator *= ( const Scalar& b )
+{
+	_value = WFMul( _value, b._value );
+	return *this;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Scalar&
+Scalar::operator /= ( const Scalar& b )
+{
+	_value = WFDiv( _value, b._value );
+	return *this;
+}
+
+//-----------------------------------------------------------------------------
+
+//INLINE Scalar
+//Scalar::Sqrt( void ) const
+//{
+//	return Scalar( BR_SQRT( _value ) );
+//}
+
+// ------------------------------------------------------------------------
+
+long WFRcp(long a);
+#pragma aux WFRcp = \
+	"mov	edx,1" \
+	"xor	eax,eax" \
+	"idiv	ebx" \
+	parm nomemory [ebx] \
+	modify nomemory [eax edx] \
+	value [eax];
+
+INLINE Scalar
+Scalar::Invert( void ) const
+{
+	return Scalar( WFRcp( _value ) );
+}
+
+// ------------------------------------------------------------------------
+
+long WFMulDiv(long a, long b, long c);
+#pragma aux WFMulDiv = \
+	"imul	ebx" \
+	"idiv	ecx" \
+	parm nomemory [eax] [ebx] [ecx]\
+	modify nomemory [edx] \
+	value [eax];
+
+INLINE Scalar
+Scalar::MulDiv(const Scalar b, const Scalar c) const
+{
+	return Scalar(WFMulDiv(_value,b._value,c._value));
+}
+
+//=============================================================================
+
+long WFMultiply64(long a,long b);
+#pragma aux WFMultiply64 = 	\
+	"imul	edx"							\
+	"mov	__upperResult,edx"				\
+	parm  [eax] [edx] 				\
+	modify [edx]        			\
+	value [eax];
+
+
+
+#define Multiply64(__a, __b, __m1, __m0)	\
+	__m0 = WFMultiply64(__a,__b);  \
+	__m1 = __upperResult;
+
+#define MultiplyAndNop64(__a, __b, __m1, __m0) Multiply64(__a,__b,__m1,__m0)
+
+//=============================================================================
+
+long WFAddCarry64(long a1,unsigned long a0, long b1, unsigned long b0);
+#pragma aux WFAddCarry64 = 	\
+	"add	eax,ecx"							\
+	"adc	ebx,edx"							\
+	"mov	__upperResult,ebx"				\
+	parm [ebx] [eax] [edx] [ecx] 				\
+	modify [ebx edx]        			\
+	value [eax];
+
+
+// a1:a0 = a1:a0 + b1:b0
+#define AddCarry64(__a1, __a0, __b1, __b0)		\
+		__a0 = WFAddCarry64(__a1,__a0,__b1,__b0);	\
+		__a1 = __upperResult
+
+
+//=============================================================================
+// kts it is not defined whether right shift is logical or arithmatic in C
+// so we have to implement both in assembly
+
+long WFShiftRightLogical(long input,long amount);
+#pragma aux WFShiftRightLogical = 	\
+	"shr	eax,cl"							\
+	parm nomemory [eax] [ecx] 				\
+	value [eax] 							\
+	modify nomemory [edx] ;
+
+
+#define ShiftRightLogical(__srl1,__srl0,__srln) (__srl1 = WFShiftRightLogical(__srl0,__srln))
+#define ShiftRightLogicalVar(__srlv1,__srlv0,__srlvn) (__srlv1 = WFShiftRightLogical(__srlv0,__srlvn))
+
+//=============================================================================
+
+INLINE
+void ShiftLeft64(unsigned long& __a1,unsigned long& __a0,int __shift)
+{
+	register long __tmp0;
+	register long __tmp1;
+	register long __tmp2;
+
+	// result a1:a0 = a1:a0 << shift
+
+	__tmp1 = __shift;
+	__tmp0 = __tmp1 << 26;
+
+	if(__tmp0 < 0)
+	{
+		__a1 = __a0 << __tmp1;
+		__a0 = 0;
+	}
+	else
+	{
+		__a1 = __a1 << __tmp1;
+		if(__tmp0 != 0)
+		{
+		    __tmp2 = - __tmp1;
+
+			ShiftRightLogicalVar(__tmp2,__a0,__tmp2);
+
+			__a1 |= __tmp2;
+		}
+		__a0 <<= __tmp1;
+	}
+}
+
+//=============================================================================
+
+INLINE
+void ShiftRight64(unsigned long& __a1,unsigned long& __a0,int __shift)
+{
+	register long __tmp0;
+	register long __tmp1;
+	register long __tmp2;
+
+	// result a1:a0 = a1:a0 >> shift
+
+	__tmp1 = __shift;
+	__tmp0 = __tmp1 << 26;
+
+	if(__tmp0 < 0)
+	{
+		ShiftRightLogicalVar(__a0,__a1,__tmp1);
+		__a1 = 0;
+	}
+	else
+	{
+		ShiftRightLogicalVar(__a0,__a0,__tmp1);
+
+		if(__tmp0 != 0)
+		{
+			__tmp2 = - __tmp1;
+			__tmp2 = __a1 << __tmp2;
+			__a0 |= __tmp2;
+		}
+		ShiftRightLogicalVar(__a1,__a1,__tmp1);
+	}
+}
+
+//==============================================================================
+
+long JoinHiLo(long a, long b);
+#pragma aux JoinHiLo = \
+	"shld	eax,edx,16" \
+	parm nomemory [eax] [edx] \
+	modify nomemory [eax edx] \
+	value [eax];
+
+//==============================================================================
+
+INLINE
+int32
+FixedMac3(int32 a, int32 b, int32 c, int32 d, int32 e, int32 f)
+{
+   	register long out0;
+	register long out1;
+	register long out2;
+	register long out3;
+
+	// result = a*b + c*d + e*f
+	MultiplyAndNop64(a,b,out1,out0);
+
+	Multiply64(c,d,out3,out2);
+
+	AddCarry64(out1,out0,out3,out2);
+
+	Multiply64(e,f,out3,out2);
+
+	AddCarry64(out1,out0,out3,out2);
+
+	return JoinHiLo(out1,out0);
+}
+
+//=============================================================================

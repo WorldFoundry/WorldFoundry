@@ -1,0 +1,9 @@
+   more flexible construction parameters
+
+   Live/dead list of particles
+   mempool of objects
+
+\/ copy constructors for RenderObject*
+\/ generate more particles after initial construction
+\/ start delay
+\/ particle rotation

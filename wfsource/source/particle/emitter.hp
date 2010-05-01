@@ -1,0 +1,149 @@
+//=============================================================================
+// particle/emitter.hp:
+// Copyright ( c ) 1997,98,99 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description:
+// Original Author: William B. Norris IV
+//============================================================================
+// oad parameter docs:
+//	Z arc: controls direction of generated particles, in % of a circle,
+//		1 = 360 degrees, .5 = 180 degrees
+//	Y arc: controls direction of generated particles, in % of a circle,
+//		1 = 360 degrees, .5 = 180 degrees
+
+//	pulse/continuous: pulse will release all particles at the pulse rate,
+//	continuous will release them continuously
+
+// # of particles: in pulse mode, this is the # of particles to generate
+// with each pulse
+// In continuous mode, it is the # of particles to generate per second
+
+// Pulse Rate: only valid in pulse mode, sets how often to pulse
+
+// time Delay: a one-time delay from creation before any particles are generated
+// (kts is this needed?)
+
+// to simulate explosions, the emitter allows generation of particles inside
+// of an expanding sphere.  To make the emitter always emit from a single point,
+// set the sphere expansion rate to 0
+
+//============================================================================
+// force documentation:
+// There are 3 kinds of forces: constant, random, and radial
+
+
+//============================================================================
+
+#ifndef PARTICLE_EMITTER_HP
+#define PARTICLE_EMITTER_HP
+
+//==============================================================================
+
+#include <particle/particle.hp>
+#include <gfx/camera.hp>
+#include <memory/mempool.hp>
+#include <timer/clock.hp>
+#include <oas/mesh.ht>
+
+class RenderObject3D;
+
+//==============================================================================
+
+class Emitter
+{
+public:
+	// TODO:
+	// function for velocity
+	// function for rotation
+	// function for model to generate
+	struct ParticleParameters
+	{
+		Scalar initialVelocity;
+		Euler initialRotation;
+		Euler deltaRotation;
+		Scalar lifeTime;
+		Scalar initialAlpha;
+		Scalar alphaDecrement;
+		RenderObject3D* templateObject;
+	};
+
+	struct EmitterParameters
+	{
+		int nParticles;
+		int generationType;				// 0 = continuous, 1 = pulse
+		Scalar period;
+		Scalar startDelay;
+		Scalar zArc;
+		Scalar yArc;
+		Scalar initialSphereRadius;
+		Scalar sphereExpansionRate;
+		Vector3 position;
+		Euler rotation;
+	};
+
+	Emitter( Memory&, const _Mesh& meshOAD, const EmitterParameters&, const ParticleParameters& pp, const Clock& );
+	~Emitter();
+
+	bool Update( const Clock& );
+	void Render( RenderCamera& camera );
+
+	inline void Validate() const;
+
+protected:
+	Memory& _memory;
+	const _Mesh& _meshOAD;
+
+	const ParticleParameters _particleParameters;
+
+	RenderObject3D* * _tblObjects;
+
+	Particle* * _tblParticles;
+	MemPool _particleMemPool;
+	int _nParticles;
+	int _nParticlesAvailable;
+
+	bool _bRenderThisFrame;				// kts get rid of this
+
+	Scalar _timeStart;
+	Scalar _timeToGenerate;
+	Scalar _period;
+
+	Vector3 _position;			        // position of emitter (center of sphere)
+	Euler 	_rotation;			        // orientation of emitter
+	Scalar _currentSphereRadius; //current radius of explosion
+
+	Scalar _zArc;
+	Scalar _yArc;
+
+//	Scalar dist; //working store, used to hold dist from cur. pt. to ctr.
+//	Vector3 _vecUnit;		//unit vector from center at cur. point
+private:
+	void GeneratePoints(const Clock&);
+
+	// not to be used
+	Emitter();
+	Emitter( const Emitter& );
+};
+
+//==============================================================================
+#include "emitter.hpi"
+//==============================================================================
+#endif	// PARTICLE_EMITTER_HP
+//==============================================================================

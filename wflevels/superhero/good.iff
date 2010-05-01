@@ -1,0 +1,41 @@
+
+{ 'MODL' 
+	{ 'SRC' "3D Studio MAX" 
+	}
+	{ 'TRGT' "World Foundy Game Engine by Recombinant Limited (www.recombinant.com)" 
+	}
+	{ 'NAME' "Box01" 
+	}
+	{ 'ORGN' 0.000000000000000l 0.000000000000000l 0.000000000000000l 
+	}
+	{ 'VRTX'  //animataion at time 0, Scale multiplier = 1
+			 // u,v,color,x,y,z
+			0.000000000000000l 0.000000000000000l 1814184l -0.500000000000000l -0.500000000000000l 0.000000000000000l  //Vertex #0
+			0.000000000000000l 0.000000000000000l 8818873l -0.500000000000000l 0.500000000000000l 0.000000000000000l  //Vertex #1
+			0.000000000000000l 0.000000000000000l 10222005l 0.500000000000000l 0.500000000000000l 0.000000000000000l  //Vertex #2
+			0.000000000000000l 0.000000000000000l 10062819l 0.500000000000000l -0.500000000000000l 0.000000000000000l  //Vertex #3
+			0.000000000000000l 0.000000000000000l 8452268l -0.500000000000000l -0.500000000000000l 1.00000000000000l  //Vertex #4
+			0.000000000000000l 0.000000000000000l 14118139l 0.500000000000000l -0.500000000000000l 1.00000000000000l  //Vertex #5
+			0.000000000000000l 0.000000000000000l 145364l 0.500000000000000l 0.500000000000000l 1.00000000000000l  //Vertex #6
+			0.000000000000000l 0.000000000000000l 5211717l -0.500000000000000l 0.500000000000000l 1.00000000000000l  //Vertex #7
+			
+	}
+	{ 'MATL'  //Material last updated 9/11/97 23:01
+			0l 11711154l "" 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y 0y  //Material #0
+			
+	}
+	{ 'FACE' 2w 1w 0w 0w  //
+			0w 3w 2w 0w  //
+			6w 5w 4w 0w  //
+			4w 7w 6w 0w  //
+			5w 3w 0w 0w  //
+			0w 4w 5w 0w  //
+			6w 2w 3w 0w  //
+			3w 5w 6w 0w  //
+			7w 1w 2w 0w  //
+			2w 6w 7w 0w  //
+			4w 0w 1w 0w  //
+			1w 7w 4w 0w  //
+			
+	}
+}

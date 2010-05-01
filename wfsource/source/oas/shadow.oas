@@ -1,0 +1,21 @@
+@*============================================================================
+@* shadow.oas
+@*============================================================================
+
+@*============================================================================
+@* Shadow definition
+
+@define DEFAULT_MOBILITY 1
+@define DEFAULT_MOVESBETWEENROOMS 1
+@define DEFAULT_TEMPLATE 1
+
+TYPEHEADER(Shadow)
+	@include actor.inc
+
+	PROPERTY_SHEET_HEADER(Shadow,1)
+@*	-------------------------------
+	PROPERTY_SHEET_FOOTER
+
+TYPEFOOTER
+
+@*============================================================================

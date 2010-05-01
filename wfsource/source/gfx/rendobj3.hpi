@@ -1,0 +1,86 @@
+//=============================================================================
+// RenderObject3D.hpi: 3D renderable object
+// Copyright ( c ) 1997,1998,1999,2000 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description:
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+inline void
+RenderObject3D::Validate() const
+{
+	assert(_vertexCount > 0);
+	assert(_vertexCount < 10000);		// arbitrary
+	assert(_faceCount > 0);
+	assert(_faceCount < 10000);		// arbitrary
+
+	assert(ValidPtr(_vertexList));
+	assert(ValidPtr(_faceList));
+
+#if DO_ASSERTIONS
+#if defined(USE_ORDER_TABLES)
+	for(int index=0;index<ORDER_TABLES;index++)
+		assert(ValidPtr(_primList[index]));
+#endif
+#endif
+	assert(ValidPtr(_materialList));
+
+	assert(_handleCount >= 0);
+	assert(_handleCount < 10000);		// arbitrary
+	if(_handleCount > 0)
+		AssertMsg(ValidPtr(_handleList),"handleCount = " << _handleCount);
+}
+
+//============================================================================
+
+INLINE Vertex3D*
+RenderObject3D::GetWrittableVertexList()	// should only be used by the animation system
+{
+	return(_vertexList);
+}
+
+//=============================================================================
+
+INLINE int
+RenderObject3D::GetVertexCount() const	// should only be used by the animation system
+{
+	return(_vertexCount);
+}
+
+//============================================================================
+// returns true and fills in the position matching the handleID, or false if no match
+
+INLINE bool
+RenderObject3D::GetHandle(const HandleID thisHandle, Vector3& position) const
+{
+	for (int handleIdx = 0; handleIdx < _handleCount; handleIdx++)
+	{
+		if (_handleList[handleIdx].ID() == thisHandle)
+		{
+			int vertexNum = _handleList[handleIdx].Vertex();
+			position = PSToVector3(_vertexList[vertexNum].position);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+//============================================================================

@@ -1,0 +1,91 @@
+//==============================================================================
+// colbox.hp:
+// Copyright ( c ) 1994,95,96,97,98,99,2000,2002 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description: The ColBox class describes different collision
+//              spaces and calculate whether a particular space collides with
+//              another.
+// Original Author: Ann Mei Chang
+// Rewrite: Kevin T. Seghetti, 2/25/96 7:42AM
+//
+// Latest rewrite: Phil Torre, 7/10/97 13:35
+//				   Hiding colbox from everything but ColSpace, and
+//				   cleaning the interfaces up.
+//==============================================================================
+
+#ifndef _COLBOX_HP
+#define _COLBOX_HP
+
+//==============================================================================
+
+#include <pigsys/pigsys.hp>
+#include <math/scalar.hp>
+#include <math/vector3.hp>
+
+//==============================================================================
+// collision space extends xdist, ydist, and zdist respectively from the
+// origin centered in the box
+
+class ColBox
+{
+public:
+	ColBox() { }
+	ColBox(const Vector3& min, const Vector3& max);
+	~ColBox() { }
+
+	// colbox boundaries in local coordinates
+	INLINE Vector3 Min() const;
+	INLINE Vector3 Max() const;
+
+	// colbox boundaries in global coordinates given current position in world
+	INLINE Vector3 Min(const Vector3& curpos) const;
+	INLINE Vector3 Max(const Vector3& curpos) const;
+	void Expand(const Vector3& delta);				// extend colbox it by passed in vector (used to generate colboxes
+											// which contain starting and endposition of a moving object)
+
+	Vector3 GetCenter( const Vector3& posCurrent ) const;
+
+	INLINE void	SetBox(const Vector3& min, const Vector3& max);
+
+	bool CheckCollision(const Vector3& mypos, const ColBox& object, const Vector3& objpos) const;
+	bool CheckCollision(const Vector3& mypos, const Vector3& endpoint1, const Vector3& endpoint2) const;
+	bool CheckCollision(const Vector3& mypos, const Vector3& endpoint) const;
+	bool CheckSurrounds(const Vector3& mypos, const ColBox& object, const Vector3& objpos) const;	// returns true if object2 is entirely contained in object1
+
+//	bool operator==(const ColBox&) const;
+
+	// KTS this is not a good idea
+	bool CheckBelow(const Vector3& mypos, const ColBox& object, const Vector3& objpos) const;
+
+#if SW_DBSTREAM >= 1
+	friend std::ostream& Print ( std::ostream& s, const ColBox& box, const Vector3& Position );
+	friend std::ostream& operator << ( std::ostream& s, const ColBox& box );
+#endif
+
+private:
+	Vector3 _minPoint;
+	Vector3 _maxPoint;
+};
+
+//==============================================================================
+#include "colbox.hpi"	// include all inline definitions as appropriate
+//==============================================================================
+#endif // !_COLBOX_HP
+//==============================================================================

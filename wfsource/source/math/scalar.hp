@@ -1,0 +1,227 @@
+// ------------------------------------------------------------------------
+// scalar.hp
+// Copyright (c) 1996,1997,1998,1999,2000,2001,2002 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ------------------------------------------------------------------------
+
+#ifndef _SCALAR_HP
+#define _SCALAR_HP
+
+// ------------------------------------------------------------------------
+
+#include <pigsys/pigsys.hp>
+#include <streams/binstrm.hp>
+
+#define MATH_DEBUG(d)
+//#define MATH_DEBUG(d) d 
+
+// ------------------------------------------------------------------------
+// Macros
+// ------------------------------------------------------------------------
+
+// Use these macros to convert floats/ints/etc to Scalar type.
+
+#define SCALAR_ONE_LS 	(1<<16)
+//#define QSCALAR( x )						Scalar(((long)(SCALAR_ONE_LS * (x))))
+
+
+#if defined(SCALAR_TYPE_FIXED)
+#define SCALAR_CONSTANT( x )				Scalar(((long)(SCALAR_ONE_LS * (x))))
+#elif defined(SCALAR_TYPE_FLOAT) 
+#define FLOAT_TYPE float
+#define SCALAR_CONSTANT( x )				Scalar( (float)(x) )
+#elif defined(SCALAR_TYPE_DOUBLE)
+#define FLOAT_TYPE double
+#define SCALAR_CONSTANT( x )				Scalar( (double)(x) )
+#else
+#error SCALAR TYPE not defined
+#endif
+
+// ------------------------------------------------------------------------
+
+class Angle;
+
+class Scalar
+{
+public:
+	// Constructors
+	inline Scalar();
+#if defined(SCALAR_TYPE_FIXED) 
+   explicit inline Scalar( long value );         // can't have this with float
+#endif
+#if defined(SCALAR_TYPE_FLOAT) 
+   explicit inline Scalar( float value );
+   explicit inline Scalar( double value );
+#endif
+#if defined(SCALAR_TYPE_DOUBLE)
+   explicit inline Scalar( double value );
+#endif
+
+    inline Scalar( const Scalar& );
+    inline Scalar( int16 integer, uint16 frac );
+
+    void Validate() const;
+
+	// Explicit Conversion Methods
+   static Scalar FromFixed32(fixed32 value);
+   static Scalar FromFloat(float value);
+   static Scalar FromDouble(double value);
+#if defined(SCALAR_TYPE_FIXED) 
+   // kts this should eventually go away, is currently only used by vector class to do 64 bit math
+   // If I make a 64 bit Scalar class then direct access will no longer be needed
+   inline long				AsLong() const;
+#endif
+
+   void AsText(char* buffer, int length);
+
+	inline float				AsFloat() const;           // kts if we ever support psx again this will have to be conditionally compiled out
+	inline bool				AsBool() const;
+	inline int16			AsGTEScalar() const;
+	inline uint16			AsUnsignedFraction() const;
+	inline int				WholePart() const;
+
+   inline Scalar           Trunc() const;             // same as wholepart, but returns a scalar    
+	inline Scalar				Round() const;
+	inline Scalar				Ceiling() const;
+	inline Scalar				Floor() const;
+
+	// Assignment Method
+	inline Scalar     operator = ( const Scalar& );
+
+	// Numerical Methods
+    inline Scalar	operator -  () const;
+    inline Scalar	operator +  ( const Scalar& ) const;
+    inline Scalar	operator -  ( const Scalar& ) const;
+    inline Scalar	operator *  ( const Scalar& ) const;
+    inline Scalar	operator /  ( const Scalar& ) const;
+    inline Scalar&	operator += ( const Scalar& );
+    inline Scalar&	operator -= ( const Scalar& );
+    inline Scalar&	operator *= ( const Scalar& );
+    Scalar&    		operator /= ( const Scalar& );
+    inline Scalar	operator *  ( const int& ) const;
+    inline Scalar	operator /  ( const int& ) const;
+
+
+	Scalar		MulDiv(const Scalar b, const Scalar c) const;					// (this * b) / c
+
+	inline friend Scalar		Mac2(Scalar a, Scalar b, Scalar c, Scalar d);
+	inline friend Scalar		Mac3(Scalar a, Scalar b, Scalar c, Scalar d, Scalar e, Scalar f);
+//	inline Scalar		Square() const;
+
+#if defined(SCALAR_TYPE_FLOAT) || defined(SCALAR_TYPE_DOUBLE)
+	inline Scalar		Sqrt() const;
+	inline Scalar		FastSqrt() const;
+#endif
+	inline Scalar		Abs() const;
+	inline Scalar		Min( const Scalar& ) const;
+	inline Scalar		Max( const Scalar& ) const;
+    inline Scalar    	Swap( Scalar& );
+	Scalar				Invert() const;
+
+	static Scalar		Random();
+	static Scalar		Random( Scalar lower, Scalar upper );
+
+	// Comparison Methods
+    inline int         operator >=	( const Scalar& ) const;
+    inline int         operator <=	( const Scalar& ) const;
+    inline int         operator !=	( const Scalar& ) const;
+    inline int         operator ==	( const Scalar& ) const;
+    inline int         operator <	( const Scalar& ) const;
+    inline int         operator >	( const Scalar& ) const;
+
+	// Conversion operators
+	inline operator bool() const;
+
+	// Trigonometric Methods
+    Scalar		Sin() const;
+    Scalar		Cos() const;
+	Angle		ASin() const;
+	Angle		ACos() const;
+	Angle		ATan2( const Scalar& ) const;       // this is x, parameter is Y (as in x/y)
+	Angle		ATan2Quick( const Scalar& ) const;
+
+	// IOSteam support
+#if DO_IOSTREAMS
+	friend std::ostream& operator << ( std::ostream& s, const Scalar& q );
+#endif
+
+	// binary iostream support
+	friend binistream& operator >> ( binistream&, Scalar& );
+#if defined( WRITER )
+	friend binostream& operator << ( binostream&, const Scalar );
+#endif
+
+	// Friendly Functions
+//	inline friend Scalar Length( const Scalar a, const Scalar b );
+//	inline friend Scalar Length( const Scalar a, const Scalar b,
+//		const Scalar c );
+//	inline friend Scalar LengthQuick( const Scalar a, const Scalar b );
+//	inline friend Scalar LengthQuick( const Scalar a,
+//		const Scalar b, const Scalar c );
+
+//	inline friend Scalar SumOfSquares( const Scalar a, const Scalar b );
+//	inline friend Scalar SumOfSquares( const Scalar a, const Scalar b,
+//		const Scalar c );
+//	inline friend Scalar SumOfSquares( const Scalar a, const Scalar b,
+//		const Scalar c, const Scalar d );
+
+//	inline friend Scalar MultiplyAccumulate( const Scalar a, const Scalar b,
+//		const Scalar c, const Scalar d );
+//	inline friend Scalar MultiplyAccumulate( const Scalar a, const Scalar b,
+//		const Scalar c, const Scalar d, const Scalar e, const Scalar f );
+//	inline friend Scalar MultiplyAccumulate( const Scalar a, const Scalar b,
+//		const Scalar c, const Scalar d, const Scalar e, const Scalar f,
+//		const Scalar g, const Scalar h );
+
+	// static data members
+	static const Scalar zero;
+	static const Scalar one;
+	static const Scalar negativeOne;
+	static const Scalar two;
+	static const Scalar half;
+	static const Scalar epsilon;			// smallest posible value
+	static const Scalar min;
+	static const Scalar max;
+
+protected:
+#if defined(SCALAR_TYPE_FIXED)
+	long	_value;
+#elif defined(SCALAR_TYPE_FLOAT) || defined(SCALAR_TYPE_DOUBLE)
+   FLOAT_TYPE _value;
+#else
+#error SCALAR TYPE not defined
+#endif
+
+};
+
+//inline Scalar Mac2(Scalar a1, Scalar b1, Scalar a2, Scalar b2);
+//inline Scalar Mac3(Scalar a1, Scalar b1, Scalar a2, Scalar b2, Scalar a3, Scalar b3);
+
+// ------------------------------------------------------------------------
+// kts some 64 bit operations
+unsigned long Sqrt64(long __a1,long __a0);
+unsigned long FastRSqrt64(unsigned long __a1,unsigned long __a0);
+
+// ------------------------------------------------------------------------
+
+#include <math/scalar.hpi>	// include all inline definitions as appropriate
+
+//=============================================================================
+#endif  // !_QSCALAR_HP
+//=============================================================================

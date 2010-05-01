@@ -1,0 +1,224 @@
+# wfsource/source/pigs.dep
+# TODO:
+#       simple macro like "PIGS_LIBS = hal anim gfx, ..." which adds the fully
+#           qualified filenames to the standard "LIBS" macro
+#       It'd be nice if this list can be generated automatically, too.
+
+#!error pigs.dep
+
+PIGS_DIR ?= $(WF_DIR)\source
+
+%ECHO $(PIGS_LIB_DIR)
+
+$(PIGS_LIB_DIR)anim.lib  .SILENT :
+        @echo anim
+        @%chdir $(PIGS_DIR)\anim
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)
+
+$(PIGS_LIB_DIR)attrib.lib  .SILENT :
+        @echo attrib
+        @%chdir $(PIGS_DIR)\attrib
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)
+
+$(PIGS_LIB_DIR)audio.lib  .SILENT :
+        @echo audio
+        @%chdir $(PIGS_DIR)\audio
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)
+
+$(PIGS_LIB_DIR)audiofmt.lib  .SILENT :
+        @echo audiofmt
+        @%chdir $(PIGS_DIR)\audiofmt
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)
+
+$(PIGS_LIB_DIR)bootscrn.lib  .SILENT :
+        @echo bootscrn
+        @%chdir $(PIGS_DIR)\bootscrn
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)
+
+$(PIGS_LIB_DIR)console.lib  .SILENT :
+        @echo console
+        @%chdir $(PIGS_DIR)\console
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)
+
+$(PIGS_LIB_DIR)cpplib.lib  .SILENT :
+        @echo cpplib
+        @%chdir $(PIGS_DIR)\cpplib
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)
+
+$(PIGS_LIB_DIR)eval.lib  .SILENT :
+        @echo eval
+        @%chdir $(PIGS_DIR)\eval
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)
+
+$(PIGS_LIB_DIR)gfx.lib  .SILENT :
+        @echo gfx
+        @%chdir $(PIGS_DIR)\gfx
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)
+
+$(PIGS_LIB_DIR)gfxfmt.lib  .SILENT :
+        @echo gfxfmt
+        @%chdir $(PIGS_DIR)\gfxfmt
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)
+
+$(PIGS_LIB_DIR)hal.lib  .SILENT :
+        @echo hal
+        @%chdir $(PIGS_DIR)\hal
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)
+
+$(PIGS_LIB_DIR)iff.lib  .SILENT :
+        @echo iff
+        @%chdir $(PIGS_DIR)\iff
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)
+
+$(PIGS_LIB_DIR)iffwrite.lib  .SILENT :
+        @echo iffwrite
+        @%chdir $(PIGS_DIR)\iffwrite
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)
+
+$(PIGS_LIB_DIR)input.lib  .SILENT :
+        @echo input
+        @%chdir $(PIGS_DIR)\input
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)
+
+$(PIGS_LIB_DIR)loadfile.lib  .SILENT :
+        @echo loadfile
+        @%chdir $(PIGS_DIR)\loadfile
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)
+
+$(PIGS_LIB_DIR)math.lib  .SILENT :
+        @echo math
+        @%chdir $(PIGS_DIR)\math
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)
+
+$(PIGS_LIB_DIR)memory.lib  .SILENT :
+        @echo memory
+        @%chdir $(PIGS_DIR)\memory
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)
+
+$(PIGS_LIB_DIR)menu.lib  .SILENT :
+        @echo menu
+        @%chdir $(PIGS_DIR)\menu
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)
+
+$(PIGS_LIB_DIR)midi.lib  .SILENT :
+        @echo midi
+        @%chdir $(PIGS_DIR)\midi
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)
+
+$(PIGS_LIB_DIR)movie.lib  .SILENT :
+        @echo movie
+        @%chdir $(PIGS_DIR)\movie
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)
+
+$(PIGS_LIB_DIR)pclib.lib  .SILENT :
+        @echo pclib
+        @%chdir $(PIGS_DIR)\pclib
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)
+
+$(PIGS_LIB_DIR)pigsys.lib  .SILENT :
+        @echo pigsys 
+        @%chdir $(PIGS_DIR)\pigsys
+	cd
+	set BUILDMODE=tool
+        @make 
+        @%chdir $(CWD)
+
+$(PIGS_LIB_DIR)profile.lib  .SILENT :
+        @echo profile
+        @%chdir $(PIGS_DIR)\profile
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)
+
+$(PIGS_LIB_DIR)recolib.lib  .SILENT :
+        @echo recolib
+        @%chdir $(PIGS_DIR)\recolib
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)
+
+$(PIGS_LIB_DIR)regexp.lib  .SILENT :
+        @echo regexp
+        @%chdir $(PIGS_DIR)\regexp
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)
+
+$(PIGS_LIB_DIR)registry.lib  .SILENT :
+        @echo registry
+        @%chdir $(PIGS_DIR)\registry
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)
+
+$(PIGS_LIB_DIR)savegame.lib  .SILENT :
+        @echo savegame
+        @%chdir $(PIGS_DIR)\savegame
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)
+
+$(PIGS_LIB_DIR)streams.lib  .SILENT :
+        @echo streams
+        @%chdir $(PIGS_DIR)\streams
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)
+
+#!if defined( PIGS_TOOL )
+$(PIGS_LIB_DIR)toolstub.lib  .SILENT :
+        @echo toolstub
+        @%chdir $(PIGS_DIR)\toolstub
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)
+#!endif
+
+$(PIGS_LIB_DIR)version.lib  .SILENT :
+        @echo version
+        @%chdir $(PIGS_DIR)\version
+        @set BUILDMODE=tool
+        make
+        @%chdir $(CWD)

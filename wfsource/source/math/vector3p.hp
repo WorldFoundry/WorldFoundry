@@ -1,0 +1,64 @@
+// ------------------------------------------------------------------------
+// math/Vector3P.hp: (Vector3PS) Platform specific Vectors
+// Copyright (c) 1997,98,99 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// Orignal Author: Kevin T. Seghetti
+// ------------------------------------------------------------------------
+
+#ifndef _Vector3_PS_HP
+#define _Vector3_PS_HP
+
+// ------------------------------------------------------------------------
+
+#if defined(__PSX__) && !defined(RENDERER_PIPELINE_SOFTWARE)
+#include "psx/Vector3p.hp"
+// ------------------------------------------------------------------------
+
+#else
+#include <math/vector3.hp>
+typedef Vector3 Vector3_PS;
+#define PS_SCALAR_CONSTANT SCALAR_CONSTANT
+#define PS_SCALAR_CONSTANT12( x )	Scalar::FromFixed32((SCALAR_ONE_LS<<4) * (x))
+
+INLINE
+Vector3_PS
+Vector3ToPS(const Vector3& in)
+{
+	return in;
+}
+
+INLINE Vector3
+PSToVector3(const Vector3_PS& in)
+{
+	return(in);
+}
+
+
+INLINE Vector3_PS
+Vector3ToPS12(const Vector3& in)
+{
+	return(in);
+}
+
+
+#endif
+
+// ------------------------------------------------------------------------
+#endif
+// ------------------------------------------------------------------------

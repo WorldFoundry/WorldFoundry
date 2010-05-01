@@ -1,0 +1,318 @@
+//=============================================================================
+// gfx/software/sub2d.ccs: 2d poly subdivision, software version, included by render.ccs
+// Copyright ( c ) 1997,99 World Foundry Group  
+//
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+//===========================================================================
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+INLINE bool
+PolyTooBig(POLY_@+POLY_TYPE@+& poly)
+{
+#define TOO_BIG_X 1024
+#define TOO_BIG_Y 512
+
+	if(abs(poly.x0 - poly.x1) >= TOO_BIG_X)
+		return true;
+	if(abs(poly.x0 - poly.x2) >= TOO_BIG_X)
+		return true;
+	if(abs(poly.x1 - poly.x2) >= TOO_BIG_X)
+		return true;
+	if(abs(poly.y0 - poly.y1) >= TOO_BIG_Y)
+		return true;
+	if(abs(poly.y0 - poly.y2) >= TOO_BIG_Y)
+		return true;
+	if(abs(poly.y1 - poly.y2) >= TOO_BIG_Y)
+		return true;
+	return false;
+}
+
+//=============================================================================
+
+INLINE bool
+PolyOffScreen(POLY_@+POLY_TYPE@+& poly)
+{
+#define TOO_BIG_X 1024
+#define TOO_BIG_Y 512
+
+	if((poly.x0 > globalRendererVariables.viewPort->HalfXSize()) && (poly.x0 < (-globalRendererVariables.viewPort->HalfXSize())))
+		return(false);
+	if((poly.y0 > globalRendererVariables.viewPort->HalfYSize()) && (poly.y0 < (-globalRendererVariables.viewPort->HalfYSize())))
+		return(false);
+
+	if((poly.x1 > globalRendererVariables.viewPort->HalfXSize()) && (poly.x1 < (-globalRendererVariables.viewPort->HalfYSize())))
+		return(false);
+	if((poly.y1 > globalRendererVariables.viewPort->HalfYSize()) && (poly.y1 < (-globalRendererVariables.viewPort->HalfYSize())))
+		return(false);
+																			   
+	if((poly.x1 > globalRendererVariables.viewPort->HalfXSize()) && (poly.x1 < (-globalRendererVariables.viewPort->HalfYSize())))
+		return(false);
+	if((poly.y1 > globalRendererVariables.viewPort->HalfYSize()) && (poly.y1 < (-globalRendererVariables.viewPort->HalfYSize())))
+		return(false);
+
+	return true;
+}
+
+//============================================================================
+// poly too big, need to divide it into 4 polys, like so:
+
+//									|
+// 		  	  v0                    |
+//		 	  /\                    |
+//	 		 /  \                   |
+//	        /    \                  |
+//	       /   0  \                 |
+//	 (v02)/________\ (v01)          |
+//	     /\        /\               |
+//	    /  \   3  /  \              |
+//	   /    \    /    \             |
+//	  /  2   \  /  1   \            |
+//	 /________\/________\           |
+//	v2	    (v12)        v1         |
+
+
+void
+RenderObject3D::Subdivide2D@+RENDER_TYPE(ViewPort& vp,Primitive& inputPrim,int z)
+{
+#if DO_ASSERTIONS
+	static int recursionCount = 0;
+	recursionCount++;
+	assert(recursionCount < 10);
+#endif
+@*	cscreen << "Subdivide2D " << endl;
+@*	FntPrint("Sd2D");
+	Primitive* prims = vp.DuplicatePrimitive(inputPrim,4);
+	assert(ValidPtr(prims));
+	if(!prims)
+		return;
+
+	POLY_@+POLY_TYPE poly = *(POLY_@+POLY_TYPE*)&inputPrim;
+	// just need to calc new coordinates (end eventually new texture coordindates)
+	// creating each new triangle from the upper left, clockwise
+	// poly 0
+	int x01 = (poly.x0+poly.x1)/2;
+	int y01 = (poly.y0+poly.y1)/2;
+	int x02 = (poly.x0+poly.x2)/2;
+	int y02 = (poly.y0+poly.y2)/2;
+	int x12 = (poly.x2+poly.x1)/2;
+	int y12 = (poly.y2+poly.y1)/2;
+
+#if FLAG_GOURAUD == 1
+	unsigned char r01 = (unsigned char) (( ((unsigned int)poly.r0) + ((unsigned int)poly.r1) )/2);
+	unsigned char g01 = (unsigned char) (( ((unsigned int)poly.g0) + ((unsigned int)poly.g1) )/2);
+	unsigned char b01 = (unsigned char) (( ((unsigned int)poly.b0) + ((unsigned int)poly.b1) )/2);
+	unsigned char r02 = (unsigned char) (( ((unsigned int)poly.r0) + ((unsigned int)poly.r2) )/2);
+	unsigned char g02 = (unsigned char) (( ((unsigned int)poly.g0) + ((unsigned int)poly.g2) )/2);
+	unsigned char b02 = (unsigned char) (( ((unsigned int)poly.b0) + ((unsigned int)poly.b2) )/2);
+	unsigned char r12 = (unsigned char) (( ((unsigned int)poly.r1) + ((unsigned int)poly.r2) )/2);
+	unsigned char g12 = (unsigned char) (( ((unsigned int)poly.g1) + ((unsigned int)poly.g2) )/2);
+	unsigned char b12 = (unsigned char) (( ((unsigned int)poly.b1) + ((unsigned int)poly.b2) )/2);
+#endif
+#if FLAG_TEXTURE
+	unsigned char u01 = (unsigned char) (( ((unsigned int)poly.u0) + ((unsigned int)poly.u1) )/2);
+	unsigned char v01 = (unsigned char) (( ((unsigned int)poly.v0) + ((unsigned int)poly.v1) )/2);
+	unsigned char u02 = (unsigned char) (( ((unsigned int)poly.u0) + ((unsigned int)poly.u2) )/2);
+	unsigned char v02 = (unsigned char) (( ((unsigned int)poly.v0) + ((unsigned int)poly.v2) )/2);
+	unsigned char u12 = (unsigned char) (( ((unsigned int)poly.u1) + ((unsigned int)poly.u2) )/2);
+	unsigned char v12 = (unsigned char) (( ((unsigned int)poly.v1) + ((unsigned int)poly.v2) )/2);
+@*	FntPrint("%d,%d;%d,%d;%d,%d:",(unsigned int)poly.u0,(unsigned int)poly.v0,(unsigned int)poly.u1,(unsigned int)poly.v1,(unsigned int)poly.u2,(unsigned int)poly.v2);
+@*	FntPrint("%d,%d;%d,%d;%d,%d",u01,v01,u02,v02,u12,v12);
+#endif
+
+	// poly 0
+    {
+		POLY_@+POLY_TYPE@+& prim = (*(POLY_@+POLY_TYPE*)&prims[0]);
+	//	prims[0].x0 = poly.x0;			// already set this way
+	//	prims[0].y0 = poly.y0;
+		prim.x1 = x01;
+		prim.y1 = y01;
+		prim.x2 = x02;
+		prim.y2 = y02;
+
+#if FLAG_GOURAUD == 1
+		prim.r1 = r01;
+		prim.g1 = g01;
+		prim.b1 = b01;
+		prim.r2 = r02;
+		prim.g2 = g02;
+		prim.b2 = b02;
+#endif
+#if FLAG_TEXTURE
+		prim.u1 = u01;
+		prim.v1 = v01;
+		prim.u2 = u02;
+		prim.v2 = v02;
+#endif
+
+		if(PolyTooBig(prim))
+		{
+			Subdivide2D@+RENDER_TYPE(vp,(Primitive&)prim,z);
+		}
+		else
+		{
+//			cout << "x0 " << poly.x0 << endl;
+//			cout << "x1 " << poly.x1 << endl;
+//			cout << "x2 " << poly.x2 << endl;
+//			cout << "prim.x0 = " << prim.x0 << endl;
+//			cout << "prim.x1 = " << prim.x1 << endl;
+//			cout << "prim.x2 = " << prim.x2 << endl;
+			assert(abs(prim.x0 - prim.x1) < 1024);
+			assert(abs(prim.x0 - prim.x2) < 1024);
+			assert(abs(prim.x1 - prim.x2) < 1024);
+			assert(abs(prim.y0 - prim.y1) < 512);
+			assert(abs(prim.y0 - prim.y2) < 512);
+			assert(abs(prim.y1 - prim.y2) < 512);
+			vp.AddPrimitive((Primitive&)prim,(z>>ADDPRIM_SHIFT_VALUE)+1);
+		}
+	}
+
+	{
+		// poly 1
+		POLY_@+POLY_TYPE@+& prim = (*(POLY_@+POLY_TYPE*)&prims[1]);
+		prim.x0 = x01;
+		prim.y0 = y01;
+	//	prim.x1 = poly.x1;
+	//	prim.y1 = poly.y1;
+		prim.x2 = x12;
+		prim.y2 = y12;
+
+#if FLAG_GOURAUD == 1
+		prim.r0 = r01;
+		prim.g0 = g01;
+		prim.b0 = b01;
+		prim.r2 = r12;
+		prim.g2 = g12;
+		prim.b2 = b12;
+#endif
+#if FLAG_TEXTURE
+		prim.u0 = u01;
+		prim.v0 = v01;
+		prim.u2 = u12;
+		prim.v2 = v12;
+#endif
+
+		if(PolyTooBig(prim))
+		{
+			Subdivide2D@+RENDER_TYPE(vp,(Primitive&)prim,z);
+		}
+		else
+		{
+			assert(abs(prim.x0 - prim.x1) < 1024);
+			assert(abs(prim.x0 - prim.x2) < 1024);
+			assert(abs(prim.x1 - prim.x2) < 1024);
+			assert(abs(prim.y0 - prim.y1) < 512);
+			assert(abs(prim.y0 - prim.y2) < 512);
+			assert(abs(prim.y1 - prim.y2) < 512);
+			vp.AddPrimitive((Primitive&)prim,(z>>ADDPRIM_SHIFT_VALUE)+1);
+		}
+
+	}
+
+	{
+		// poly 2
+		POLY_@+POLY_TYPE@+& prim = (*(POLY_@+POLY_TYPE*)&prims[2]);
+		prim.x0 = x02;
+		prim.y0 = y02;
+		prim.x1 = x12;
+		prim.y1 = y12;
+	//	prim.x2 = poly.x2;
+	//	prim.y2 = poly.y2;
+
+#if FLAG_GOURAUD == 1
+		prim.r0 = r02;
+		prim.g0 = g02;
+		prim.b0 = b02;
+		prim.r2 = r12;
+		prim.g2 = g12;
+		prim.b2 = b12;
+#endif
+#if FLAG_TEXTURE
+		prim.u0 = u02;
+		prim.v0 = v02;
+		prim.u1 = u12;
+		prim.v1 = v12;
+#endif
+
+		if(PolyTooBig(prim))
+		{
+			Subdivide2D@+RENDER_TYPE(vp,(Primitive&)prim,z);
+		}
+		else
+		{
+			assert(abs(prim.x0 - prim.x1) < 1024);
+			assert(abs(prim.x0 - prim.x2) < 1024);
+			assert(abs(prim.x1 - prim.x2) < 1024);
+			assert(abs(prim.y0 - prim.y1) < 512);
+			assert(abs(prim.y0 - prim.y2) < 512);
+			assert(abs(prim.y1 - prim.y2) < 512);
+			vp.AddPrimitive((Primitive&)prim,(z>>ADDPRIM_SHIFT_VALUE)+1);
+		}
+	}
+
+	{
+		// poly 3
+		POLY_@+POLY_TYPE@+& prim = (*(POLY_@+POLY_TYPE*)&prims[3]);
+		prim.x0 = x02;
+		prim.y0 = y02;
+		prim.x1 = x01;
+		prim.y1 = y01;
+		prim.x2 = x12;
+		prim.y2 = y12;
+#if FLAG_GOURAUD == 1
+		prim.r0 = r02;
+		prim.g0 = g02;
+		prim.b0 = b02;
+		prim.r1 = r01;
+		prim.g1 = g01;
+		prim.b1 = b01;
+		prim.r2 = r12;
+		prim.g2 = g12;
+		prim.b2 = b12;
+#endif
+#if FLAG_TEXTURE
+		prim.u0 = u02;
+		prim.v0 = v02;
+		prim.u1 = u01;
+		prim.v1 = v01;
+		prim.u2 = u12;
+		prim.v2 = v12;
+#endif
+
+		if(PolyTooBig(prim))
+		{
+			Subdivide2D@+RENDER_TYPE(vp,(Primitive&)prim,z);
+		}
+		else
+		{
+			assert(abs(prim.x0 - prim.x1) < 1024);
+			assert(abs(prim.x0 - prim.x2) < 1024);
+			assert(abs(prim.x1 - prim.x2) < 1024);
+			assert(abs(prim.y0 - prim.y1) < 512);
+			assert(abs(prim.y0 - prim.y2) < 512);
+			assert(abs(prim.y1 - prim.y2) < 512);
+			vp.AddPrimitive((Primitive&)prim,(z>>ADDPRIM_SHIFT_VALUE)+1);
+		}
+	}
+@*	FntPrint("\n");
+#if DO_ASSERTIONS
+	recursionCount--;
+#endif
+}
+
+//============================================================================

@@ -1,0 +1,27 @@
+@*============================================================================
+@* shield.oas
+@*============================================================================
+
+@*============================================================================
+@* Platform definition
+
+@define DEFAULT_MASS 0
+@define DEFAULT_MOBILITY 1
+@define DEFAULT_MOVESBETWEENROOMS 1
+@define DEFAULT_TEMPLATE 1
+
+TYPEHEADER(Shield)
+	@include actor.inc
+
+	PROPERTY_SHEET_HEADER(Shield,1)
+@*	-------------------------------
+	TYPEENTRYFIXED32(Blink Frequency,,FIXED32(0),FIXED32(100.0),FIXED32(0.2))
+	GROUP_START(Display)
+	TYPEENTRYFIXED32(Shield Purchase Display,On Purchase,FIXED32(0),FIXED32(100.0),FIXED32(1))
+	TYPEENTRYFIXED32(Invulnerability Display,Invulnerability,FIXED32(0),FIXED32(100.0),FIXED32(3))
+	GROUP_STOP()
+	PROPERTY_SHEET_FOOTER
+
+TYPEFOOTER
+
+@*============================================================================

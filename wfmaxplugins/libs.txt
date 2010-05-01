@@ -1,0 +1,1 @@
+comctl32.lib comdlg32.lib user32.lib gdi32.lib kernel32.lib advapi32.lib core.lib util.lib MSVCPRT.LIB msvcrt.lib

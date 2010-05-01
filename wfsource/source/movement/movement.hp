@@ -1,0 +1,150 @@
+//============================================================================
+// movement.hp: Base class and derived classes for movement handlers
+// Copyright ( c ) 1997,1998,1999,2000,2002,2003 World Foundry Group.  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+//============================================================================
+//      Abstract:
+//                      Provides a base class for movement handlers and derived classes
+//                      for state-specific handlers.  MovementObjects will contain a pointer
+//                      to the derived movement handler appropriate for their current state.
+//
+//      History:
+//                      Created 03/03/97 by Phil Torre
+//
+//============================================================================
+
+#ifndef _MOVEMENT_HP
+#define _MOVEMENT_HP
+
+#include <physics/physical.hp>
+#include <physics/physicalobject.hp>
+#include <physics/collision.hp>
+#include <movement/movementobject.hp>
+#include <timer/clock.hp>
+#include <baseobject/baseobject.hp>
+
+//===========================================================================
+
+class MovementManager;
+
+//============================================================================
+//	This replaces the various types of movement handler data structs that used
+//	to be embedded in Actor.
+
+struct MovementHandlerData
+{
+	union
+	{
+		MovementObject*	supportingObject;        // what are we standing on? (ground)
+    	MovementObject*	objectClimbing;			// what are we climbing up? (climb)
+	};
+    Vector3		relativeVelocity;       // our motion relative to supportingObject
+	Vector3		wheelVelocity;			// how fast are our "tires" spinning?
+    Scalar		stunnedUntil;           // How long are we stunned/uninterruptable? (ground)
+	Scalar		jumpDuration;			// How many seconds of jumping acceleration left to apply? (air)
+
+};
+
+//===========================================================================
+// This is the class that state-specific handlers are derived from.  Actor
+// objects contain a pointer to this base class.
+
+class MovementHandler
+{
+friend class AnimationManager;
+public:
+	virtual void init(MovementManager& movementManager, MovementObject& movementObject )             = 0;
+	virtual bool check()			= 0;
+	virtual bool update(MovementManager& movementManager, MovementObject& movementObject, const BaseObjectList& baseObjectList )			= 0;
+	virtual void predictPosition(MovementManager& movementManager, MovementObject& movementObject, const Clock& clock, const BaseObjectList& baseObjectList)  = 0;
+	virtual void SetStunTime(MovementManager& movementManager, Scalar duration);
+   virtual size_t DataSize();                // returns how much storage this handler uses
+
+protected:
+	// Helper methods for derived handlers
+	Vector3		SumForceVectors(MovementObject& movementObject);
+//#if !defined (__DOOMSTICK__)
+	Angle		CalcNewHeading(Angle angleFrom, Angle angleTo, Scalar slewRate);
+//#endif
+};
+
+//============================================================================
+// Handler for moving on the ground: Running, walking, standing, etc.
+class GroundHandler : public MovementHandler
+{
+public:
+    virtual void init( MovementManager& movementManager, MovementObject& movementObject );
+    virtual bool check();
+    virtual bool update(MovementManager& movementManager, MovementObject& movementObject, const BaseObjectList& baseObjectList );
+    virtual void predictPosition(MovementManager& movementManager, MovementObject& movementObject, const Clock& clock, const BaseObjectList& baseObjectList);
+	 virtual void SetStunTime(MovementManager& movementManager, Scalar newTime);       // kts note: newTime should be calculated by adding duration to the current level clock
+};
+
+
+//============================================================================
+// Handler for moving through the air:  Jumping, falling
+class AirHandler : public MovementHandler
+{
+public:
+
+	virtual void init(MovementManager& movementManager, MovementObject& movementObject);
+	virtual bool check();
+	virtual bool update(MovementManager& movementManager, MovementObject& movementObject, const BaseObjectList& baseObjectList );
+	virtual void predictPosition(MovementManager& movementManager, MovementObject& movementObject, const Clock& clock, const BaseObjectList& baseObjectList);
+}; 
+
+//============================================================================
+// Handler for climbing up things
+class ClimbHandler : public MovementHandler
+{
+public:
+
+    virtual void init(MovementManager& movementManager, MovementObject& movementObject);
+    virtual bool check();
+    virtual bool update(MovementManager& movementManager, MovementObject& movementObject, const BaseObjectList& baseObjectList );
+    virtual void predictPosition(MovementManager& movementManager, MovementObject& movementObject, const Clock& clock, const BaseObjectList& baseObjectList);
+};
+
+//============================================================================
+// "Catch-all" handler for states no other handler can deal with.  If this is
+// ever selected by an object of MOBILITY == PHYSICS, something is wrong.
+class NullHandler : public MovementHandler
+{
+public:
+    virtual void init(MovementManager& movementManager, MovementObject& movementObject);
+    virtual bool check();
+    virtual bool update(MovementManager& movementManager, MovementObject& movementObject, const BaseObjectList& baseObjectList );
+    virtual void predictPosition(MovementManager& movementManager, MovementObject& movementObject, const Clock& clock, const BaseObjectList& baseObjectList);
+    virtual size_t DataSize();                // returns how much storage this handler uses
+};
+
+//============================================================================
+
+extern GroundHandler	theGroundHandler;
+extern AirHandler		theAirHandler;
+extern ClimbHandler		theClimbHandler;
+extern NullHandler		theNullHandler;
+
+extern MovementHandler* physicsHandlerTable[];
+extern MovementHandler* cameraHandlerTable[];
+
+//==============================================================================
+#include "movement.hpi"  // include all inline definitions as appropriate
+//==============================================================================
+#endif // _MOVEMENT_HP
+//==============================================================================

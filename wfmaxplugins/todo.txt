@@ -1,0 +1,3 @@
+* Attributes -- Add "F2" edit in place for object name (in combobox)
+Change the export OAD info into something Excel & Access-compatible
+Add export to Select (for selected fields)

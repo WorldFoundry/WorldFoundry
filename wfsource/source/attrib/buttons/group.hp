@@ -1,0 +1,33 @@
+#ifndef BUTTONS_GROUP_HP
+#define BUTTONS_GROUP_HP
+
+#include <attrib/oaddlg.hp>
+#include <attrib/buttons/button.hp>
+
+class Group : public uiDialog
+{
+public:
+	Group::Group( typeDescriptor* td );
+	virtual Group::~Group();
+
+	virtual void show_hide( int msgCode );
+	virtual dataValidation copy_to_xdata( byte* & saveData );
+	virtual int make_dialog_gadgets( HWND );
+	void reset( byte* & );
+	//virtual void composeHelp( char* entries[] );
+
+	virtual int storedDataSize() const;
+	virtual bool enable( bool bEnabled );
+	virtual double eval() const;
+
+	void endGroup();
+
+protected:
+	virtual void reset();
+	HWND hwndGroup;
+	int _yStart;
+	enum { _GROUP_X_INC = 5 };
+};
+
+#endif	// BUTTONS_GROUP_HP
+

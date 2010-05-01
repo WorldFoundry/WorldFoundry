@@ -1,0 +1,56 @@
+//==============================================================================
+// commonblock.hp:
+// Copyright ( c ) 2003 World Foundry Group.  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//==============================================================================
+// Description: all game objects need to be derived from this object
+// since it is what the object list code refers to, as well as the asset handling code
+//==============================================================================
+
+#ifndef COMMONBLOCK_HP
+#define COMMONBLOCK_HP
+//==============================================================================
+
+class CommonBlock
+{
+public:
+   CommonBlock(const void* commonBlockBase, int commonBlockSize);
+   void Validate() const;
+
+   const void* GetBlockPtr(int32 offset) const;
+
+#if SW_DBSTREAM >= 1
+   friend std::ostream& operator << ( std::ostream& s, const CommonBlock& obj );
+#endif
+
+private:
+   const char* _commonBlockBase;
+   int _commonBlockSize;
+};
+
+#if SW_DBSTREAM >= 1
+std::ostream& operator << ( std::ostream& s, const CommonBlock& obj );
+#endif
+
+//==============================================================================
+#include "commonblock.hpi"
+//==============================================================================
+#endif         // !defined COMMONBLOCK_HP
+//==============================================================================
+

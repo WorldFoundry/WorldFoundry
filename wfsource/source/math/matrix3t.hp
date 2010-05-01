@@ -1,0 +1,153 @@
+// ------------------------------------------------------------------------
+// matrix3t.hp
+// Copyright (c) 1997,1998,1999,2000 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ------------------------------------------------------------------------
+
+#ifndef _MATRIX3T_HP
+#define _MATRIX3T_HP
+
+#include <math/vector3.hp>
+
+// ------------------------------------------------------------------------
+// 3 x 4 Matrix Class (for use with PSX GTE)
+// ------------------------------------------------------------------------
+
+class Angle;
+class Vector3;
+class Euler;
+//class Quaternion;
+class Scalar;
+class Matrix34;
+
+class binistream;
+#if defined( WRITER )
+class binostream;
+#endif
+
+DBSTREAM1( class ostream; )
+
+class Matrix3t
+{
+public:
+
+#if defined( __PSX__ )
+	void SetGTE();				// set GTE to contain this matrix, is there a
+								// better way do to this? (like a HardwareMatrix class?)
+#endif
+//	struct RotateX { };
+//	struct RotateY { };
+//	struct RotateZ { };
+#if 0				// kts 7/24/97 11:04 not used, changing to match psx matrix dimensions
+	// construct/destruct
+	INLINE Matrix3t();
+		// identity matrix
+	INLINE Matrix3t( const Vector3& translation );
+		// translation matrix
+	INLINE Matrix3t( const Vector3& scale, const Vector3& translation );
+		// scale matrix
+//	INLINE Matrix3t( RotateX, const Angle&, const Vector3& translation );
+		// RotateX matrix
+//	INLINE Matrix3t( RotateY, const Angle&, const Vector3& translation );
+		// RotateY matrix
+//	INLINE Matrix3t( RotateZ, const Angle&, const Vector3& translation );
+		// RotateZ matrix
+//	INLINE Matrix3t( const Euler& euler, const Vector3& translation );
+		// euler rotation matrix
+//	INLINE Matrix3t( const Quaternion&, const Vector3& translation );
+		// quaternion matrix
+	INLINE Matrix3t
+	(
+		const Vector3& row0,
+		const Vector3& row1,
+		const Vector3& row2,
+		const Vector3& row3
+	);
+	INLINE Matrix3t( const Matrix3t& );
+		// gte 3 x 3 matrix plus translation vector
+
+	// copy
+	INLINE Matrix3t& operator = ( const Matrix3t& );
+#endif
+	INLINE Matrix3t( const Matrix34& );				// standard 3 x 4 matrix
+
+#if 0
+	// element access: idxRow: 0..3, idxColumn: 0..2
+	Scalar GetElement( int idxRow, int idxColumn ) const;
+	void SetElement( int idxRow, int idxColumn, const Scalar& value );
+	INLINE const Vector3& GetTranslation() const;
+	INLINE void SetTranslation( const Vector3& );
+
+	// initialization methods
+	void Construct
+	(
+		const Vector3& row1,
+		const Vector3& row2,
+		const Vector3& row3,
+		const Vector3& row4
+	);
+	INLINE void ConstructIdentity();
+	void ConstructTranslation( const Vector3& );
+//	void ConstructScale( const Vector3& s, const Vector3& translation );
+//	void ConstructEuler( const Euler& euler, const Vector3& translation );
+//	void ConstructQuaternion( const Quaternion&, const Vector3& translation );
+//	void ConstructRotationX( const Angle angle, const Vector3& translation );
+//	void ConstructRotationY( const Angle angle, const Vector3& translation );
+//	void ConstructRotationZ( const Angle angle, const Vector3& translation );
+#endif
+	void ConstructMatrix34( const Matrix34& );
+#if 0
+
+	// multiply
+	Matrix3t operator * ( const Matrix3t& ) const;
+	const Matrix3t& operator *= ( const Matrix3t& );
+
+#endif
+	// ostream support
+#if DO_IOSTREAMS
+	friend ostream& operator << ( ostream&, const Matrix3t& );
+#endif
+
+#if 0
+	// binary io stream support
+	friend binistream& operator >> ( binistream& is, Matrix3t& );
+#if defined( WRITER )
+	friend binostream& operator << ( binostream& os, const Matrix3t& );
+#endif
+#endif
+private:
+#if 0
+	// helpers
+	void SetRow( int idxRow, const Vector3& );
+#endif
+	typedef struct wf_matrix3t
+	{
+   		int16 m[3][3];
+		Vector3 t;
+	} wf_matrix3t;
+
+	// data members
+	wf_matrix3t _matrix;
+};
+
+// ------------------------------------------------------------------------
+#include <math/matrix3t.hpi>	// include all inline definitions as appropriate
+// ------------------------------------------------------------------------
+#endif // _MATRIX3T_HP
+// ------------------------------------------------------------------------

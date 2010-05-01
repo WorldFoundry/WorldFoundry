@@ -1,0 +1,33 @@
+//=============================================================================
+// command.hp: command line handling and parsing
+//=============================================================================
+
+#ifndef _COMMAND_HP
+#define _COMMAND_HP
+
+#include "global.hp"
+#include <string>
+#include <vector>
+
+//=============================================================================
+
+class CommandLine
+{
+public:
+	CommandLine(int argc, char** argv);
+	// for now, just behave like an array
+	const std::string& operator[] (unsigned int index) const;
+	size_t Size() const;
+
+	// Printing
+	friend std::ostream& operator<<(std::ostream& s, const CommandLine &cl);
+private:
+	CommandLine();				        // must construct from argc,argv
+	std::vector<std::string> commands;
+};
+
+//=============================================================================
+#include "command.hpi"
+//=============================================================================
+#endif
+//=============================================================================

@@ -1,0 +1,36 @@
+// ------------------------------------------------------------------------
+// Copyright (c) 1995, PF. Magic, Inc.  All Rights Reserved.
+//
+// This is UNPUBLISHED PROPRIETARY SOURCE CODE of PF. Magic, Inc.;
+// The contents of this file may not be disclosed to third parties, copied
+// or duplicated in any form, in whole or in part, without the prior
+// written permission of PF. Magic, Inc.
+// ------------------------------------------------------------------------
+
+
+// ------------------------------------------------------------------------
+// INPUT PARAMETERS
+// path		full file name to be split
+// OUTPUT PARAMETERS
+// drive	buffer to hold drive letter followed by a colon or empty string
+// dir		buffer to hold path with a trailing slash or the empty string
+// fname	buffer to hold filename without dribe, dir, or ext
+// ext		buffer to hold extension with preceding period or empty string
+
+void
+_splitpath( const char * path, char * drive, char * dir,
+	char * fname, char * ext );
+
+// ------------------------------------------------------------------------
+// OUTPUT PARAMETERS
+// path		buffer to hold full file name
+// INPUT PARAMETERS
+// drive	drive letter followed by a colon or empty string
+// dir		path with or without a trailing slash or the empty string
+// fname	filename without drive, dir, or ext
+// ext		extension with preceding period or empty string
+
+void
+_makepath( char * path, const char * drive, const char * dir,
+	const char * fname, const char * ext );
+

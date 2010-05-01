@@ -1,0 +1,452 @@
+//=============================================================================
+// binstrm.hpi:
+// Copyright ( c ) 1996,97,98,99 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description:
+// Original Author: Brad McKee
+//============================================================================
+
+// ------------------------------------------------------------------------
+// Validate compile-time switches
+// ------------------------------------------------------------------------
+
+#include <pigsys/assert.hp>
+
+// ------------------------------------------------------------------------
+
+inline void
+binios::Validate( const char * file, const int line ) const
+{
+	(void)file;
+	(void)line;
+	AssertMsgFileLine( _align8  > 0, "8-bit alignment must be positive", file, line );
+	AssertMsgFileLine( _align16 > 0, "16-bit alignment must be positive", file, line );
+	AssertMsgFileLine( _align32 > 0, "32-bit alignment must be positive", file, line );
+	AssertMsgFileLine( _word_order == binios::little_endian
+		|| _word_order == binios::big_endian, "Unknown word order", file, line );
+	AssertMsgFileLine( _scalar_type == binios::float32 || _scalar_type == binios::fixed16_16,
+		"Unknown scalar type", file, line );
+}
+
+// ------------------------------------------------------------------------
+
+inline void
+binistream::Validate( const char * file, const int line ) const
+{
+	binios::Validate( file, line );
+}
+
+// ------------------------------------------------------------------------
+
+#if defined( WRITER )
+
+void
+binostream::Validate( const char * file, const int line ) const
+{
+	binios::Validate( file, line );
+}
+#endif
+
+// ------------------------------------------------------------------------
+// Binary I/O Stream Inline Functions
+// ------------------------------------------------------------------------
+
+INLINE binistream&
+binistream::read( char * buf, int len )
+{
+    DBSTREAM4( cbinstrm << "binistream::read( " << ((void *)buf) << ", " << len << " )" << endl; )
+    const char* next_cur = _cur + len;
+    if( next_cur < _end )
+    {
+        while( _cur < next_cur ) *buf++ = *_cur++;
+    }
+    else if( next_cur == _end )
+    {
+        while( _cur < next_cur ) *buf++ = *_cur++;
+        _iostate |= binios::eofbit;
+    }
+    else
+    {
+        _iostate |= ( binios::failbit | binios::eofbit );
+        AssertMsg( 0, "bad IO state:" << _iostate );
+    }
+    return *this;
+
+}
+
+#if 0
+
+INLINE binistream&
+binistream::operator >> ( char& c )
+{
+        DBSTREAM4( cbinstrm << "binistream::operator >> ( char ) begin" << endl; )
+
+	    AssertMsg( good(), "Can't read from a bad binistream" );
+        align( _align8 );
+        read( &c, sizeof( c ) );
+
+        DBSTREAM4( cbinstrm << "binistream::operator >> ( char ) = " << uint32( c ) << endl; )
+
+        return *this;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE binistream&
+binistream::operator >> ( uint8& i )
+{
+        DBSTREAM4( cbinstrm << "binistream::operator >> ( uint8 ) begin" << endl; )
+
+	    AssertMsg( good(), "Can't read from a bad binistream" );
+        align( _align8 );
+        read( (char *)&i, sizeof( i ) );
+
+        DBSTREAM4( cbinstrm << "binistream::operator >> ( uint8 ) = " << uint32( i ) << endl; )
+
+        return *this;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE binistream&
+binistream::operator >> ( int8& i )
+{
+        DBSTREAM4( cbinstrm << "binistream::operator >> ( int8 ) begin" << endl; )
+
+	    AssertMsg( good(), "Can't read from a bad binistream" );
+        align( _align8 );
+        read( (char *)&i, sizeof( i ) );
+
+        DBSTREAM4( cbinstrm << "binistream::operator >> ( int8 ) = " << uint32( i ) << endl; )
+
+        return *this;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE binistream&
+binistream::operator >> ( uint16& i )
+{
+        DBSTREAM4( cbinstrm << "binistream::operator >> ( uint16 ) begin" << endl; )
+
+	    AssertMsg( good(), "Can't read from a bad binistream" );
+        align( _align16 );
+        read( (char *)&i, sizeof( i ) );
+  #if !SW_STREAM_STRICT_FORMATTING
+        i = process_uint16( i );
+  #endif // !SW_STREAM_STRICT_FORMATTING
+
+        DBSTREAM4( cbinstrm << "binistream::operator >> ( uint16 ) = " << i << endl; )
+
+        return *this;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE binistream&
+binistream::operator >> ( int16& i )
+{
+        DBSTREAM4( cbinstrm << "binistream::operator >> ( int16 ) begin" << endl; )
+
+	    AssertMsg( good(), "Can't read from a bad binistream" );
+        align( _align16 );
+        read( (char *)&i, sizeof( i ) );
+  #if !SW_STREAM_STRICT_FORMATTING
+        i = process_int16( i );
+  #endif // !SW_STREAM_STRICT_FORMATTING
+
+        DBSTREAM4( cbinstrm << "binistream::operator >> ( int16 ) = " << i << endl; )
+
+        return *this;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE binistream&
+binistream::operator >> ( uint32& i )
+{
+        DBSTREAM4( cbinstrm << "binistream::operator >> ( uint32 ) begin" << endl; )
+
+	    AssertMsg( good(), "Can't read from a bad binistream" );
+        align( _align32 );
+        read( (char *)&i, sizeof( i ) );
+  #if !SW_STREAM_STRICT_FORMATTING
+        i = process_uint32( i );
+  #endif // !SW_STREAM_STRICT_FORMATTING
+
+        DBSTREAM4( cbinstrm << "binistream::operator >> ( uint32 ) = " << i << endl; )
+
+        return *this;
+}
+
+#endif		                            // 0
+
+// ------------------------------------------------------------------------
+#if 0
+INLINE binistream&
+binistream::seekg( binios::streamoff offset, binios::seekdir direction )
+{
+    DBSTREAM4( cbinstrm << "binistream::seekg( " << offset << ", "; )
+
+    char * newcur;
+
+    switch( direction )
+    {
+        case binios::beg:               // seek from beginning
+            newcur = _buf + offset;
+            DBSTREAM4( cbinstrm << "binios::beg )" << endl; )
+        break;
+
+        case binios::cur:               // seek from current pos
+            newcur = _cur + offset;
+            DBSTREAM4( cbinstrm << "binios::cur )" << endl; )
+        break;
+
+        case binios::end:               // seek from end of stream
+            newcur = _end - offset;
+            DBSTREAM4( cbinstrm << "binios::end )" << endl; )
+        break;
+
+        default:                        // nothing else allowed
+            Fail( "Illegal binistream::seekdir" );
+    }
+
+    if( newcur >= _buf && newcur <= _end )  // if within range
+        _cur = newcur;                                          // set new pos
+    else
+    {
+        _iostate |= binios::failbit; // else set fail flag
+        assert( 0 );
+    }
+    return *this;
+}
+#endif
+// ------------------------------------------------------------------------
+
+INLINE binistream&
+binistream::seekg( binios::streampos position )
+{
+    return seekg( position, binios::beg );
+}
+
+// ------------------------------------------------------------------------
+// report the current stream reader offset
+//
+INLINE binios::streampos
+binistream::tellg( void ) const
+{
+	AssertMsg( !bad(), "Stream is not valid...can't tellg()" );
+
+    DBSTREAM4( cbinstrm << "tellg( " << " ) = " << int( _cur - _buf ) << endl; )
+    return _cur - _buf;
+}
+
+// ------------------------------------------------------------------------
+// pow2_boundary = 2, 4, 8, 16, 32, etc.
+// returns true if stream position is on a boundary
+
+INLINE int
+binistream::aligned( const size_t pow2_boundary ) const
+{
+    return ( tellg() & ( pow2_boundary - 1 ) ) == 0;
+}
+
+// ------------------------------------------------------------------------
+// makes sure that tellg % pow2_boundary - 1 == 0, seeks if necessary
+
+INLINE binistream&
+binistream::align( const int pow2_boundary )
+{
+    assert( pow2_boundary <= 4 );   // LDH
+
+    AssertMsg( good(), "Can't align a bad binistream" );
+
+    DBSTREAM4( cbinstrm << "align( " << pow2_boundary << " )" << endl; )
+
+    binios::streamoff extra = tellg() & ( pow2_boundary - 1 );
+
+    assert( extra < 4 );                    // LDH
+
+    if( extra != 0 )
+        seekg( 4 - extra, binios::cur );
+
+    return *this;
+}
+
+
+// ------------------------------------------------------------------------
+
+INLINE binistream&
+binistream::operator >> ( char& c )
+{
+    DBSTREAM4( cbinstrm << "binistream::operator >> ( char ) begin" << endl; )
+
+    AssertMsg( good(), "Can't read from a bad binistream, rdstate = " << rdstate());
+    align( _align8 );
+    read( &c, sizeof( c ) );
+
+    DBSTREAM4( cbinstrm << "binistream::operator >> ( char ) = " << uint32( c ) << endl; )
+
+    return *this;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE binistream&
+binistream::operator >> ( uint8& i )
+{
+    DBSTREAM4( cbinstrm << "binistream::operator >> ( uint8 ) begin" << endl; )
+
+    AssertMsg( good(), "Can't read from a bad binistream" );
+    align( _align8 );
+    read( (char *)&i, sizeof( i ) );
+
+    DBSTREAM4( cbinstrm << "binistream::operator >> ( uint8 ) = " << uint32( i ) << endl; )
+
+    return *this;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE binistream&
+binistream::operator >> ( int8& i )
+{
+    DBSTREAM4( cbinstrm << "binistream::operator >> ( int8 ) begin" << endl; )
+
+    AssertMsg( good(), "Can't read from a bad binistream" );
+    align( _align8 );
+    read( (char *)&i, sizeof( i ) );
+
+    DBSTREAM4( cbinstrm << "binistream::operator >> ( int8 ) = " << uint32( i ) << endl; )
+
+    return *this;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE binistream&
+binistream::operator >> ( uint16& i )
+{
+    DBSTREAM4( cbinstrm << "binistream::operator >> ( uint16 ) begin" << endl; )
+
+	    AssertMsg( good(), "Can't read from a bad binistream" );
+    align( _align16 );
+    read( (char *)&i, sizeof( i ) );
+#if !SW_STREAM_STRICT_FORMATTING
+    i = process_uint16( i );
+#endif // !SW_STREAM_STRICT_FORMATTING
+
+    DBSTREAM4( cbinstrm << "binistream::operator >> ( uint16 ) = " << i << endl; )
+
+    return *this;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE binistream&
+binistream::operator >> ( int16& i )
+{
+    DBSTREAM4( cbinstrm << "binistream::operator >> ( int16 ) begin" << endl; )
+
+    AssertMsg( good(), "Can't read from a bad binistream" );
+    align( _align16 );
+    read( (char *)&i, sizeof( i ) );
+#if !SW_STREAM_STRICT_FORMATTING
+    i = process_int16( i );
+#endif // !SW_STREAM_STRICT_FORMATTING
+
+    DBSTREAM4( cbinstrm << "binistream::operator >> ( int16 ) = " << i << endl; )
+
+    return *this;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE binistream&
+binistream::operator >> ( uint32& i )
+{
+    DBSTREAM4( cbinstrm << "binistream::operator >> ( uint32 ) begin" << endl; )
+
+	AssertMsg( good(), "Can't read from a bad binistream" );
+    align( _align32 );
+    read( (char *)&i, sizeof( i ) );
+#if !SW_STREAM_STRICT_FORMATTING
+    i = process_uint32( i );
+#endif // !SW_STREAM_STRICT_FORMATTING
+
+    DBSTREAM4( cbinstrm << "binistream::operator >> ( uint32 ) = " << i << endl; )
+
+    return *this;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE binistream&
+binistream::operator >> ( int32& i )
+{
+    DBSTREAM4( cbinstrm << "binistream::operator >> ( int32 ) begin" << endl; )
+
+    AssertMsg( good(), "Can't read from a bad binistream" );
+    align( _align32 );
+    read( (char *)&i, sizeof( i ) );
+#if !SW_STREAM_STRICT_FORMATTING
+    i = process_int32( i );
+#endif // !SW_STREAM_STRICT_FORMATTING
+
+    DBSTREAM4( cbinstrm << "binistream::operator >> ( int32 ) = " << i << endl; )
+
+    return *this;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE binistream::streampos
+binistream::getFilelen( void )
+{
+	return ( (streampos) (_end - _buf) );
+}
+
+// ------------------------------------------------------------------------
+
+inline const void*
+binistream::GetMemoryPtr(int len)				// kts kludge for texture loading
+{
+	RangeCheckInclusive(0,len,(_end-_cur));
+
+//	assert(ValidPtr(_cur));
+//	assert((len % 4) == 0);
+    const char * result = _cur;
+    const char* next_cur = _cur + len;
+	assert( next_cur <= _end);
+
+	if(next_cur == _end)
+        _iostate |= binios::eofbit;
+
+	if(next_cur > _end)
+	{
+	    _iostate |= ( binios::failbit | binios::eofbit );
+    	assert( 0 );
+	}
+	_cur = next_cur;
+//	assert(ValidPtr(result));
+	return result;
+}
+
+// ------------------------------------------------------------------------

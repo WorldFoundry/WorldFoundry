@@ -1,0 +1,535 @@
+//==============================================================================
+// physical.hpi:
+// Copyright ( c ) 1996,97,98,99 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//=============================================================================
+// Description: The PhysicalAttributes class encapsulates
+//
+// Original Author: Kevin T. Seghetti
+//==============================================================================
+
+#include <math/angle.hp>
+#include <oas/levelcon.h>
+#include <math/matrix34.hp>
+
+//==============================================================================
+
+inline void
+PhysicalAttributes::Validate() const
+{
+#if DO_ASSERTIONS
+   //kts write more validation code here
+
+#if defined PHYSICS_ENGINE_ODE
+#elif defined PHYSICS_ENGINE_WF
+// Validate the colBox expansion vector against the PredictedPosition vector
+	Vector3 expansionVector, predictedMotionVector;
+
+	predictedMotionVector = PredictedPosition() - Position();
+
+	Vector3 expminpoint = _colSpace.Min();
+	Vector3 unexpminpoint = _colSpace.UnExpMin();
+	Vector3 expmaxpoint = _colSpace.Max();
+	Vector3 unexpmaxpoint = _colSpace.UnExpMax();
+
+
+	if ( expminpoint.X() == unexpminpoint.X() )
+		expansionVector.SetX( expmaxpoint.X() - unexpmaxpoint.X() );
+	else
+		expansionVector.SetX( expminpoint.X() - unexpminpoint.X() );
+
+	if ( expminpoint.Y() == unexpminpoint.Y() )
+		expansionVector.SetY( expmaxpoint.Y() - unexpmaxpoint.Y() );
+	else
+		expansionVector.SetY( expminpoint.Y() - unexpminpoint.Y() );
+
+	if ( expminpoint.Z() == unexpminpoint.Z() )
+		expansionVector.SetZ( expmaxpoint.Z() - unexpmaxpoint.Z() );
+	else
+		expansionVector.SetZ( expminpoint.Z() - unexpminpoint.Z() );
+
+
+	if ( !(expansionVector == predictedMotionVector) )
+	{
+		DBSTREAM1(
+			cerror << "FATAL ERROR: PhysicalAttributes::Validate() failed." << std::endl;
+			cerror << "predictedMotionVector = " << predictedMotionVector << std::endl;
+			cerror << "      expansionVector = " << expansionVector << std::endl;
+			cerror << *this << std::endl;
+		)
+		assert(0);
+	}
+#else
+#error physics engine not defined! 
+#endif
+
+
+#endif
+}
+
+//==============================================================================
+
+INLINE
+PhysicalAttributes::PhysicalAttributes()
+	: _predictedPosition(Vector3::zero), linVelocity(Vector3::zero), oldLinVelocity(Vector3::zero)
+{
+#if defined(PHYSICAL_INTERNAL_EULER)
+	_position = Vector3::zero;
+#elif defined(PHYSICAL_INTERNAL_MATRIX)
+    _matrix.ConstructIdentity();
+#else
+#error PHYSICAL_INTERNAL not defined
+#endif
+	_hasRunPredictPosition = false;
+	_hasRunUpdate = false;
+
+#if defined PHYSICS_ENGINE_ODE
+   _body = 0;
+   _geom = 0;
+#endif
+}
+
+//==============================================================================
+
+inline bool 
+PhysicalAttributes::HasRunPredictPosition() const
+{
+    return _hasRunPredictPosition;
+    
+}
+
+inline void 
+PhysicalAttributes::HasRunPredictPosition(bool newSetting)
+{
+    _hasRunPredictPosition = newSetting;
+}
+
+
+inline bool 
+PhysicalAttributes::HasRunUpdate() const
+{
+    return _hasRunUpdate;
+    
+}
+
+inline void
+PhysicalAttributes::HasRunUpdate(bool newSetting)
+{
+    _hasRunUpdate = newSetting;
+}
+
+
+//==============================================================================
+
+INLINE
+PhysicalAttributes::PhysicalAttributes(const Vector3& position,
+                      const Euler& euler,
+                      const Vector3& minPoint, const Vector3& maxPoint,
+                      Scalar slopeA,
+                      Scalar slopeB,
+                      Scalar slopeC,
+                      Scalar slopeD) 
+	: _predictedPosition(Vector3::zero), linVelocity(Vector3::zero), oldLinVelocity(Vector3::zero)
+{
+   Construct(position,euler,minPoint,maxPoint,slopeA,slopeB,slopeC,slopeD);
+}
+
+//==============================================================================
+
+INLINE void
+PhysicalAttributes::Construct(const Vector3& position, const Euler& rotation, const Vector3& min, const Vector3& max, 
+								Scalar slopeA,
+								Scalar slopeB,
+								Scalar slopeC,
+								Scalar slopeD)
+{
+	_colSpace.SetBox(min, max);
+	_colSpace.SetSlope( slopeA, slopeB, slopeC, slopeD );
+
+#if defined(PHYSICAL_INTERNAL_EULER)
+	_position = position;
+   _orientation = rotation;
+#elif defined(PHYSICAL_INTERNAL_MATRIX)
+    _matrix.ConstructEuler(rotation,position);
+#else
+#error PHYSICAL_INTERNAL not defined
+#endif
+	_predictedPosition = Position();
+
+#if defined PHYSICS_ENGINE_ODE
+   assert(_body == 0);
+   assert(_geom == 0);
+   assert(odeWorld.Space() != 0);
+
+    _body = ode::dBodyCreate (odeWorld());
+    ode::dBodySetPosition (_body, position[0].AsFloat(),position[1].AsFloat(),position[2].AsFloat());
+
+#if defined(PHYSICAL_INTERNAL_EULER)              
+    Matrix34 temp(_orientation,_position);
+   ode::dBodySetRotation (_body,temp.AsFLoatArray());
+#elif defined(PHYSICAL_INTERNAL_MATRIX)
+    ode::dBodySetRotation (_body,_matrix.AsFLoatArray());
+#else
+#error PHYSICAL_INTERNAL not defined
+#endif
+
+    //dBodySetRotation (_body,R);
+    //dBodySetData (temp->body,(void*) i);
+    Vector3 size = _colSpace.Max()-_colSpace.Min();
+    _geom = dCreateBox (odeWorld.Space(),size.X().AsFloat(),size.Y().AsFloat(),size.Z().AsFloat());
+    ode::dGeomSetBody (_geom,_body);
+    ode::dMass m;
+#define DENSITY (5.0)		// density of all objects
+
+    ode::dMassSetBox (&m,DENSITY,size.X().AsFloat(),size.Y().AsFloat(),size.Z().AsFloat());
+    ode::dBodySetMass (_body,&m);
+#endif
+}
+
+//==============================================================================
+
+INLINE
+PhysicalAttributes::~PhysicalAttributes()
+{
+}
+
+//==============================================================================
+
+INLINE const ColSpace&
+PhysicalAttributes::GetColSpace() const
+{
+	return(_colSpace);
+}
+
+//==============================================================================
+
+INLINE
+const Vector3&
+PhysicalAttributes::Position() const
+{
+#if defined(PHYSICAL_INTERNAL_EULER)
+    return(_position);
+#elif defined(PHYSICAL_INTERNAL_MATRIX)
+    return _matrix[3];
+#else
+#error PHYSICAL_INTERNAL not defined
+#endif
+}
+
+//==============================================================================
+
+INLINE void
+PhysicalAttributes::SetColSpace(const Vector3& minPoint, const Vector3& maxPoint)
+{
+	_colSpace.SetBox(minPoint, maxPoint);
+}
+
+//==============================================================================
+
+INLINE
+const Vector3&
+PhysicalAttributes::PredictedPosition() const
+{
+	assert(sizeof(Vector3) == sizeof(Scalar[3]));
+	return(_predictedPosition);                                                                     // kts kludge
+}
+
+//==============================================================================
+
+INLINE void
+PhysicalAttributes::SetPosition(const Vector3& position)
+{
+#if defined(PHYSICAL_INTERNAL_EULER)
+	_position = position;
+#elif defined(PHYSICAL_INTERNAL_MATRIX)
+    _matrix[3] = position;
+#else
+#error PHYSICAL_INTERNAL not defined
+#endif
+}
+
+//==============================================================================
+
+INLINE void
+PhysicalAttributes::SetPredictedPosition(const Vector3& newPosition)
+{
+	_predictedPosition = newPosition;
+	_colSpace.Expand(_predictedPosition - Position());
+	Validate();
+}
+
+//==============================================================================
+
+INLINE Euler
+PhysicalAttributes::Rotation() const
+{
+#if defined(PHYSICAL_INTERNAL_EULER)
+    return(_orientation);
+#elif defined(PHYSICAL_INTERNAL_MATRIX)
+   return _matrix.AsEuler();
+#else
+#error PHYSICAL_INTERNAL not defined
+#endif
+}
+
+//==============================================================================
+
+INLINE void
+PhysicalAttributes::AddRotation(const Euler rotation)
+{
+#if defined(PHYSICAL_INTERNAL_EULER)
+   _orientation += rotation;
+#elif defined(PHYSICAL_INTERNAL_MATRIX)
+    Matrix34 temp = Matrix34(rotation,Vector3::zero);
+    temp *= _matrix;
+    _matrix = temp;              // kts should we have a premultiply matrix function?
+#else
+#error PHYSICAL_INTERNAL not defined
+#endif
+}
+
+//==============================================================================
+
+INLINE void 
+PhysicalAttributes::SetRotation(const Euler& newRot)
+{
+#if defined(PHYSICAL_INTERNAL_EULER)
+    _orientation = newRot;
+#elif defined(PHYSICAL_INTERNAL_MATRIX)
+    _matrix = Matrix34(newRot,_matrix[3]);
+#else
+#error PHYSICAL_INTERNAL not defined
+#endif
+}
+
+
+INLINE const Matrix34
+PhysicalAttributes::Matrix() const              // returns a 3x4 matrix representing current state
+{
+#if defined(PHYSICAL_INTERNAL_EULER)
+    return Matrix34(_orientation,_position);
+#elif defined(PHYSICAL_INTERNAL_MATRIX)
+    return(_matrix);
+#else
+#error PHYSICAL_INTERNAL not defined
+#endif
+}
+
+INLINE void 
+PhysicalAttributes::SetMatrix(const Matrix34& matrix)
+{
+
+#if defined(PHYSICAL_INTERNAL_EULER)
+   _position = matrix[3];
+   _orientation = matrix.AsEuler();
+#elif defined(PHYSICAL_INTERNAL_MATRIX)
+    _matrix = matrix;
+#else
+#error PHYSICAL_INTERNAL not defined
+#endif
+}
+
+//==============================================================================
+
+#if 0
+INLINE void
+PhysicalAttributes::ApplyToVisualActor()
+{
+        _vactor.Rotate(_orientation);
+        _vactor.PostTranslate(Position());
+//      _orientation.ApplyPre();
+}
+#endif
+
+//==============================================================================
+
+INLINE
+const Vector3
+PhysicalAttributes::GetDeltaPos() const
+{
+    return (_predictedPosition - Position());
+}
+
+//==============================================================================
+// Returns velocity from last frame
+
+INLINE const Vector3&
+PhysicalAttributes::OldLinVelocity() const
+{
+	return oldLinVelocity;
+}
+
+//==============================================================================
+// Only DoneWithPhysics() can call this!
+
+INLINE void
+PhysicalAttributes::SetOldLinVelocity(const Vector3& velocity)
+{
+	oldLinVelocity = velocity;
+}
+
+//==============================================================================
+
+INLINE Vector3
+PhysicalAttributes::MeanVelocity() const
+{
+	return ( (linVelocity + oldLinVelocity) * Scalar::half);
+}
+
+//==============================================================================
+
+INLINE
+const Vector3&
+PhysicalAttributes::LinVelocity() const
+{
+        assert(sizeof(Vector3) == sizeof(Scalar[3]));
+        return(linVelocity);
+}
+
+//==============================================================================
+
+INLINE void
+PhysicalAttributes::SetLinVelocity(const Vector3& newLinVelocity)
+{
+        linVelocity = newLinVelocity;
+}
+
+//==============================================================================
+
+INLINE void
+PhysicalAttributes::AddLinVelocity(const Vector3& addedLinVelocity)
+{
+        linVelocity = linVelocity + addedLinVelocity;
+}
+
+//==============================================================================
+
+#if 0
+INLINE void
+PhysicalAttributes::SetLookAtUp(Vector3 lookAt, Vector3 lookUp)         // only used by camera
+{
+        _vactor.LookUp(lookAt, lookUp,Position());
+}
+#endif
+
+//==============================================================================
+// returns true if any portion of fine collision space overlaps in 3space
+
+INLINE bool
+PhysicalAttributes::CheckCollision(const PhysicalAttributes& other) const
+{
+      return(_colSpace.CheckCollision(Position(), other._colSpace, other.Position()));
+}
+
+//==============================================================================
+// returns true if any portion of coarse collision space overlaps in 3space
+
+INLINE bool
+PhysicalAttributes::CheckCoarseCollision(const PhysicalAttributes& other) const
+{
+      return(_colSpace.CheckCoarseCollision(Position(), other._colSpace, other.Position()));
+}
+
+//==============================================================================
+
+INLINE bool
+PhysicalAttributes::CheckCollision(const Vector3& other) const
+{
+      return(_colSpace.CheckCollision(Position(), other));
+}
+
+//==============================================================================
+
+INLINE bool
+PhysicalAttributes::CheckSurrounds(const PhysicalAttributes& other) const                       // returns true if any portion overlaps in 3space
+{
+	return(_colSpace.CheckSurrounds(Position(), other._colSpace, other.Position()));
+}
+
+//==============================================================================
+// Were these objects inside of each other before either one moved?
+// (Which is to say, do their UNexpanded colboxes intersect?
+
+INLINE bool
+PhysicalAttributes::PremoveCollisionCheck(const PhysicalAttributes& other) const
+{
+    return ( _colSpace.PremoveCollisionCheck(Position(), other._colSpace, other.Position()) );
+}
+
+//==============================================================================
+
+INLINE bool
+PhysicalAttributes::ContainsSlope() const
+{
+	return _colSpace.ContainsSlope();
+}
+
+//==============================================================================
+
+#if 0
+INLINE Scalar
+PhysicalAttributes::EvaluateSlope(const PhysicalAttributes& other, colSide whichSide) const
+{
+	return _colSpace.EvaluateSlope(Position(), other._colSpace, other._predictedPosition, whichSide);
+}
+#endif
+
+//==============================================================================
+
+INLINE Scalar
+PhysicalAttributes::TimeToHitSlope(const PhysicalAttributes& other, Scalar deltaT) const
+{
+	return _colSpace.TimeToHitSlope(Position(), other._colSpace, other.Position(), other.MeanVelocity(), deltaT);
+}
+
+//==============================================================================
+
+INLINE const Vector3&
+PhysicalAttributes::SlopeNormal() const
+{
+	return _colSpace.SlopeNormal();
+}
+
+//==============================================================================
+
+INLINE Vector3
+PhysicalAttributes::Min() const
+{
+        return (_colSpace.Min(Position()));
+}
+
+//==============================================================================
+
+INLINE Vector3
+PhysicalAttributes::Max() const
+{
+        return (_colSpace.Max(Position()));
+}
+
+//==============================================================================
+
+#if defined PHYSICS_ENGINE_ODE
+#include "ode/physical.hpi"
+#elif defined PHYSICS_ENGINE_WF
+#include "wf/physical.hpi"
+#else
+#error physics engine not defined! 
+#endif
+
+//==============================================================================

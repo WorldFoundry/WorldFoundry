@@ -1,0 +1,116 @@
+<!DOCTYPE UI><UI>
+<class>AttribEditDialog</class>
+<comment>Cancel Dialog for World Foundry Attribute Editor</comment>
+<author>Kevin Seghetti</author>
+<widget>
+    <class>QDialog</class>
+    <property stdset="1">
+        <name>name</name>
+        <cstring>ribdlg</cstring>
+    </property>
+    <property stdset="1">
+        <name>geometry</name>
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>200</width>
+            <height>110</height>
+        </rect>
+    </property>
+    <property stdset="1">
+        <name>sizePolicy</name>
+        <sizepolicy>
+            <hsizetype>0</hsizetype>
+            <vsizetype>0</vsizetype>
+        </sizepolicy>
+    </property>
+    <property stdset="1">
+        <name>minimumSize</name>
+        <size>
+            <width>200</width>
+            <height>110</height>
+        </size>
+    </property>
+    <property stdset="1">
+        <name>maximumSize</name>
+        <size>
+            <width>200</width>
+            <height>110</height>
+        </size>
+    </property>
+    <property stdset="1">
+        <name>caption</name>
+        <string>Attribute Editor Interface</string>
+    </property>
+    <property stdset="1">
+        <name>sizeGripEnabled</name>
+        <bool>true</bool>
+    </property>
+    <widget>
+        <class>QLabel</class>
+        <property stdset="1">
+            <name>name</name>
+            <cstring>TextLabel1</cstring>
+        </property>
+        <property stdset="1">
+            <name>geometry</name>
+            <rect>
+                <x>10</x>
+                <y>10</y>
+                <width>190</width>
+                <height>40</height>
+            </rect>
+        </property>
+        <property stdset="1">
+            <name>text</name>
+            <string>Waiting for World Foundry 
+Attribute editor to exit</string>
+        </property>
+        <property stdset="1">
+            <name>alignment</name>
+            <set>AlignCenter</set>
+        </property>
+        <property>
+            <name>hAlign</name>
+        </property>
+    </widget>
+    <widget>
+        <class>QPushButton</class>
+        <property stdset="1">
+            <name>name</name>
+            <cstring>btnDone_2</cstring>
+        </property>
+        <property stdset="1">
+            <name>geometry</name>
+            <rect>
+                <x>60</x>
+                <y>60</y>
+                <width>80</width>
+                <height>40</height>
+            </rect>
+        </property>
+        <property stdset="1">
+            <name>text</name>
+            <string>&amp;Cancel</string>
+        </property>
+        <property stdset="1">
+            <name>autoDefault</name>
+            <bool>true</bool>
+        </property>
+        <property>
+            <name>toolTip</name>
+            <string>Close the dialog</string>
+        </property>
+    </widget>
+</widget>
+<connections>
+    <slot access="public">slotHelp()</slot>
+    <slot access="public">slotRendRibBrowse()</slot>
+    <slot access="public">slotRender()</slot>
+    <slot access="public">slotSave()</slot>
+    <slot access="public">slotSavePathBrowse()</slot>
+    <slot access="public">slotShaderPathBrowse()</slot>
+</connections>
+<tabstops>
+</tabstops>
+</UI>

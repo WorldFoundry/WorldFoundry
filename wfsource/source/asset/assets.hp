@@ -1,0 +1,127 @@
+//===========================================================================
+// assets.hp: AssetManager class
+// Copyright ( c ) 1997,1999,2000,2002,2003 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//===========================================================================
+// Description: manages all of the assets loaded by each room (also handles permanents)
+// Original Author: Kevin T. Seghetti
+//==========================================================================
+
+#ifndef _ASSETMANAGER_HP
+#define _ASSETMANAGER_HP
+
+#include <pigsys/pigsys.hp>
+#include <iff/disktoc.hp>
+#include <hal/diskfile.hp>
+#include <oas/levelcon.h>
+#include <gfx/vmem.hp>
+#include <streams/asset.hp>
+#include <gfx/callbacks.hp>
+
+class AssetSlot;
+
+const int MAX_ACTIVE_ROOMS = MAX_ADJACENT_ROOMS+1;
+
+//==============================================================================
+
+class AssetCallback
+{
+public:
+   virtual int GetSlotIndex(int roomIndex) = 0; 
+};
+
+//============================================================================
+// kts this is a fucking kludge, so I am not going to make it good, I am going
+// to get rid of it
+
+struct AssetStringMap
+{
+	packedAssetID _id;
+	char _name[32];
+};
+
+//=============================================================================
+// only one per level
+
+class AssetManager
+{
+public:
+	AssetManager( size_t cbPermMemory, size_t cbRoomMemory, VideoMemory& videoMemory, _DiskFile& diskFile, Memory& memory, AssetCallback& callback);
+	~AssetManager();
+
+   void Validate() const;
+
+	inline void LoadTOC(_DiskFile& diskFile,int32 tocOffset);  			// offset = where in the diskfile the toc is
+	inline const DiskTOC::TOCEntry& GetTOCEntry(int index);
+	void LoadPermanents();
+	void LoadRoomSlot(int roomIndex,int activeRoomIndex);		// make roomIndex one of the active rooms
+	void FreeRoomSlot(int slotNum);
+
+	AssetSlot& GetAssetSlot(int slotNum);
+	binistream GetAssetStream(packedAssetID asset) const;  // return a binistream which will iterate the given asset
+
+   void ReadAssetMap(binistream& in);
+   LookupTextureStruct LookupTexture(const char* name, int32 userData);			// in streaming, this should be an asset ID
+	inline const char* LookupAssetName( packedAssetID idAsset );   // kts this is only used by mattes, the level conversion process needs to be updated so that the names are not needed
+   const void* LookupAssetMemory(packedAssetID id);
+
+	enum
+	{
+		PERM_SLOT_INDEX = MAX_ACTIVE_ROOMS,  	// this is the active rooms enumeration
+		MAX_ACTIVE_SLOTS = MAX_ACTIVE_ROOMS+1,	// +1 for perm, perm index = MAX_ACTIVE_ROOMS
+		MAX_ASSETS_PER_ROOM = 200,
+		TOC_ASMAP_INDEX = 0,
+		TOC_LEVEL_INDEX = 1,
+		TOC_PERM_INDEX = 2,
+		TOC_FIRST_ROOM_INDEX = 3
+   };
+
+	enum { ROOM_PERM_INDEX=4095 };		// kts move this somewhere else
+
+#if SW_DBSTREAM
+	std::ostream& _print( std::ostream& ) const;
+	INLINE friend std::ostream& operator << ( std::ostream& s, const AssetManager& am )	{ return am._print( s ); }
+#endif
+
+private:
+	AssetSlot* _assets[MAX_ACTIVE_SLOTS];
+	char* _assetMemory;
+
+	DiskTOC _levelTOC;
+	size_t _cbPermMemory;
+	size_t _cbRoomMemory;
+    VideoMemory& _videoMemory;
+    _DiskFile& _diskFile;
+    Memory& _memory;
+    AssetCallback& _callback;
+
+    int32		_assetStringMapEntries;
+ #pragma message ("KTS " __FILE__ ": can only have 300 assets until this kludge is removed ")
+    AssetStringMap	_assetStringMap[300];
+};
+
+//=============================================================================
+
+#if		(USE_INLINE_DEFS || defined( _ASSETMANAGER_CC )) && !defined(ASSETMANAGER_JUSTDEFS)
+#include "assets.hpi"	// include all inline definitions as appropriate
+#endif
+
+//=============================================================================
+#endif // !_ASSETMANAGER_HP
+//=============================================================================

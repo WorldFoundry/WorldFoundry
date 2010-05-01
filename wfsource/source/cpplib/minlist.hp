@@ -1,0 +1,83 @@
+//=============================================================================
+// minlist.hp: double linked list handling for the game
+// Copyright ( c ) 1994,1995,1996,1997,1999,2000,2002 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//=============================================================================
+// Documentation:
+//	Abstract:
+//			Intrusive doubly-linked list class
+//	History:
+//			Created	10-24-94 06:26pm Kevin T. Seghetti
+//			Adapted 02-29-96 06:56pm Les D. Hedger
+//	Class Hierarchy:
+//			none
+//	Dependencies:
+//			none
+//	Restrictions:
+//		Nodes cannot be in more than one list at a time
+//	Example:
+//=============================================================================
+// use only once insurance
+
+#ifndef _MINLIST_HP
+#define _MINLIST_HP
+
+//=============================================================================
+// dependencies
+
+#include <hal/halbase.h>
+
+//=============================================================================
+
+class MinNode
+{
+					// base class, not useful unless derived from.
+public:
+	MinNode();
+	~MinNode();
+
+	void Reset();				// clears existing node to NULL
+
+	MinNode *Delete();				// returns NULL
+	MinNode *Prev();				// returns NULL if no previous node
+	MinNode *Next();				// returns NULL if no more nodes
+	MinNode *Insert(MinNode *node);	// insert node after this
+	MinNode *Remove();				// remove from list (MUST BE IN A LIST)
+
+	inline void Validate() const;
+	inline void ValidateNotInList() const;
+	inline void ValidateInList() const;
+
+protected:
+	void SetPrev(MinNode *newPrev);		// accessor for _prev
+	void SetNext(MinNode *newNext);		// accessor for _next
+
+private:
+	MinNode *_next;
+	MinNode *_prev;
+};
+
+//==============================================================================
+#if		USE_INLINE_DEFS || defined(_mINLIST_CC)
+#include "minlist.hpi"	// include all inline definitions as appropriate
+#endif
+//==============================================================================
+#endif
+//==============================================================================
+

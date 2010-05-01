@@ -1,0 +1,135 @@
+//=============================================================================
+// diskio.hp:
+// Copyright ( c ) 1997,99 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description: Instead of a streamer
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+#ifndef HAL_DISKFILE_HP
+#define HAL_DISKFILE_HP
+
+//=============================================================================
+
+#include <hal/hal.h>
+#if defined( __PSX__ )
+extern "C" {
+#	include <libcd.h>
+};
+#endif
+
+#if defined( __WIN__ )
+#	include <windows.h>
+#	include <mmsystem.h>
+#endif
+
+//=============================================================================
+
+void
+HalInitFileSubsystem();
+
+//=============================================================================
+
+class _DiskFile
+{
+public:
+	explicit _DiskFile(const char* filename);
+	virtual ~_DiskFile();
+	virtual void Validate() const;
+	virtual void SeekRandom( int32 position ) = 0;  // seek to anywhere in the file
+	inline void SeekForward( int32 position );		  // only allows forward seeks
+	virtual void ReadBytes( void* buffer, int32 size ) = 0;
+	inline int32 FilePos() const;
+#if DO_ASSERTIONS
+	inline int32 FileLen() const;
+#endif
+
+protected:
+	int32 _currentFilePosition;
+#if DO_ASSERTIONS
+	int32 _fileSize;
+#endif
+
+private:
+	_DiskFile();
+};
+
+//=============================================================================
+
+class DiskFileHD : public _DiskFile
+{
+public:
+	explicit DiskFileHD( const char* filename );
+	~DiskFileHD();
+	virtual void Validate() const;
+	virtual void SeekRandom( int32 position );
+	virtual void ReadBytes( void* buffer, int32 size );
+
+protected:
+	int _fileHandle;
+	int _cbFileOffset;
+	bool _hasSeeked;
+private:
+	DiskFileHD();
+};
+
+//=============================================================================
+
+class DiskFileCD : public _DiskFile
+{
+public:
+	explicit DiskFileCD( const char* filename );
+	virtual ~DiskFileCD();
+	virtual void Validate() const;
+	virtual void SeekRandom( int32 position );
+	virtual void ReadBytes( void* buffer, int32 size );
+
+	enum { _SECTOR_SIZE = 2048 };
+
+protected:
+	enum { _MAX_SECTOR = 330000 };
+#if defined( __PSX__ )
+//	CdlFILE	gFilePosBCD;
+	int32 _fileStartPos;
+//	SBlockInfo* gBlockInfoPtr;
+#endif
+
+#if defined( __WIN__ )
+	HMMIO mmio;
+#endif
+
+	char _buffer[ _SECTOR_SIZE ];
+
+private:
+	DiskFileCD();
+};
+
+//=============================================================================
+
+_DiskFile*
+ConstructDiskFile(char* filename, Memory& memory);		// factory function, creates correct type of diskfile
+
+//=============================================================================
+
+#include <hal/diskfile.hpi>
+
+//=============================================================================
+#endif // HAL_DISKFILE_HP
+//=============================================================================

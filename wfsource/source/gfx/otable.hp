@@ -1,0 +1,103 @@
+//=============================================================================
+// otable.hp: reverse ordering table class
+// Copyright ( c ) 1997,1998,1999,2000,2001 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description:
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+#ifndef _otable_H
+#define _otable_H
+#if defined(USE_ORDER_TABLES)
+
+//============================================================================
+// Includes
+//============================================================================
+
+#include <pigsys/pigsys.hp>
+class Memory;
+#include <gfx/prim.hp>
+#include <gfx/renderer.hp>
+
+//==============================================================================
+
+#if defined(__WIN__)
+typedef P_TAG ORDER_TABLE_ENTRY;
+#elif defined(__LINUX__)
+typedef P_TAG ORDER_TABLE_ENTRY;
+#elif defined(__PSX__)
+// Polygon Primitive Definitions
+typedef struct {
+	unsigned	addr: 24;
+	unsigned 	len:   8;
+} ORDER_TABLE_ENTRY;
+#else
+#error order table not defined for platform
+#endif
+
+//==============================================================================
+
+#if defined(DO_SLOW_STEREOGRAM)
+	const int ORDER_TABLES=4;				// need to double buffer the double buffer
+#else
+	const int ORDER_TABLES=2;			// for double buffering
+#endif
+
+
+//============================================================================
+
+class OrderTable
+{
+public:
+	OrderTable(int orderTableDepth,Memory& memory);
+	~OrderTable();
+	void Clear();
+	void AddOrderTable(OrderTable& orderTable, int atDepth);
+	void AddPrimitive(Primitive& prim,int depth);
+
+	void Render();
+
+	void Validate() const;
+
+#if DO_IOSTREAMS
+	friend std::ostream& operator << ( std::ostream& s, const OrderTable& ot );
+#endif
+
+private:
+	OrderTable();
+
+#if defined ( __PSX__) || defined( __WIN__ ) || defined (__LINUX__)
+	ORDER_TABLE_ENTRY* _orderTable;
+#else
+#	error "Unknown platform"
+#endif
+	int _depth;
+	Memory& _memory;			        // only used at construction/destruction
+};
+
+//============================================================================
+#include <gfx/otable.hpi>		// include all inline definitions as appropriate
+//=============================================================================
+#else            // defined(USE_ORDER_TABLES)
+	const int ORDER_TABLES=1;	
+#endif            // defined(USE_ORDER_TABLES)
+//==============================================================================
+#endif
+//=============================================================================

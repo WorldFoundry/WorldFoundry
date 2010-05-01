@@ -1,0 +1,46 @@
+// tga.hp
+// by William B. Norris IV
+// Copyright 1998,99 World Foundry Group.  
+
+#ifndef GFXFMT_TGA_HP
+#define GFXFMT_TGA_HP
+
+#include <gfxfmt/bitmap.hp>
+
+#pragma pack( 1 )
+typedef struct
+{
+    char IDLength;
+    char ColorMapType;
+    char ImageType;
+	int16 CMapStart;
+	int16 CMapLength;
+    char CMapDepth;
+    int16 XOffset;
+    int16 YOffset;
+    int16 Width;
+    int16 Height;
+    char PixelDepth;
+    char ImageDescriptor;
+} TGA_HEADER;
+#pragma pack()
+
+class TargaBitmap : public Bitmap
+{
+public:
+	TargaBitmap( std::istream& input, const char* szBitmapName );
+	TargaBitmap( const int width, const int height, const uint16 bgColor );
+	TargaBitmap( const Bitmap& );			// create bitmap from another bitmap [e.g., a palette]
+	~TargaBitmap();
+	virtual void save( std::ostream& s ) const;
+
+protected:
+	TGA_HEADER	th;
+
+public:	// new (soon to be) .dll interface
+	bool Validate( void* header, size_t, std::string msg );
+	void ReadBitmap( std::istream& input );
+//	void SaveBitmap( std::ostream& output ) const;
+};
+
+#endif	// GFXFMT_TGA_HP

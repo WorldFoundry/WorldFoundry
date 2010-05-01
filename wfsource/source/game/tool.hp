@@ -1,0 +1,123 @@
+//============================================================================
+// Tool.hp:
+// Copyright ( c ) 1996,1997,1999,2000,2002,2003 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//===========================================================================
+//	Abstract: Tool Header file
+//	History:
+//			Created	from object.hps using prep
+//
+//	Class Hierarchy:
+//			none
+//
+//	Dependancies:
+//
+//	Restrictions:
+//
+//	Example:
+//
+//============================================================================
+
+#ifndef _Tool_HP
+#define _Tool_HP
+
+//============================================================================
+
+#include <oas/levelcon.h>
+#include <oas/tool.ht>
+#include "actor.hp"
+
+//==============================================================================
+  
+struct _Tool;
+
+class Tool: public Actor
+{
+public:
+	Tool(const SObjectStartupData* startupData);
+	virtual ~Tool();
+
+	virtual bool CanRender() const;
+	virtual bool CanUpdate() const;
+	virtual EActorKind kind() const;
+
+	typedef enum
+	{
+		TOOL_TYPE_BEAM,
+		TOOL_TYPE_PROJECTILE,
+		TOOL_TYPE_SHIELD,
+		TOOL_TYPE_SCRIPT_ONLY,
+		TOOL_COUNT,
+	} ToolTypeOptions;
+
+	virtual void activate();
+	virtual bool canActivate();
+
+	void trigger( const QInputDigital& input );
+
+	inline void	PickedUpBy(int32 newOwner);	// actor index, notification of attachment
+	inline void	PutDownOn(int32 newOwner);	// actor index, notification of abandonment
+
+	Vector3 currentDir() const;
+	const Vector3& currentPos() const;
+	const Vector3& GetSpeed() const;
+	const PhysicalAttributes& GetPhysicalAttributes() const;
+	PhysicalAttributes& GetWritablePhysicalAttributes();					// get non-const so we can change it
+
+#if DO_ASSERTIONS
+	inline int32 Owner() const;
+#endif
+	void Validate() const;
+
+protected:
+	typedef enum
+	{
+		TOOL_BUTTON_A,
+		TOOL_BUTTON_B,
+		TOOL_BUTTON_C,
+		TOOL_BUTTON_D,
+		TOOL_BUTTON_E,
+		TOOL_BUTTON_F,
+		TOOL_BUTTON_G,
+		TOOL_BUTTON_H,
+		TOOL_BUTTON_COUNT,
+	} ToolButtonOptions;
+
+	inline const _Tool* getOad() const;
+	_Tool _toolOAD;				// copy of original data
+	long _objectToGenerate;		// which template object to spew
+	int32 _owner;				// actor index of owner
+	Scalar _timeAvailableToFire;
+   const void* _pScript;
+	Memory* _memory;
+
+private:
+	void _InitActivationScript( const SObjectStartupData* startupData );
+};
+
+#include "tool.hpi"
+
+//============================================================================
+
+Actor* OadTool( const SObjectStartupData* startupData );
+
+//============================================================================
+#endif // !_Tool_HP
+//============================================================================
+

@@ -1,0 +1,146 @@
+//==============================================================================
+// Memory.hp
+// Copyright ( c ) 1998,99,2000,2001,2003 World Foundry Group.  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//==============================================================================
+// Description:
+// Abstract memory manager
+//============================================================================
+// use only once insurance
+
+#ifndef _Memory_HP
+#define _Memory_HP
+
+//==============================================================================
+
+#include <pigsys/pigsys.hp>
+#include <streams/dbstrm.hp>
+
+//#if DO_IOSTREAMS
+#define SW_MEMORY_NAMED 1
+#define MEMORY_NAMED(data) data
+//#else
+//#define SW_MEMORY_NAMED 0
+//#define MEMORY_NAMED(ignore)
+//#endif
+
+//==============================================================================
+
+class Memory
+{
+public:
+	virtual ~Memory();
+
+	virtual void* Allocate(size_t size ASSERTIONS( COMMA const char* file COMMA int line) ) = 0;
+	virtual void Free(const void* mem) = 0;
+	inline void Free(const void* mem,int size);
+	virtual void Clear() = 0;						// warning: all previous allocations are now invalid
+
+	//size_t BytesFree() const;         // returns # of bytes left in pool
+
+	virtual bool ValidAllocation(void* memory) = 0;  // returns true if memory came from this
+	virtual bool Empty() const = 0;
+
+	inline void Validate() const;					// check integrity of class
+	MEMORY_NAMED(
+		inline const char* Name() const;
+		inline void Name( const char* );
+	)
+	IOSTREAMS( friend std::ostream& operator<<(std::ostream& out, const Memory& memory); )
+protected:
+	ASSERTIONS( virtual void _Validate() const; )					// check integrity of class
+	IOSTREAMS( virtual std::ostream& _Print(std::ostream& out) const = 0; )
+	MEMORY_NAMED( char _name[ 32 ]; )
+	explicit Memory( MEMORY_NAMED( const char* name ) );
+
+	int32 Size() const;
+};
+
+//==============================================================================
+
+#if 1
+#define MEMORY_DELETE( memory, classptr, classname) \
+		destroy(memory,classptr);
+#else
+#define MEMORY_DELETE( memory, classptr, classname) \
+{	\
+	(##classptr##)->~##classname##(); \
+	(##memory##).Free( classptr ); \
+}
+#endif
+
+#if 0
+#define MEMORY_DELETE_PTR( memory, classptr, classname) \
+{	\
+	((##classname##*)##classptr##)->~##classname##(); \
+	(##memory##).Free( classptr ); \
+}
+#endif
+
+#if defined(__PSX__)
+#define MEMORY_DELETE_ARRAY( memory, classptr, classname, entries) \
+{	\
+	long* pad = ((long*)classptr)-2; \
+	for(int index=0;index<entries;index++) \
+		##classptr##[index].~##classname##(); \
+	##(memory)##.Free(pad); \
+}
+#else
+#define MEMORY_DELETE_ARRAY( memory, classptr, classname, entries) \
+{	\
+	long* count = ((long*)classptr)-1; \
+/*	assert(*count == entries); kts doesn't always work*/ \
+	for(int index=0;index<entries;index++) \
+		classptr [index].~classname (); \
+	(memory).Free(count); \
+}
+#endif
+
+
+
+
+template <class T> void destroy(Memory& memory, T* item)
+{
+	item->~T();
+	memory.Free(item);
+};
+
+//==============================================================================
+
+#if DO_ASSERTIONS
+#pragma message ("KTS " __FILE__ ": this causes problems under vc98, fix it")
+#define MEMORY_TRACK_FILE_LINE 0
+#else
+#define MEMORY_TRACK_FILE_LINE 0
+#endif
+
+//==============================================================================
+#include "memory.hpi"	// include all inline definitions as appropriate
+//==============================================================================
+
+#if MEMORY_TRACK_FILE_LINE
+#define new(param) new( param, __FILE__, __LINE__ )
+#define delete(param) delete( param, __FILE__, __LINE__ )
+#else
+//#define new(param) new( param )
+//#define delete(param) delete( param )
+#endif
+//==============================================================================
+#endif	// _MEMORY_HP
+//==============================================================================

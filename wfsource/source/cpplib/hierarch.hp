@@ -1,0 +1,110 @@
+//==============================================================================
+// hierarch.hp: templated general tree hierarchy class (user ordered)
+//==============================================================================
+
+#ifndef HIERARCHY_HP
+#define HIERARCHY_HP
+
+#include <pigsys/assert.hp>
+
+//==============================================================================
+
+template<class Type>
+class hierarchyNode
+{
+public:
+	hierarchyNode(void);
+	hierarchyNode(Type& THIS, Type& parent);
+	~hierarchyNode(void);
+	Type* Parent(void);
+	Type& Parent(Type& THIS, Type& parent);
+
+	Type* PreviousSibling(void);
+	Type* NextSibling(void);
+
+	Type* FirstChild(void);
+	Type& AddChild(Type& THIS,Type& child);
+
+	Type& Remove(void);
+
+	void Validate() { assert(sig == 0x12345678); }
+
+private:
+#if DO_ASSERTIONS
+	int sig;
+#endif
+	Type* _parent;
+	Type* _child;
+	Type* _left;
+	Type* _right;
+};
+
+//============================================================================
+
+template<class Type>
+class hierarchyIteratorParent
+{
+public:
+	hierarchyIteratorParent(Type& node);
+	~hierarchyIteratorParent(void);
+	Type* operator++();
+	Type* operator++(int);
+	Type* operator*(void);
+private:
+	Type* currentNode;
+};
+
+//============================================================================
+// WARNING!!!: this class interates immediate children only, use hierarchyIteratorDescendant
+
+template<class Type>
+class hierarchyIteratorChildren
+{
+public:
+	hierarchyIteratorChildren(Type& node);
+	~hierarchyIteratorChildren(void);
+	Type* operator++();
+	Type* operator++(int);
+	Type* operator*(void);
+private:
+	Type* currentNode;
+};
+
+//============================================================================
+
+template<class Type>
+class hierarchyIteratorDescendants
+{
+public:
+	hierarchyIteratorDescendants(Type& start);
+	~hierarchyIteratorDescendants(void);
+	Type* operator++();
+	Type* operator++(int);
+	Type* operator*(void);
+private:
+	Type* currentNode;
+	Type* startNode;
+};
+
+//============================================================================
+
+template<class Type>
+class hierarchyIteratorDescendantsAndThis
+{
+public:
+	hierarchyIteratorDescendantsAndThis(Type& start);
+	~hierarchyIteratorDescendantsAndThis(void);
+	Type* operator++();
+	Type* operator++(int);
+	Type* operator*(void);
+private:
+	Type* currentNode;
+	Type* startNode;
+};
+
+
+//============================================================================
+#include <cpplib/hierarch.hpi>
+//==============================================================================
+#endif
+//==============================================================================

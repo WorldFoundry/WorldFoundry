@@ -1,0 +1,121 @@
+//==============================================================================
+//	channel.hp:	
+//	Copyright 1997,98,99,2000,2003 World Foundry Group.  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//==============================================================================
+//          Impliments a system for reading channels (streams of parameterized
+//				data).  This file contains the game engine side of channels;
+//				see levelcon.h and LVLExp for the channel creation stuff.
+//
+//	Created 9/16/97 by Phil Torre
+//
+//==============================================================================
+
+#ifndef _CHANNEL_HP
+#define _CHANNEL_HP
+
+#include <pigsys/pigsys.hp>
+
+#include <oas/levelcon.h>
+#include <math/scalar.hp>
+
+//class IFFChunkIter;
+
+//==============================================================================
+
+struct ChannelEntry
+{
+	fixed32 time;
+	int32  value;
+};
+
+//==============================================================================
+// The Channel family of classes encapsulate a stream of key/value pairs.
+
+class Channel
+{
+public:
+	Channel();
+	virtual ~Channel();
+
+	virtual int32 Value( Scalar time, int32 period=0 )=0;
+	virtual Scalar EndTime()=0;
+};
+
+//==============================================================================
+
+class LinearChannel : public Channel
+{
+public:
+	LinearChannel( _ChannelOnDisk* channelOnDisk );		// Construct from lvl file data
+//	LinearChannel( IFFChunkIter& channelChunkIter );	// Construct from model data
+
+	virtual int32 Value(Scalar time, int32 period=0);
+	virtual Scalar EndTime();
+
+private:
+//	Scalar endTime;             // Time value of last key
+//	int32  numKeys;				// How many keys this channel contains
+//	ChannelEntry* channelData;	// pointer to array of entries
+	_ChannelOnDisk* _channelOnDisk;	// The _ChannelOnDisk struct is wrapped in IFF and promises
+									// to hang around in memory
+};
+
+//==============================================================================
+
+class ConstantChannel : public Channel
+{
+public:
+	ConstantChannel( _ChannelOnDisk* channelOnDisk );	// Construct from lvl file data
+//	ConstantChannel( IFFChunkIter& channelChunkIter );	// Construct from model data
+
+	virtual int32 Value(Scalar time, int32 period=0);
+	virtual Scalar EndTime();
+
+private:
+//	int32 value;
+	_ChannelOnDisk* _channelOnDisk;
+};
+
+//==============================================================================
+
+typedef Scalar (*fnChannel)( Scalar );
+
+class FnChannel : public Channel
+{
+public:
+	FnChannel( fnChannel fn, Scalar frameRate );
+	FnChannel();
+	virtual int32 Value( Scalar time, int32 period=0 );
+	virtual Scalar EndTime();
+
+private:
+	Scalar _frameRate;
+	fnChannel _fn;
+};
+
+//==============================================================================
+// Helper function for constructing Channel subclasses
+class Memory;
+
+Channel* ConstructChannel( _ChannelOnDisk* channelData, Memory& memory );
+
+//==============================================================================
+
+#endif	// _CHANNEL_HP

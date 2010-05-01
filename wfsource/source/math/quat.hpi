@@ -1,0 +1,130 @@
+#ifndef QUAT_HPI
+#define QUAT_HPI
+
+#include <math/scalar.hp>
+
+// ------------------------------------------------------------------------
+
+INLINE Quaternion::Quaternion()
+{
+	ConstructIdentity();
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Quaternion::Quaternion
+(
+	const Scalar x, const Scalar y, const Scalar z, const Scalar w
+)
+{
+	Construct( x, y, z, w );
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Quaternion::Quaternion( const Euler& euler )
+{
+	ConstructEuler( euler );
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Quaternion::Quaternion( const Matrix34& matrix34 )
+{
+	ConstructMatrix34( matrix34 );
+}
+
+// ------------------------------------------------------------------------
+
+#if defined( __PSX__ )
+
+INLINE Quaternion::Quaternion( const Matrix3t& matrix3t )
+{
+	ConstructMatrix3t( matrix3t );
+}
+
+#endif
+
+// ------------------------------------------------------------------------
+
+INLINE void
+Quaternion::SetX( Scalar x )
+{
+	_quat.x = x.AsLong();
+}
+
+// ------------------------------------------------------------------------
+
+INLINE void
+Quaternion::SetY( Scalar y )
+{
+	_quat.y = y.AsLong();
+}
+
+// ------------------------------------------------------------------------
+
+INLINE void
+Quaternion::SetZ( Scalar z )
+{
+	_quat.z = z.AsLong();
+}
+
+// ------------------------------------------------------------------------
+
+INLINE void
+Quaternion::SetW( Scalar w )
+{
+	_quat.w = w.AsLong();
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Scalar
+Quaternion::GetX() const
+{
+	return Scalar( _quat.x );
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Scalar
+Quaternion::GetY() const
+{
+	return Scalar( _quat.y );
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Scalar
+Quaternion::GetZ() const
+{
+	return Scalar( _quat.z );
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Scalar
+Quaternion::GetW() const
+{
+	return Scalar( _quat.w );
+}
+
+// ------------------------------------------------------------------------
+
+INLINE br_quat*
+Quaternion::BrQuatPtr()
+{
+	return &_quat;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE const br_quat*
+Quaternion::BrQuatPtr() const
+{
+	return &_quat;
+}
+
+// ------------------------------------------------------------------------
+
+#endif	// QUAT_HPI

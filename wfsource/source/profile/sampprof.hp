@@ -1,0 +1,48 @@
+//==============================================================================
+// profile.hp: psx profiler: copied from psxtools:pfprof DO NOT MODIFY
+//==============================================================================
+
+#ifndef _PROFILE_HP
+#define _PROFILE_HP
+
+#if !defined( __PSX__ )
+#	error profiler only works on psx right now
+#endif
+
+//==============================================================================
+
+#include <pigsys/pigsys.hp>
+
+//extern "C" {
+//#include <sys/types.h>
+//#include <cstddef>
+//#include <libetc.h>
+//#include <libgte.h>
+//#include <libgpu.h>
+//#include <pigsys/assert.hp>
+//#include <missing.h>
+//}
+
+//==============================================================================
+
+class profileSample
+	{
+public:
+	profileSample( int nSampleRate = 300 );
+	virtual ~profileSample();
+	virtual void start();
+	virtual void stop();
+	virtual void save( const char* szProfileFilename );
+	void hit( void* addr );
+
+protected:
+	void* startOfProgram;
+	void* endOfProgram;
+	unsigned long romHits;
+	unsigned long* programHits;
+	int _nSampleRate;
+	};
+
+//==============================================================================
+#endif
+//==============================================================================

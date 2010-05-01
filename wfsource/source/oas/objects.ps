@@ -1,0 +1,29 @@
+@*============================================================================
+@* objects.ps: creates the enumerated list (objects.p) of all object types in World Foundry, suitable for inclusion by prep
+@*============================================================================\
+@@*============================================================================
+@@* object.p: enumeration of all World Foundry game objects for prep,  
+@@*   created from  object.ps,DO NOT MODIFY 
+@@*============================================================================
+
+@define INDEX 0
+
+@define OBJECTSHEADER 	@@@+define NULL_KIND INDEX @redefine INDEX @=(@e1(INDEX + 1)) @t
+@define OBJECTSFOOTER
+@define OBJECTENTRY(name) @@@+define name@+_KIND INDEX @redefine INDEX @=(@e1(INDEX + 1)) @t
+@define OBJECTNOACTORENTRY(name) @@@+define name@+_KIND INDEX @redefine INDEX @=(@e1(INDEX + 1)) @t 
+@define OBJECTONLYTEMPLATEENTRY(name) @@@+define name@+_KIND INDEX @redefine INDEX @=(@e1(INDEX + 1)) @t 
+@define OBJECTSUBENTRY(name,parent) @@@+define name@+_KIND INDEX @redefine INDEX @=(@e1(INDEX + 1)) @t 
+@define COLTABLEHEADER
+@define COLTABLEFOOTER
+@define COLTABLEENTRY(obj1,obj2,msg1,msg2)
+
+@@*============================================================================
+
+@@ifdef(OBJECTS_P)(@@begincomment)
+@@define OBJECTS_P
+
+@include objects.mac
+
+@@endcomment
+@@*============================================================================

@@ -1,0 +1,17 @@
+################################################################################
+## Makefile.inc
+##
+## Standardized common part of 3D Studio MAX PlugIns
+## Copyright 1998 Recombinant Limited.  All Rights Reserved.
+##
+
+################################################################################
+# Inputs [defaults]
+
+MAX_VERSION ?= 2
+
+################################################################################
+# Global defines
+
+MULTITHREADED = m
+

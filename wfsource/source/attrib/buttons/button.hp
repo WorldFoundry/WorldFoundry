@@ -1,0 +1,9 @@
+// buttons/button.hp
+
+#include <attrib/attrib.hp>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
+#include <attrib/util.hp>
+#include <oas/oad.h>
+#include <attrib/oaddlg.hp>

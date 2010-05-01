@@ -1,0 +1,85 @@
+//=============================================================================
+// math/psx/Vector3P.hp: (Vector3PS) Playstation/gte specific Vectors
+// Copyright (c) 1997,98,99 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// Orignal Author: Kevin T. Seghetti
+//=============================================================================
+
+#include <libetc.h>
+#include <libgte.h>
+#include <libgpu.h>
+#include <math/scalarps.hp>
+#include <math/vector3.hp>
+
+//=============================================================================
+
+struct Vector3_PS : private SVECTOR
+{
+	Scalar_PS X() const { return(vx); }
+	Scalar_PS Y() const { return(vy); }
+	Scalar_PS Z() const { return(vz); }
+
+	void SetX(Scalar_PS newX) { vx = newX; }
+	void SetY(Scalar_PS newY) { vy = newY; }
+	void SetZ(Scalar_PS newZ) { vz = newZ; }
+
+	// read/write access to elements, i: 0..2
+	INLINE Scalar_PS& operator [] ( int index ) { assert( index >= 0 ); 	assert( index <= 2 ); 	Scalar_PS* arr = &vx; return arr[index]; }
+	// read-only access to elements, i: 0..2
+	INLINE const Scalar_PS operator [] ( int index ) const { assert( index >= 0 ); 	assert( index <= 2 ); const Scalar_PS* arr = &vx;	return arr[index]; }
+
+	Vector3_PS() { }
+	Vector3_PS(const Vector3_PS& newVect) { vx = newVect.vx; vy = newVect.vy; vz = newVect.vz; }
+	Vector3_PS(Scalar_PS x, Scalar_PS y, Scalar_PS z) { vx = x; vy = y; vz = z; }
+	bool operator== (const Vector3_PS& otherVect) const { return (vx == otherVect.vx) && (vy == otherVect.vy) && (vz == otherVect.vz); }
+	const Vector3_PS& operator = (const Vector3_PS& newVect) { vx = newVect.vx; vy = newVect.vy; vz = newVect.vz; return(*this); }
+
+#if DO_IOSTREAMS
+	ostream& PrintAs412(ostream& out) const;
+#endif
+};
+
+#if DO_IOSTREAMS
+	ostream& operator<< (ostream& out, const Vector3_PS& vect);
+#endif
+
+//=============================================================================
+
+INLINE Vector3_PS
+Vector3ToPS(const Vector3& in)
+{
+	return Vector3_PS(S32ToS16(in[0]),S32ToS16(in[1]),S32ToS16(in[2]));
+}
+
+INLINE Vector3
+PSToVector3(const Vector3_PS& in)
+{
+	return(Vector3(S16ToS32(in[0]),S16ToS32(in[1]),S16ToS32(in[2])));
+}
+
+INLINE Vector3_PS
+Vector3ToPS12(const Vector3& in)
+{
+	MATH_DEBUG( cout << "Vector3ToPS12: input: " << in << endl; )
+	MATH_DEBUG( cout << "output = " << Vector3_PS(S32ToS12(in[0]),S32ToS12(in[1]),S32ToS12(in[2])) << endl; )
+	return Vector3_PS(S32ToS12(in[0]),S32ToS12(in[1]),S32ToS12(in[2]));
+}
+
+
+//=============================================================================

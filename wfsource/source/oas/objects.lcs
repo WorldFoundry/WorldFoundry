@@ -1,0 +1,16 @@
+@*============================================================================*/
+@* objects.lcs: creates a machine readable ascii list (objects.lc) of all objects in veolcity */
+@*============================================================================*/
+Objects.lc: this file is automaticaly generated from objects.lcs DO NOT MODIFY
+This file must be in the same directory as all of the .oad files
+@define OBJECTSHEADER { @n	NullObject
+@define OBJECTSFOOTER }
+@define OBJECTENTRY(name,collide) @lowercase(name)
+@define OBJECTONLYTEMPLATEENTRY(name,collide) @lowercase(name)
+@define OBJECTNOACTORENTRY(name,collide) @lowercase(name)
+@define OBJECTSUBENTRY(name,parent,collide) @lowercase(name)
+@define COLTABLEHEADER
+@define COLTABLEFOOTER
+@define COLTABLEENTRY(obj1,obj2,msg1,msg2)
+@include objects.mac
+@*============================================================================*/

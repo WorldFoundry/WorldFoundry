@@ -1,0 +1,75 @@
+// ===========================================================================
+// gfx/vertex.hp: vertex structure
+// Copyright ( c ) 1997,1998,1999,2000 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description:
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+#ifndef _Vertex_H
+#define _Vertex_H
+
+//============================================================================
+
+#include <pigsys/pigsys.hp>
+#include <math/vector2.hp>
+#include <math/vector3.hp>
+#include <gfx/math.hp>
+#include <gfx/color.hp>
+class _IffWriter;
+
+//============================================================================
+// by putting the position at the end, the rest of Vertex2D and Vertex3D are
+// bit-wise identical, so common code usage can occur
+
+struct Vertex2D
+{
+	explicit Vertex2D() {}
+	Vertex2D( Scalar newU, Scalar newV, const Color& newColor, const Vector2& newPosition );
+
+	Scalar u,v;					        // UV coordinates for this vertex in the texture page, if textured
+	Color color;						// vertex color, if shaded
+	Vector2 position;					// position, in local coordinates
+};
+
+//============================================================================
+
+struct Vertex3D
+{
+	explicit Vertex3D() {}
+	Vertex3D( Scalar newU, Scalar newV, const Color& newColor, const Vector3_PS& newPosition );
+	inline void Validate() const;
+	INLINE bool operator < (const Vertex3D& /*other*/ ) const;
+	INLINE bool operator ==(const Vertex3D& other) const;
+	Scalar u,v;					        // UV coordinates for this vertex in the texture page, if textured
+	Color color;						// vertex color, if shaded
+	Vector3_PS position;					// position, in local coordinates
+
+#if DO_IOSTREAMS
+	friend std::ostream& operator << ( std::ostream& s, const Vertex3D& v3 );
+#endif
+	friend _IffWriter& operator << ( _IffWriter& iff, const Vertex3D& v3 );
+};
+
+//============================================================================
+#include "gfx/vertex.hpi"
+//============================================================================
+#endif
+//============================================================================

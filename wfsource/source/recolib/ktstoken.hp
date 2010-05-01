@@ -1,0 +1,53 @@
+//=============================================================================
+// ktstoken.hp: extensions to the rouge-wave RWCToken class
+// By Kevin T. Seghetti
+// Copyright (c) 1995 Cave Logic Studios, Ltd
+// based on code
+// (c) Copyright 1989, 1990, 1991, 1992, 1993, 1994 Rogue Wave Software, Inc.
+// ALL RIGHTS RESERVED
+//=============================================================================
+
+#ifndef _ktstoken_hp
+#define _ktstoken_hp
+
+//=============================================================================
+//#include "global.hp"
+#include <string>
+
+//=============================================================================
+
+const std::string closingParen(")");
+
+class ktsRWCTokenizer
+{
+	const std::string       theString;
+	const char*		place;
+	unsigned int offset;
+	std::string foobar;
+public:
+	ktsRWCTokenizer(const std::string& s);	// Construct to lex a string
+
+  // Advance to next token, delimited by s:
+		// first skips whiteSpace chars, then returns chars up to next delimiter
+	std::string		operator()(const std::string& delimiters,const std::string& whiteSpace);
+	std::string		operator()(); // { return operator()(" \t\n"); }
+
+	std::string NextTrackParens(const std::string& ws = closingParen);			// handles nested parens
+
+	// skip one character in stream
+	ktsRWCTokenizer& operator+=(int i);
+
+	char GetNextChar();						// remove next character in string, returns 0 if past end of string
+	char ReadChar(int offset=0);			// peek at next character in string, returns 0 if past end of string, if offset given, looks at character at offset in string from current position
+
+	std::string GetWhiteSpace(const std::string& ws = std::string(" \t\n"));			// return string containing only whitespace
+
+	int MatchNextChar(const std::string& ws);
+
+	std::string restOfString();					// returns portion of string which has not yet been returned as tokens
+};
+
+//=============================================================================
+#endif
+//=============================================================================
+

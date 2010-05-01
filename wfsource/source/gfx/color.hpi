@@ -1,0 +1,377 @@
+//=============================================================================
+// Color.hpi:
+// Copyright ( c ) 1997,1999,2000,2002 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description:
+// Original Author: Kevin
+//============================================================================
+
+//============================================================================
+
+INLINE
+Color::Color()
+{
+	_color = 0;
+}
+
+//============================================================================
+
+INLINE
+Color::Color(const Color& color)
+{
+	_color = color._color;
+}
+
+//============================================================================
+
+//INLINE
+//Color::Color(uint32 color)
+//{
+//	_color = color;
+//}
+
+INLINE Color
+Color::FromInt(uint32 color)
+{
+	Color temp;
+	temp._color = color;
+	return temp;
+}
+
+//============================================================================
+
+INLINE
+Color::Color(uint8 newRed, uint8 newGreen, uint8 newBlue)
+{
+	_color = ((((unsigned int)newRed)<<16) |
+			 (((unsigned int)newGreen)<<8) |
+			 ((unsigned int)newBlue));
+}
+
+//============================================================================
+
+INLINE void
+Color::Validate() const
+{
+	assert(_color < 0xff000000);
+}
+
+//============================================================================
+
+INLINE uint8
+Color::Red() const
+{
+	return(((unsigned int)_color >> 16) & 0xFF);
+
+}
+//============================================================================
+
+INLINE uint8
+Color::Green() const
+{
+	return(((unsigned int)_color >> 8) & 0xFF);
+}
+
+//============================================================================
+
+INLINE uint8
+Color::Blue() const
+{
+	return(((unsigned int)_color) & 0xFF);
+}
+
+//============================================================================
+
+INLINE uint32
+Color::AsLong() const
+{
+	return _color;
+}
+
+//============================================================================
+
+INLINE uint8
+Color::SetRed(uint8 newRed)
+{
+	_color = (_color & ~0xff0000) | ((unsigned int)newRed<<16);
+	return(newRed);
+}
+
+//============================================================================
+
+INLINE uint8
+Color::SetGreen(uint8 newGreen)
+{
+	_color = (_color & ~0xff00) | ((unsigned int)newGreen << 8);
+	return(newGreen);
+}
+
+//============================================================================
+
+INLINE uint8
+Color::SetBlue(uint8 newBlue)
+{
+	_color = (_color & ~0xff) | newBlue;
+	return(newBlue);
+}
+
+//============================================================================
+
+INLINE Color
+Color::operator+(const Color& other) const
+{
+	Color result;
+	register long temp = long(Red())+long(other.Red());
+	if(temp > 255)
+		temp = 255;
+	result.SetRed(temp);
+	temp = long(Green())+long(other.Green());
+	if(temp > 255)
+		temp = 255;
+	result.SetGreen(temp);
+	temp = long(Blue())+long(other.Blue());
+	if(temp > 255)
+		temp = 255;
+	result.SetBlue(temp);
+
+	return result;
+}
+
+//============================================================================
+
+INLINE Color
+Color::operator-(const Color& other) const
+{
+	Color result;
+	register long temp = long(Red())-long(other.Red());
+	if(temp < 0)
+		temp = 0;
+	result.SetRed(temp);
+	temp = long(Green())-long(other.Green());
+	if(temp < 0)
+		temp = 0;
+	result.SetGreen(temp);
+	temp = long(Blue())-long(other.Blue());
+	if(temp < 0)
+		temp = 0;
+	result.SetBlue(temp);
+	return result;
+}
+
+//=============================================================================
+
+INLINE Color
+Color::operator*(const Scalar& other) const
+{
+	Color result;
+	result.SetRed((Scalar(Red(),0)*other).WholePart());
+	result.SetGreen((Scalar(Green(),0)*other).WholePart());
+	result.SetBlue((Scalar(Blue(),0)*other).WholePart());
+	return result;
+}
+
+//=============================================================================
+
+INLINE Color
+Color::operator*(const Color& other) const
+{
+	Color result;
+	register long temp = (long(Red())*long(other.Red()))/128;
+	if(temp > 255)
+		temp = 355;
+	result.SetRed(temp);
+	temp = (long(Green())*long(other.Green()))/128;
+	if(temp > 255)
+		temp = 355;
+	result.SetGreen(temp);
+	temp = (long(Blue())*long(other.Blue()))/128;
+	if(temp > 255)
+		temp = 355;
+	result.SetBlue(temp);
+
+	return result;
+}
+
+//============================================================================
+
+#if DO_IOSTREAMS
+
+INLINE std::ostream&
+operator<< (std::ostream& out, const Color& color)
+{
+	out << "Red: " << (int)color.Red() << ", Green: " << (int)color.Green() << ", Blue:" << (int)color.Blue();
+	return out;
+}
+
+#endif
+
+//============================================================================
+// Color48:
+//============================================================================
+
+INLINE
+Color48::Color48()
+{
+	_color[0] = 0;
+	_color[1] = 0;
+	_color[2] = 0;
+}
+
+//============================================================================
+
+INLINE
+Color48::Color48(const Color48& color)
+{
+	_color[0] = color._color[0];
+	_color[1] = color._color[1];
+	_color[2] = color._color[2];
+}
+
+//============================================================================
+
+INLINE
+Color48::Color48(const Color& color)
+{
+	_color[0] = uint16(color.Red())<<4;
+	_color[1] = uint16(color.Green())<<4;
+	_color[2] = uint16(color.Blue())<<4;
+}
+
+//============================================================================
+
+INLINE
+Color48::Color48(uint16 red, uint16 green, uint16 blue)
+{
+	_color[0] = red;
+	_color[1] = green;
+	_color[2] = blue;
+}
+
+//=============================================================================
+
+#if 0
+INLINE
+Color48::Color48(Scalar red, Scalar green, Scalar blue)
+{
+	_color[0] = red.AsLong()>>8;
+	_color[1] = green.AsLong()>>8;
+	_color[2] = blue.AsLong()>>8;
+}
+#endif
+
+//============================================================================
+
+INLINE
+Color48::operator Color () const
+{
+	Color result;
+	long temp = _color[0]>>4;
+	if(temp > 255)
+		temp = 255;
+	result.SetRed(temp);
+
+	temp = _color[1]>>4;
+	if(temp > 255)
+		temp = 255;
+	result.SetGreen(temp);
+
+	temp = _color[2]>>4;
+	if(temp > 255)
+		temp = 255;
+	result.SetBlue(temp);
+
+//	cout << "_color[0]>>4 = " << (_color[0]>>4) << std::endl;
+//	cout << "_color[1]>>4 = " << (_color[1]>>4) << std::endl;
+//	cout << "_color[2]>>4 = " << (_color[2]>>4) << std::endl;
+//	cout << "result = " << result << std::endl;
+	return result;
+}
+
+//============================================================================
+
+INLINE void
+Color48::Validate() const
+{
+}
+
+//============================================================================
+
+INLINE uint16
+Color48::Red() const
+{
+	return _color[0];
+
+}
+//============================================================================
+
+INLINE uint16
+Color48::Green() const
+{
+	return _color[1];
+}
+
+//============================================================================
+
+INLINE uint16
+Color48::Blue() const
+{
+	return _color[2];
+}
+
+//============================================================================
+
+INLINE uint16
+Color48::SetRed(uint16 red)
+{
+	_color[0] = red;
+	return(red);
+}
+
+//============================================================================
+
+INLINE uint16
+Color48::SetGreen(uint16 green)
+{
+	_color[1] = green;
+	return(green);
+}
+
+//============================================================================
+
+INLINE uint16
+Color48::SetBlue(uint16 blue)
+{
+	_color[2] = blue;
+	return(blue);
+}
+
+//============================================================================
+
+#if DO_IOSTREAMS
+
+INLINE std::ostream&
+operator<< (std::ostream& out, const Color48& color)
+{
+	out << "Red: " << color.Red() << ", Green: " << color.Green() << ", Blue:" << color.Blue();
+	return out;
+}
+#endif
+
+//============================================================================

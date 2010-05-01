@@ -1,0 +1,76 @@
+//=============================================================================
+// ActBox.hp
+// Copyright ( c ) 1995,1996,1997,1999,2000,2002,2003 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+//
+//	Abstract: ActBox (activation box) Header file
+//	History:
+//			Created	from object.hps using prep
+//
+//	Class Hierarchy:
+//			none
+//
+//	Dependancies:
+//
+//	Restrictions:
+//
+//	Example:
+//
+//============================================================================
+
+#ifndef _ActBox_HP
+#define _ActBox_HP
+
+//============================================================================
+
+#include <oas/levelcon.h>
+#include <oas/actbox.ht>
+#include <physics/activate.hp>
+#include "actor.hp"
+
+//============================================================================
+
+class ActBox: public Actor
+{
+public:
+	ActBox(const SObjectStartupData* startupData);
+	virtual ~ActBox() { }
+
+	virtual void update();
+
+	virtual EActorKind kind() const;
+
+private:
+   inline const _Activation* GetActivateBlockPtr() const;
+
+
+	INLINE const _ActBox* getOad() const		{ return (const _ActBox*)_oadData; }
+    void activate( const Actor* );
+	void doFieldEffect( BaseObject& pColObject );
+   Activation activation;
+};
+
+//============================================================================
+
+Actor* OadActBox( const SObjectStartupData* startupData );
+
+//============================================================================
+#endif // !_ActBox_HP
+//============================================================================

@@ -1,0 +1,3 @@
+call buildpsx
+call buildwin
+

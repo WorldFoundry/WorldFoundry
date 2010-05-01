@@ -1,0 +1,13 @@
+
+PLUGIN_BASE = txt2oad
+!include "../Makefile.def"
+THE_PLUGIN = $(WF_DIR)\install\gdk\3dsmax$(MAX_VERSION)\$(PLUGIN_BASE).dle
+
+include "../Makefile.inc"
+
+$(THE_PLUGIN) : $(STD_FILES) \
+	$(PLUGIN_BASE).obj \
+	$(PLUGIN_BASE).res
+	link /nologo $(LINK_FLAGS) /subsystem:windows /dll /def:$(PLUGIN_BASE).def /out:$(.TARGET) $(.SOURCES)
+
+################################################################################

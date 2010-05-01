@@ -1,0 +1,26 @@
+(
+
+; local mailboxes:
+;	2000 = guided missile active
+
+
+; rotate camera test code
+;	( write-to-mailbox self 1004
+;		( - ( read-mailbox self 1004 ) 0.025 )
+;	)
+
+
+; guided missile aiming code
+	( if (read-mailbox self 2000)
+		( write-to-mailbox self 1004
+			( - ( read-mailbox self 1004 ) 0.025 )
+		)
+		( write-to-mailbox self 1004 0)
+	)
+
+; copy joystick input	
+	( write-to-mailbox self 3022
+		( read-mailbox self 3021 )
+	)
+)
+			

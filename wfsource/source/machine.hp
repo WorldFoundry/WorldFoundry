@@ -1,0 +1,59 @@
+//==========================================================================
+#ifndef _MACHINE_HP
+#define _MACHINE_HP
+
+// ------------------------------------------------------------------------
+// Copyright(c) 1996, PF. Magic, Inc.  
+//
+// This is UNPUBLISHED PROPRIETARY SOURCE CODE of PF. Magic, Inc.;
+// The contents of this file may not be disclosed to third parties, copied
+// or duplicated in any form, in whole or in part, without the prior
+// written permission of PF. Magic, Inc.
+// ------------------------------------------------------------------------
+
+// ------------------------------------------------------------------------
+// Default Switch Settings
+// ------------------------------------------------------------------------
+
+// ------------------------------------------------------------------------
+
+#if defined( __DOS__ ) || defined( __WIN__ )
+
+#ifndef IOSTREAM
+#define IOSTREAM 1
+#endif
+
+// Expression contains compiler generated information
+#ifdef __WATCOMC__
+#pragma warning 549 9
+#endif
+
+// ------------------------------------------------------------------------
+
+#elif defined( __PSX__ )
+
+#ifndef SW_IOSTREAM
+#define SW_IOSTREAM 0
+#endif
+
+#ifndef _MAX_FNAME
+#define _MAX_FNAME 260
+#endif
+
+#ifndef _MAX_EXT
+#define _MAX_EXT _MAX_FNAME
+#endif
+
+#ifndef _MAX_PATH
+#define _MAX_PATH _MAX_FNAME
+#endif
+
+// ------------------------------------------------------------------------
+
+#else
+#error "unknown target"
+#endif
+
+// ------------------------------------------------------------------------
+
+#endif // _MACHINE_HP

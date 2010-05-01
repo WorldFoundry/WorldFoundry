@@ -1,0 +1,116 @@
+//=============================================================================
+// iffread.hpi:
+// Copyright ( c ) 1997,99 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+#if DO_IOSTREAMS
+
+inline std::ostream& 
+operator<<(std::ostream& s, const ChunkID &a)
+{
+	// kts note: if you are getting an error about op<< cannot access private _chunkID 
+	// you must be using VC6 and need to apply service pack 4
+	char* cid= (char*)&a._chunkID;
+	if(cid[0])
+		s << (char)cid[0];
+	if(cid[1])
+		s << (char)cid[1];
+	if(cid[2])
+		s << (char)cid[2];
+	if(cid[3])
+		s << (char)cid[3];
+	return s;
+}
+#endif
+
+//==============================================================================
+
+
+INLINE ChunkID
+IFFChunkIter::GetChunkID() const
+{
+	return(ChunkID(_chunkID));
+}
+
+//=============================================================================
+
+INLINE ChunkID
+IFFChunkIter::GetSwappedChunkID() const
+{
+	char* ptr = (char*)&_chunkID;
+	int32 id = (int32)(*ptr++)<<24;
+	id |= (int32)(*ptr++)<<16;
+	id |= (int32)(*ptr++)<<8;
+	id |= (int32)(*ptr);
+	return(ChunkID(id));
+}
+
+//=============================================================================
+
+INLINE void
+IFFChunkIter::Validate() const
+{
+	RangeCheck(0,_chunkSize,1024*5000);			// kts arbitrary
+	RangeCheckInclusive(0,_bytesLeft,_chunkSize);
+}
+
+//=============================================================================
+
+INLINE int
+IFFChunkIter::Size() const					// total size of chunk
+{
+	Validate();
+	return _chunkSize;
+}
+
+//=============================================================================
+
+INLINE int
+IFFChunkIter::BytesLeft() const			// # of bytes left to read from this chunk
+{
+	Validate();
+	return(_bytesLeft);
+}
+
+//=============================================================================
+// returns internal memory pointer and advances count bytes
+
+inline const char*
+IFFChunkIter::GetMemoryPtr(int count)		// kts hack to allow texture loading to not use another buffer
+{
+	assert(!_locked);
+	assert(_stream.good());
+//	cout << "ReadBytes: count = " << count << ", bytesleft = " << _bytesLeft << endl;
+	Validate();
+	AssertMsg(_bytesLeft >= count,"Attempted to read past end of chunk: " << _chunkID);
+
+	assert(_stream.good());
+	const char* result = (const char*)_stream.GetMemoryPtr(count);
+	assert(_stream.good());
+//	assert(ValidPtr(result));
+	_bytesLeft -= count;
+	Validate();
+	return result;
+}
+
+//=============================================================================

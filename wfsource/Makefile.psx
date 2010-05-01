@@ -1,0 +1,52 @@
+# wfsrc/Makefile.psx
+
+## C Compiler
+CC_psx       = ccpsx
+CCC_psx      = ccpsx -D__cplusplus
+CCC_OUT_psx = -o
+CCCARGS_psx  += -Wall -Wpointer-arith -Wcast-align -comments-c++ -v
+CCCARGS_psx  += -DUSE_3T_MATRICES=1
+!if $(BUILD_DO_DEBUGGING_INFO) == "1"
+CCCARGS_psx += -g
+!endif
+
+!if $(BUILD_DO_OPTIMIZATIONS) == "1"
+CCCARGS_psx += -O3 -mgpopt -G 1000
+!endif
+
+
+
+LIBS_psx += $(PSX_DIR)\lib\libsn.lib $(PSX_DIR)\lib\libapi.lib
+LIBS_psx += $(PSX_DIR)\lib\libetc.lib $(PSX_DIR)\lib\libgpu.lib
+LIBS_psx += $(PSX_DIR)\lib\libgs.lib $(PSX_DIR)\lib\libgte.lib
+LIBS_psx += $(PSX_DIR)\lib\libcd.lib $(PSX_DIR)\lib\libsnd.lib
+LIBS_psx += $(PSX_DIR)\lib\libspu.lib $(PSX_DIR)\lib\libmath.lib
+LIBS_psx += $(PSX_DIR)\lib\libcard.lib $(PSX_DIR)\lib\libpress.lib
+LIBS_psx += $(PSX_DIR)\lib\libc2\libc2.lib
+
+
+
+INCLUDE_psx += -I..\pigsys\psx -I$(PSX_DIR)/include
+
+## Linker
+LINKPOST_psx = ,$(TEST_PROG)$(EXE),$(TEST_PROG).sym,$(TEST_PROG).map
+
+## Librarian
+AR_psx                      = $(PSX_DIR)\bin\psylib /u
+LIBOUT_psx  =
+
+## obj files
+OBJ = .obj
+
+## Executable
+EXE_psx = .cpe
+RUN_psx = run
+
+## Assembler
+AS_psx = $(PSX_DIR)\bin\asmpsx
+AFLAGS_psx = /o c+ /l /g
+
+
+## Non-standard includes useful *only* for this platform
+PSX_DIR ?= $(WF_DIR)..\psxtools\psx
+

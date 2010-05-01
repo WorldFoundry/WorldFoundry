@@ -1,0 +1,56 @@
+//=============================================================================
+// inputdig.hp:
+//=============================================================================
+/*
+Documentation:
+
+	Abstract:
+	   		C++ class representing current and last state of
+	   		an input device with buttons
+
+	History:
+			Created	by Joseph Boyle 24 Jan 95
+			InputCameraRemapper class added 4/9/96 by Phil Torre
+
+
+	Class Hierarchy:
+			none
+
+	Dependencies:
+			none
+
+	Restrictions:
+
+
+*/
+//==============================================================================
+
+#ifndef _INPUTDIGGAME_HP
+#define _INPUTDIGGAME_HP
+#include <math/vector3.hp>
+#include <memory/memory.hp>
+#include <input/inputdig.hp>
+
+#pragma comment( lib, "winmm.lib" )
+
+//=============================================================================
+
+class InputCameraRemapper : public Input
+{
+public:
+	InputCameraRemapper(Input* unmappedInput,Memory& memory);
+	virtual ~InputCameraRemapper();
+
+	virtual joystickButtonsF read();
+	virtual joystickButtonsF readRaw();
+	virtual void setButtons( joystickButtonsF )		{ assert( 0 ); }
+
+protected:
+	Input* inputSource;
+	Memory& _memory;
+};
+
+//=============================================================================
+#endif
+//==============================================================================
+

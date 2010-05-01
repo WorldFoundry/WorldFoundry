@@ -1,0 +1,98 @@
+See http://worldfoundry.org/WorldFoundry/Installation for the latest installation 
+instructions
+
+//==============================================================================
+Old instructions
+
+There are plans to implement a configure style make system, just hasn't been
+done yet.
+
+You will also need wftools (so you can build prep)
+
+then:
+cd (wherever you put it)/wfsource
+make
+(if this doesn't work please notify kts@worldfoundry.org so I can figure out why).
+
+To run the game 
+(this will run the cd.iff which is checked in, if you build your own levels then
+cd.iff for your game will be placed in wfsource/assets/linux, you will need to cd
+to there and run the engine from thetherere 
+
+The game executable will be in the object directory, g is a shell script which
+runs the game and forces the perceived frame rate to be 20hz (since problems
+occur under about 5hz, and it is currently running at about .5 hz on my 200Mhz
+pentium Pro).
+
+The joystick is emulated on the keyboard numpad like so:
+up(keypad 8),down(keypad 2),left(keypad 4) and right(keypad 6) map to the
+directions, the # keys above the alpha keys map to joystick buttons: 1,2,3,4,5,6
+
+On the cube menu: joystick buttons 1 & 2 select next and previous level, and
+button 3 runs the selected level. Most of the levels are just simple 3d geometry
+(created for a stereo glasses demo we did), but a couple of them are simple
+playable levels (player can run and jump). 
+
+Most of the libraries have test suites, which can be run by:
+cd (wherever you put it)/wfsource/source/<library>
+make test
+
+//==============================================================================
+To Create/Edit levels:
+
+World Foundry currently supports 2 different 3D packages for level creation:
+Innovation 3D ( http://innovation3d.sourceforge.net/ ) which runs under linux
+and is open source and free, and 3D Sdudio Max ( http://www.discreet.com ), which runs
+under Windows and costs a lot of $$.
+
+Innovation 3D is still under development, but provides the basics required to
+create a level.
+
+There is no way to convert levels made from one package to the other at this
+time (of course a game can consist of levels from both).
+
+To edit levels:
+
+
+Install Innovation 3D
+get the World Foundry Innovation 3D plugins and install them
+create a directory ~/.worldfoundry
+copy attribedit.ini into ~/.worldfoundry
+
+//==============================================================================
+Older instructions
+
+To build the engine/game, first a few environment variables need to be set,
+I use the following script:
+#!/bin/tcsh
+setenv RENDERER gl
+setenv RENDERER_PIPELINE software
+xterm +sb -geometry 80x50 +bdc +cm +dc +nul -sl 0 +ulc -bg black -fg white -ls -title 'WorldFoundry' & 
+
+NOTE: BUILDMODE, WF_DIR, and WF_TARGET no longer need to be set unless you don't
+like the defaults:
+setenv BUILDMODE debug
+	Either "debug" (default) or "release"
+
+setenv WF_DIR /usr/local/src/WorldFoundry/wfsource
+	Will be figured out auto-magically when make is run.
+
+setenv WF_TARGET linux
+	The default for the GNU* make files that Linux (/Un*x?) will use.
+
+Or for the bash shell just add this to your ~/.bash_profile:
+RENDERER=gl
+RENDERER_PIPELINE=software
+
+The above notes apply here also:
+WF_TARGET=linux
+WF_DIR=/usr/local/src/WorldFoundry/wfsource
+BUILDMODE=debug
+
+export RENDERER RENDERER_PIPELINE
+
+If any of these were defined:
+export WF_TARGET WF_DIR BUILDMODE
+
+Now logout and login again to get the new enviroment, done -- Terry :)
+

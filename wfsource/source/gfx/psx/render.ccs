@@ -1,0 +1,380 @@
+@*=============================================================================
+@* gfx/psx/render.ccs: 3D renderable object, psx specific code, prep source to generate a renderer
+@* Copyright ( c ) 1997,98,99 World Foundry Group  
+@*
+@* // Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description:
+//
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+#define PRINT_EVERYTHING 0
+
+#include <gfx/RendObj3.hp>
+#include <gfx/psx/RendObj3.hp>
+#include <gfx/material.hp>
+#if defined( __PSX__ )
+#	include <libgte.h>
+#	include <libgpu.h>
+#	include <inline_c.h>
+#else
+#	include <gfx/win/libgpu.h>
+#endif
+#include <gfx/psx/gteflags.h>
+#include <math/vector3.hp>
+
+#include <cpplib/libstrm.hp>
+#include <gfx/prim.hp>
+
+#define FLAG_TEXTURE TEXTURE_FLAG
+#define FLAG_GOURAUD GOURAUD_FLAG
+#define FLAG_LIGHTING LIGHTING_FLAG
+
+//============================================================================
+
+#define abs(val) ((val)<0?-(val):(val))
+
+//============================================================================
+
+#define ADDPRIM_SHIFT_VALUE 1
+
+//============================================================================
+
+#if DO_IOSTREAMS
+INLINE ostream&
+operator<<(ostream& out, const SVECTOR& vect)
+{
+	out << vect.vx << "," << vect.vy << "," << vect.vz;
+	return(out);
+}
+#endif
+
+//============================================================================
+
+@include ..\software\sub2d.ccs
+
+@include ..\software\sub3d.ccs
+
+@include ..\software\clip3d.ccs
+
+//============================================================================
+// assumes GTE is already set up
+
+#if PRINT_EVERYTHING
+extern void DumpGTERegs();
+#endif
+
+
+#define vPort (*scratch->viewPort)
+#define poly ((POLY_@+POLY_TYPE*)primitive)
+const int divide_hither = (SCALAR_CONSTANT(0.25).AsLong())>>8;		// in meters / 256
+
+//-----------------------------------------------------------------------------
+// this function is not called recursively
+
+int
+RenderObject3D::RenderPoly3D@+RENDER_TYPE(Primitive* primitive)
+{
+#if PRINT_EVERYTHING
+	cout << "Hardware: New Poly: RenderObject3D::RenderPoly3D@+RENDER_TYPE(Primitive* primitive)" << endl;
+#endif
+// kts kludge!!! to skip lmalloc memory tracking data
+#if DO_ASSERTIONS
+	register RendererVariables* scratch = (RendererVariables*)getScratchAddr(12);			// assume allocated from above
+#else
+	register RendererVariables* scratch = (RendererVariables*)getScratchAddr(0);			// assume allocated from above
+#endif
+	assert(ValidPtr(scratch));
+	assert(ValidPtr(scratch->viewPort));
+	assert(ValidPtr(scratch->currentRenderMaterial));
+	assert(ValidPtr(&scratch->currentRenderMaterial->_cdColor));
+
+	int count = 0;
+	int currentMaterial = scratch->currentRenderFace->materialIndex;
+	while(scratch->currentRenderFace->materialIndex == currentMaterial)
+	{
+		register const RotatedVector& v0 = scratch->rotatedVectorList[scratch->currentRenderFace->v1Index];
+		register const RotatedVector& v1 = scratch->rotatedVectorList[scratch->currentRenderFace->v2Index];
+		register const RotatedVector& v2 = scratch->rotatedVectorList[scratch->currentRenderFace->v3Index];
+
+		*(int32*)(&poly->x0) = v0._xy;
+		*(int32*)(&poly->x1) = v1._xy;
+		*(int32*)(&poly->x2) = v2._xy;
+		gte_ldsxy3_@+POLY_TYPE_LOWER(poly);
+		gte_nclip();				// Normal clip
+		gte_stopz(&scratch->zflag);
+		if(scratch->zflag > 0)				// if facing away, skip it
+		{
+			scratch->sz[0] = v0._z;
+			scratch->sz[1] = v1._z;
+			scratch->sz[2] = v2._z;
+
+#if PRINT_EVERYTHING
+			cout << "sz[0] = " << Fixed16(scratch->sz[0]) << ", sz[1] = " << Fixed16(scratch->sz[1]) << ", sz[2] = " << Fixed16(scratch->sz[2]) << endl;
+#endif
+#if DO_ASSERTIONS
+			static clipCount=0;
+#endif
+			if(( (scratch->sz[0] < chopHitherSCALAR || scratch->sz[1] < chopHitherSCALAR || scratch->sz[2] < chopHitherSCALAR)))						// 3D clipping, chop poly at chop_Hther
+			{
+				if(scratch->sz[0] > chopHitherSCALAR || scratch->sz[1] > chopHitherSCALAR || scratch->sz[2] > chopHitherSCALAR)
+				{
+					scratch->gteVect[0] = v0._originalVector;
+					scratch->gteVect[1] = v1._originalVector;
+					scratch->gteVect[2] = v2._originalVector;
+					scratch->tempVect[0] = v0._resultingVector;
+					scratch->tempVect[1] = v1._resultingVector;
+					scratch->tempVect[2] = v2._resultingVector;
+					AssertMsg( (scratch->tempVect[0].Z() == scratch->sz[0]) || (scratch->sz[0] == 0 && scratch->tempVect[0].Z() < 0) || (scratch->tempVect[0].Z() == 32767 && scratch->sz[0] > 32767) ,scratch->tempVect[0].Z() << "," << scratch->sz[0]);
+					AssertMsg( (scratch->tempVect[1].Z() == scratch->sz[1]) || (scratch->sz[1] == 0 && scratch->tempVect[1].Z() < 0) || (scratch->tempVect[1].Z() == 32767 && scratch->sz[1] > 32767) ,scratch->tempVect[1].Z() << "," << scratch->sz[1]);
+					AssertMsg( (scratch->tempVect[2].Z() == scratch->sz[2]) || (scratch->sz[2] == 0 && scratch->tempVect[2].Z() < 0) || (scratch->tempVect[2].Z() == 32767 && scratch->sz[2] > 32767) ,scratch->tempVect[2].Z() << "," << scratch->sz[2]);
+#if DO_ASSERTIONS
+					assert(clipCount == 0);
+					clipCount++;
+#endif
+					Clip3D@+RENDER_TYPE(vPort,scratch->gteVect,scratch->tempVect,*primitive);
+#if DO_ASSERTIONS
+					clipCount--;
+#endif
+				}
+			}
+			else
+			{
+				if(v2._flags == 0 && !PolyOffScreen(* poly))
+				{
+					register int32 z = (((scratch->sz[0] >= scratch->sz[1]) && (scratch->sz[0] >= scratch->sz[2]))?scratch->sz[0]:((scratch->sz[1] >= scratch->sz[0]) && (scratch->sz[1] >= scratch->sz[2]))?scratch->sz[1]:scratch->sz[2]);
+					if(z > 0)
+					{
+						// lighting code
+#if FLAG_LIGHTING
+#if FLAG_GOURAUD == 0
+						assert(0);
+#else
+			// get color from vertex, how do I deal with vertex colors from in here? kts write code to read normals from each vertex
+
+						// kludge to get smooth fogging
+						gte_SetRGBcd(&scratch->currentRenderMaterial->_cdColor);
+						gte_ldv0(&scratch->currentRenderFace->normal);	// ir0 contains result from above, don't mess it up
+						gte_ldir0(&v2._ir0);
+						gte_ncds();
+						gte_strgb(&poly->r2);
+
+						gte_ldir0(&v0._ir0);
+						gte_ncds();
+						gte_strgb(&poly->r0);
+
+						gte_ldir0(&v1._ir0);
+						gte_ncds();
+						gte_strgb(&poly->r1);
+#endif
+#else
+#endif
+						if(PolyTooBig(*poly))
+						{
+			//				cout << "Calling Subdivide2D@+RENDER_TYPE" << endl;
+							Subdivide2D@+RENDER_TYPE(vPort,*primitive,z);
+						}
+						else
+						{
+							assert(abs(poly->x0 - poly->x1) < 1024);
+							assert(abs(poly->x0 - poly->x2) < 1024);
+							assert(abs(poly->x1 - poly->x2) < 1024);
+							assert(abs(poly->y0 - poly->y1) < 1024);
+							assert(abs(poly->y0 - poly->y2) < 1024);
+							assert(abs(poly->y1 - poly->y2) < 1024);
+
+							DBSTREAM4( cout << "no sub, adding primitive" << endl; )
+							// kts if you want to print the fields of the primitive, write am operator << for it
+							vPort.AddPrimitive(*primitive,(z>>ADDPRIM_SHIFT_VALUE)+1);
+						}
+					}
+					DBSTREAM2( else
+						cdebug << "Too close, Z clipped" << endl; )
+				}
+				DBSTREAM5( else
+					cdebug << "poly off screen or limiter fired: " << ((void*)v2._flags) << endl; )
+			}
+		}
+		DBSTREAM2( else
+			cdebug << "normal clipped" << endl; )
+		scratch->currentRenderFace++;
+		primitive++;
+		count++;
+	}
+
+	return count;
+}
+
+//-----------------------------------------------------------------------------
+
+#undef poly
+#define poly ((POLY_@+POLY_TYPE*)&primitive)
+
+//-----------------------------------------------------------------------------
+// recursive call, came from clip3d or subdivide 3d
+
+void
+RenderObject3D::RenderPoly3D@+RENDER_TYPE(POLYVECT& gteVect,Primitive& primitive)
+{
+#if PRINT_EVERYTHING
+	cout << "Hardware: New Poly: RenderObject3D::RenderPoly3D@+RENDER_TYPE(POLYVECT& gteVect,Primitive& primitive)" << endl;
+	cout << "POLYVECT = " << gteVect[0] << "; " << gteVect[1] << "; " << gteVect[2] << endl;
+#endif
+#if DO_ASSERTIONS
+	register RendererVariables* scratch = (RendererVariables*)getScratchAddr(12);			// assume allocated from above
+#else
+	register RendererVariables* scratch = (RendererVariables*)getScratchAddr(0);			// assume allocated from above
+#endif
+	assert(ValidPtr(scratch));
+
+	gte_ldv0(&gteVect[0]);
+	gte_rtps();
+	gte_stir0(&scratch->ir0[0]);
+	gte_ldv0(&gteVect[1]);
+	gte_rtps();
+	gte_stir0(&scratch->ir0[1]);
+	gte_ldv0(&gteVect[2]);
+	gte_rtps();
+	gte_stir0(&scratch->ir0[2]);
+	gte_stflg(&scratch->flags);
+	gte_nclip();				// Normal clip
+
+	gte_stopz(&scratch->zflag);
+	if(scratch->zflag > 0)				// if facing away, skip it
+	{
+		gte_stsz3c(&scratch->sz[0]);			// read 3 z
+		gte_stsxy3_@+POLY_TYPE_LOWER(poly);			// store the resulting 2d coordinates into the poly primitive
+#if PRINT_EVERYTHING
+		Vector3_PS _resultingVector;
+		gte_stsv(&_resultingVector);
+		cout << "new Resulting Vector = " << _resultingVector << endl;
+#endif
+// kts 6/2/98 11:58AM still doesn't work right, but removed for 3D demo
+			if(( (scratch->sz[0] < chopHitherSCALAR || scratch->sz[1] < chopHitherSCALAR || scratch->sz[2] < chopHitherSCALAR)))						// 3D clipping, chop poly at chop_Hther
+			{
+				return;
+#if DO_ASSERTIONS				// make sure no longer needs to be clipped
+				if(scratch->sz[0] > chopHitherSCALAR || scratch->sz[1] > chopHitherSCALAR || scratch->sz[2] > chopHitherSCALAR)
+					AssertMsg(0,"Should have been 3d Clipped already, chopHitherSCALAR = " << chopHitherSCALAR << "," << scratch->sz[0] << "," << scratch->sz[1] << "," << scratch->sz[2] << endl);
+				else
+					AssertMsg(0,"should have been behind camera clipped already" << endl);
+#endif
+			}
+		_RenderPoly3D@+RENDER_TYPE(primitive);
+	}
+	DBSTREAM2( else
+		cdebug << "normal clipped" << endl; )
+}
+
+//-----------------------------------------------------------------------------
+
+void
+RenderObject3D::_RenderPoly3D@+RENDER_TYPE(Primitive& primitive)
+{
+#if DO_ASSERTIONS
+	register RendererVariables* scratch = (RendererVariables*)getScratchAddr(12);			// assume allocated from above
+#else
+	register RendererVariables* scratch = (RendererVariables*)getScratchAddr(0);			// assume allocated from above
+#endif
+	assert(ValidPtr(scratch));
+	assert(ValidPtr(scratch->viewPort));
+	assert(ValidPtr(scratch->currentRenderMaterial));
+	assert(ValidPtr(&scratch->currentRenderMaterial->_cdColor));
+
+	scratch->flags &= (~(
+		GTE_FLAGF_LIME_OUTOFRANGE
+			|GTE_FLAGF_LIMD1_OUTOFRANGE
+			|GTE_FLAGF_LIMD2_OUTOFRANGE
+		|GTE_FLAGF_SUM
+		));
+	if(scratch->flags == 0 && !PolyOffScreen(*poly))
+	{
+		register int32 z = (((scratch->sz[0] >= scratch->sz[1]) && (scratch->sz[0] >= scratch->sz[2]))?scratch->sz[0]:((scratch->sz[1] >= scratch->sz[0]) && (scratch->sz[1] >= scratch->sz[2]))?scratch->sz[1]:scratch->sz[2]);
+		if(z > 0)
+		{
+			// lighting code
+#if FLAG_LIGHTING
+#if FLAG_GOURAUD == 0
+			assert(0);
+			gte_ldv0(&scratch->currentRenderFace->normal);	// ir0 contains result from above, don't mess it up
+	 	  	gte_SetRGBcd(&scratch->currentRenderMaterial->_cdColor);
+			gte_ncds();
+			register int32 z = (((scratch->sz[0] >= scratch->sz[1]) && (scratch->sz[0] >= scratch->sz[2]))?scratch->sz[0]:((scratch->sz[1] >= scratch->sz[0]) && (scratch->sz[1] >= scratch->sz[2]))?scratch->sz[1]:scratch->sz[2]);
+			gte_strgb(&poly->r0);
+#else
+// get color from vertex, how do I deal with vertex colors from in here? kts write code to read normals from each vertex
+
+			// kludge to get smooth fogging
+			gte_SetRGBcd(&scratch->currentRenderMaterial->_cdColor);
+			gte_ldv0(&scratch->currentRenderFace->normal);	// ir0 contains result from above, don't mess it up
+			gte_ncds();
+			gte_strgb(&poly->r2);
+
+			gte_ldir0(&scratch->ir0[0]);
+			gte_ncds();
+			gte_strgb(&poly->r0);
+
+			gte_ldir0(&scratch->ir0[1]);
+			gte_ncds();
+			gte_strgb(&poly->r1);
+#endif
+#else
+#endif
+			if(PolyTooBig(*poly))
+			{
+//				cout << "Calling Subdivide2D@+RENDER_TYPE" << endl;
+				Subdivide2D@+RENDER_TYPE(vPort,primitive,z);
+			}
+			else
+			{
+				assert(abs(poly->x0 - poly->x1) < 1024);
+				assert(abs(poly->x0 - poly->x2) < 1024);
+				assert(abs(poly->x1 - poly->x2) < 1024);
+				assert(abs(poly->y0 - poly->y1) < 1024);
+				assert(abs(poly->y0 - poly->y2) < 1024);
+				assert(abs(poly->y1 - poly->y2) < 1024);
+
+				DBSTREAM4( cout << "no sub, adding primitive" << endl; )
+				// kts if you want to print the fields of the primitive, write am operator << for it
+				vPort.AddPrimitive(primitive,(z>>ADDPRIM_SHIFT_VALUE)+1);
+			}
+		}
+		DBSTREAM2( else
+			cdebug << "Too close, Z clipped" << endl; )
+	}
+	DBSTREAM5( else
+		cdebug << "poly off screen or limiter fired: " << ((void*)scratch->flags) << endl; )
+}
+
+#undef poly
+
+//============================================================================
+@*		if(0)
+//		if(recurseCount < 4 && (scratch->sz[0] < divide_hither || scratch->sz[1] < divide_hither || scratch->sz[2] < divide_hither))
+//		if( scratch->sz[0] <= 0 || scratch->sz[1] <= 0 || scratch->sz[2] <= 0)
+//		if( scratch->sz[0] < divide_hither || scratch->sz[1] < divide_hither || scratch->sz[2] < divide_hither)
+@*		{
+		// make sure at least one point is visible, otherwise clip entire poly
+//			if( scratch->sz[0] > 0 && scratch->sz[1] > 0 && scratch->sz[2] > 0)
+@*			if( scratch->sz[0] > 0 || scratch->sz[1] > 0 || scratch->sz[2] > 0)
+@*				Subdivide3D@+RENDER_TYPE(vPort,gteVect,primitive);
+@*		}
+
+//============================================================================

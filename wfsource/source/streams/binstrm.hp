@@ -1,0 +1,342 @@
+//=============================================================================
+// binstrm.hp:
+// Copyright ( c ) 1996,97,98,99 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description:
+// Original Author: Brad McKee
+//============================================================================
+
+#ifndef _BINSTRM_HP
+#define _BINSTRM_HP
+
+// ------------------------------------------------------------------------
+
+#include <pigsys/pigsys.hp>
+#include <cpplib/stdstrm.hp>
+#include <streams/dbstrm.hp>
+#include <streams/asset.hp>
+
+// ------------------------------------------------------------------------
+// Validate compile-time switches
+// ------------------------------------------------------------------------
+
+// ------------------------------------------------------------------------
+// Debug Stream Support
+// ------------------------------------------------------------------------
+
+DBSTREAM1( extern ostream_withassign cbinstrm; )
+DBSTREAM1( extern ostream_withassign cstreaming; )
+
+// ------------------------------------------------------------------------
+// Binary I/O Stream Declaration
+// ------------------------------------------------------------------------
+
+class binios
+{
+  public:
+	enum io_state
+	{                     				// Error state
+		goodbit = 0x00,                 // - no errors
+		badbit  = 0x01,                 // - operation failed, may not proceed
+		failbit = 0x02,                 // - operation failed, may proceed
+		eofbit  = 0x04                  // - end of file
+	};
+	typedef int iostate;
+
+	enum open_mode
+	{                    				// How to open a stream
+		in        = 0x0001,             // - open for input
+		out       = 0x0002,             // - open for output
+		atend     = 0x0004,             // - seek to end after opening
+		append    = 0x0008,             // - open for output, append to the end
+		truncate  = 0x0010,             // - discard contents after opening
+		nocreate  = 0x0020,             // - open only an existing file
+		noreplace = 0x0040              // - open only a new file
+	};
+	typedef int openmode;
+
+	enum seek_dir
+	{                     				// Seek direction
+		beg	  	  = 0x00,               // - seek from beginning
+		cur	  	  = 0x01,               // - seek from current position
+		end       = 0x02                // - seek from end
+	};
+	typedef int seekdir;
+
+	typedef int streampos;
+	typedef int streamoff;
+
+	enum alignment_defaults
+	{
+	  #if defined( __WIN__ ) || defined( __PSX__ ) || defined(__LINUX__)
+		native_align8			= 1,
+		native_align16			= 1,
+		native_align32			= 4,
+		native_alignobject		= 4
+	  #else
+	  #error "native alignment is not known"
+	  #endif
+	};
+	typedef uint32 alignment;
+
+	enum word_orders
+	{
+		little_endian		= 0,			// LSB -> MSB
+		big_endian			= 1,			// MSB -> LSB
+	  #if defined( __WIN__ ) || defined( __PSX__ ) || defined(__LINUX__)
+		native_word_order = little_endian
+	  #else
+	  #error "native byte ordering is not known"
+	  #endif
+	};
+	typedef uint32 word_order;
+
+	enum scalar_types
+	{
+		float32			= 0,
+		fixed16_16		= 1,
+		native_scalar_type = fixed16_16
+	};
+	typedef uint32 scalar_type;
+
+	enum
+	{
+    	pfm3d_version = 17
+	};
+
+	iostate	rdstate( void ) const { return _iostate; }
+	iostate	clear( iostate state )
+		{ iostate old = _iostate; _iostate = state; return old; }
+
+	// state testing
+	int 		good( void ) const { return !rdstate(); }
+	int			bad( void )  const { return rdstate() & badbit; }
+	int			fail( void ) const { return rdstate() & ( failbit | badbit ); }
+	int			eof( void )  const { return rdstate() & eofbit; }
+
+	// allow for boolean testing
+	int	    operator!( void ) const { return rdstate() & ( failbit | badbit ); }
+	operator void * ( void ) const { return( (void *)( fail() == 0 ) ); }
+
+	// query methods
+	scalar_type scalartype( void ) const { return _scalar_type; }
+	alignment align8( void ) const { return _align8; }
+	alignment align16( void ) const { return _align16; }
+	alignment align32( void ) const { return _align32; }
+	alignment alignobject( void ) const { return _alignobject; }
+	word_order wordorder( void ) const { return _word_order; }
+
+	void Validate( const char * file, const int line ) const;
+
+  protected:
+	binios
+	(
+		const iostate state					= goodbit,
+		const alignment align8				= native_align8,
+		const alignment align16				= native_align16,
+		const alignment align32				= native_align32,
+		const alignment alignobject			= native_alignobject,
+		const word_order order				= native_word_order,
+		const scalar_type sc_type			= native_scalar_type
+	);
+	~binios( void ) { }
+
+	// apply word operations
+	uint16 process_uint16( const uint16 ) const;
+	int16 process_int16( const int16 ) const;
+	uint32 process_uint32( const uint32 ) const;
+	int32 process_int32( const int32 ) const;
+
+	iostate				_iostate;
+	alignment			_align8, _align16, _align32, _alignobject;
+	word_order			_word_order;
+	scalar_type			_scalar_type;
+};
+
+// ------------------------------------------------------------------------
+
+class binistream : public binios
+{
+  public:
+#if DO_DEBUG_FILE_SYSTEM		//!SW_STREAMING
+	binistream
+	(
+		char const * name,
+		const alignment align8				= native_align8,
+		const alignment align16				= native_align16,
+		const alignment align32				= native_align32,
+		const alignment alignobject		  	= native_alignobject,
+		const word_order order				= native_word_order,
+		const scalar_type sc_type			= native_scalar_type
+	);
+#endif
+
+	binistream
+	(
+		const void* memory,
+		int32 len,
+		const alignment align8				= native_align8,
+		const alignment align16				= native_align16,
+		const alignment align32				= native_align32,
+		const alignment alignobject		  	= native_alignobject,
+		const word_order order				= native_word_order,
+		const scalar_type sc_type			= native_scalar_type
+	);
+
+#if 0
+	// allocate a sub-stream, destructor updates parent
+	binistream
+	(
+		binistream& parent,
+		binios::streampos nbytes
+	);
+#endif
+
+	~binistream( void );
+
+	const binistream& operator = (const binistream& other);
+
+	binistream& operator >> ( char& c );
+	binistream& operator >> ( uint8& i );
+	binistream& operator >> ( int8& i );
+	binistream& operator >> ( uint16& i );
+	binistream& operator >> ( int16& i );
+	binistream& operator >> ( uint32& i );
+	binistream& operator >> ( int32& i );
+	binistream& operator >> ( binistream &(*f)( binistream & ) );
+
+	streampos getFilelen( void );
+
+	binistream& read( char * buf, int len );
+	binistream& readheader( const uint32 blocktype, const uint32 blocksize );
+	binistream& seekg( streampos position );
+	binistream& seekg( streamoff offset, seekdir direction );
+	streampos  	tellg( void ) const;
+
+	const void* GetMemoryPtr(int len);				// kts kludge for texture loading
+
+	int			aligned( const size_t pow2_boundary ) const;
+	binistream& align( const int pow2_boundary );
+
+	void Validate( const char * file, const int line ) const;
+
+  protected:
+
+#if DO_DEBUG_FILE_SYSTEM			//!SW_STREAMING
+	void ConstructBinistreamFromFilename
+	(
+		const char* name,
+		const alignment align8				= native_align8,
+		const alignment align16				= native_align16,
+		const alignment align32				= native_align32,
+		const alignment alignobject		  	= native_alignobject,
+		const word_order order				= native_word_order,
+		const scalar_type sc_type			= native_scalar_type
+	);
+#endif
+
+	void ConstructBinistreamFromMemory
+	(
+		const void* memory,
+		int32 len,
+		const alignment align8				= native_align8,
+		const alignment align16				= native_align16,
+		const alignment align32				= native_align32,
+		const alignment alignobject		  	= native_alignobject,
+		const word_order order				= native_word_order,
+		const scalar_type sc_type			= native_scalar_type
+	);
+
+	binistream *	_parent;
+
+	const char *			_buf;
+	const char *			_end;
+	const char *			_cur;
+	bool			_ownMemory;
+};
+
+// ------------------------------------------------------------------------
+
+#if defined( WRITER )
+
+class binostream : public binios
+{
+  public:
+	enum
+	{
+		default_buffer_size		= 4096
+	};
+
+	binostream
+	(
+		char const * name,
+		const size_t bufsz					= default_buffer_size,
+		const alignment align8				= native_align8,
+		const alignment align16				= native_align16,
+		const alignment align32				= native_align32,
+		const alignment alignobject		  	= native_alignobject,
+		const word_order order				= native_word_order,
+		const scalar_type sc_type			= native_scalar_type
+	);
+	~binostream( void );
+
+	binostream& operator << ( const char c );
+	binostream& operator << ( const uint8 i );
+	binostream& operator << ( const int8 i );
+	binostream& operator << ( const uint16 i );
+	binostream& operator << ( const int16 i );
+	binostream& operator << ( const uint32 i );
+	binostream& operator << ( const int32 i );
+	binostream& operator << ( binostream& (*f)( binostream& ) );
+
+	binostream& write( char const * buf, int len );
+	binostream& writeheader( void );
+
+	binostream& flush( void );
+	binostream& seekp( streampos position );
+	binostream& seekp( streamoff offset, seekdir direction );
+	streampos	tellp( void ) const;
+
+	int			aligned( const size_t pow2_boundary ) const;
+	binostream& align( const int pow2_boundary );
+
+	void Validate( const char * file, const int line ) const;
+
+  protected:
+	int _fh;
+	streampos _pos;
+	char * _buf;
+	char * _end, * _cur;
+};
+
+#else
+
+#define binostream	@ERROR
+
+#endif
+
+//=============================================================================
+
+#include <streams/binstrm.hpi>
+
+//=============================================================================
+#endif // _BINSTRM_HP
+//=============================================================================
+

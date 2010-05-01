@@ -1,0 +1,134 @@
+//=============================================================================
+// PixelMap.hp:
+// Copyright ( c ) 1997,1999,2000,2001 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description:
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+#ifndef _PixelMap_H
+#define _PixelMap_H
+
+//============================================================================
+// Includes
+//============================================================================
+
+#include <pigsys/pigsys.hp>
+#include <gfx/color.hp>
+#include <gfx/renderer.hp>
+    
+//==============================================================================
+
+#if defined(RENDERER_GL)
+#define SIXTEEN_BIT_VRAM 0
+// 0 = 32 bit, seperated RGB, 1 = packed 5 bits per pixel
+#endif
+            
+//============================================================================
+
+class PixelMap
+{
+public:
+
+	PixelMap(int flags, int xSize, int ySize);
+	PixelMap(PixelMap& parent,int xPos, int yPos, int xSize, int ySize);
+    ~PixelMap();
+
+	void Load(const void* memory, int xSize, int ySize);		
+	void Load(const void* memory, int xOffset, int yOffset, int xSize, int ySize);		
+
+	int GetFlags() const;
+	int GetXSize() const;
+	int GetYSize() const;
+
+	int GetBaseXSize() const;
+	int GetBaseYSize() const;
+
+	int GetXPositionInVideoMemory() const;		// only valid for video memory pixelmaps
+	int GetYPositionInVideoMemory() const;
+
+	void Clear(const Color& color);
+
+    // kts temp
+#if defined(RENDERER_GL)
+    void SetGLTexture() const;                 // make this pixelmap the current GL texture
+#endif          // RENDERER_GL
+
+#if defined(RENDERER_XWINDOWS)
+    void SetGLTexture() const;                 // make this pixelmap the current GL texture
+#endif          // RENDERER_XWINDOWS
+
+	void Validate() const;
+	enum
+	{
+		MEMORY_MAIN,
+		MEMORY_VIDEO
+	};
+private:
+    // structure copy forbidden
+    const PixelMap& operator=(const PixelMap& other);
+    PixelMap(const PixelMap& other);
+
+	int _xPos;
+	int _yPos;
+	int _xSize;
+	int _ySize;
+//	int _lineMultiplier;
+
+	int _flags;
+
+    PixelMap* _parent;
+
+#if defined(RENDERER_GL)
+    GLuint _glTextureName;              // index of this pixelmaps texture
+
+#if SIXTEEN_BIT_VRAM
+     uint16* _pixelBuffer;
+#else
+    GLubyte* _pixelBuffer;
+#endif		                            // sixteen_bit
+#endif          // RENDERER_GL
+
+
+#if defined(RENDERER_XWINDOWS)
+    int _glListIndex;                // index of the display list created to set this pixelmap as the current gl texture
+
+#if SIXTEEN_BIT_VRAM
+     uint16* _pixelBuffer;
+#else
+    GLubyte* _pixelBuffer;
+#endif		                            // sixteen_bit
+#endif          // RENDERER_XWINDOWS
+
+
+#if DO_IOSTREAMS
+	friend std::ostream& operator << ( std::ostream& s, const PixelMap& p );
+#endif
+};
+
+//============================================================================
+
+#if		USE_INLINE_DEFS || defined( _PixelMap_CC )
+#include <gfx/pixelmap.hpi>		// include all inline definitions as appropriate
+#endif
+
+//=============================================================================
+#endif
+//=============================================================================

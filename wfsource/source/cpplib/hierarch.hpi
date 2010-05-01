@@ -1,0 +1,468 @@
+//==============================================================================
+// hierarch.hpi: inline definitions for tree hierarchy class
+//==============================================================================
+
+#ifndef HIERARCHY_HP
+#error should only be included from hierarch.hp
+#endif
+
+#include <pigsys/assert.hp>
+
+//==============================================================================
+//==============================================================================
+
+template<class Type> inline
+hierarchyNode<Type>::hierarchyNode()
+{
+	_parent = NULL;
+	_left = NULL;
+	_right = NULL;
+	_child = NULL;
+#if DEBUG
+	sig = 0x12345678;
+#endif
+}
+
+//==============================================================================
+// THIS is the object this instance of hierarchyNode is in
+
+template<class Type> inline
+hierarchyNode<Type>::hierarchyNode(Type& THIS, Type& parent)
+{
+	assert(&THIS.tNode == this);
+	hierarchyNode();						// call no-param constructor
+	Parent(THIS, parent);
+}
+
+//==============================================================================
+
+template<class Type> inline
+hierarchyNode<Type>::~hierarchyNode()
+{
+#if DEBUG
+	Validate();
+#endif
+
+	// unlink from parent if we are the leftmost node
+	if(_parent && _left == NULL)
+	 {
+//		assert(_parent->tNode._child == this);
+		_parent->tNode._child = _right;
+	 }
+
+	// unlink from child list
+	if(_left)
+		_left->tNode._right = _right;
+
+	if(_right)
+		_right->tNode._left = _left;
+
+	// delete all children
+	while(_child)
+		DELETE_CLASS( _child );
+}
+
+//==============================================================================
+
+template<class Type> inline
+Type* hierarchyNode<Type>::Parent(void)
+{
+#if DEBUG
+	Validate();
+#endif
+	return _parent;
+}
+
+//==============================================================================
+
+template<class Type> inline
+Type* hierarchyNode<Type>::PreviousSibling(void)
+{
+#if DEBUG
+	Validate();
+#endif
+	return _left;
+}
+
+//==============================================================================
+
+template<class Type> inline
+Type* hierarchyNode<Type>::NextSibling(void)
+{
+#if DEBUG
+	Validate();
+#endif
+	return _right;
+}
+
+//==============================================================================
+// THIS is the object this instance of hierarchyNode is in
+
+template<class Type> inline
+Type& hierarchyNode<Type>::Parent(Type& THIS, Type& parent)
+{
+	assert(&THIS.tNode == this);
+#if DEBUG
+	Validate();
+	parent.tNode.Validate();
+#endif
+
+	assert(_parent == NULL);
+	assert(_right == NULL);
+	assert(_left == NULL);
+	_parent = &parent;
+
+	assert(_parent);
+#if DEBUG
+	_parent->tNode.Validate();
+#endif
+
+	if(_parent->tNode._child)
+	 {
+		_right  = _parent->tNode._child;
+
+#if DEBUG
+		_right->tNode.Validate();
+#endif
+
+		_parent->tNode._child = NULL;				// so following assert will work
+		_right->tNode._left = &THIS;
+	 }
+	assert(_parent->tNode._child == NULL);
+	_parent->tNode._child = &THIS;
+	return *_parent;
+}
+
+//==============================================================================
+
+template<class Type> inline
+Type* hierarchyNode<Type>::FirstChild(void)
+{
+#if DEBUG
+	Validate();
+#endif
+	return _child;
+}
+
+//==============================================================================
+// THIS is the object this instance of hierarchyNode is in
+
+template<class Type> inline
+Type& hierarchyNode<Type>::AddChild(Type& THIS, Type& child)
+{
+#if DEBUG
+	Validate();
+#endif
+	assert(&THIS.tNode == this);
+	child.tNode.Parent(THIS,child);
+	return child;
+}
+
+//==============================================================================
+// iterator code
+//==============================================================================
+
+template<class Type> inline
+hierarchyIteratorParent<Type>::hierarchyIteratorParent(Type& node)
+{
+	currentNode  = node.tNode.Parent();
+#if DEBUG
+	node.tNode.Validate();
+	if(currentNode)
+		currentNode->tNode.Validate();
+#endif
+}
+
+//==============================================================================
+
+template<class Type> inline
+hierarchyIteratorParent<Type>::~hierarchyIteratorParent(void)
+{
+#if DEBUG
+	if(currentNode)
+		currentNode->tNode.Validate();
+#endif
+}
+
+//==============================================================================
+
+template<class Type> inline
+Type*
+hierarchyIteratorParent<Type>::operator++()
+{
+#if DEBUG
+	if(currentNode)
+	currentNode->tNode.Validate();
+#endif
+	if(currentNode)
+		currentNode = currentNode->tNode.Parent();
+	return(currentNode);
+}
+
+//==============================================================================
+
+template<class Type> inline
+Type*
+hierarchyIteratorParent<Type>::operator++(int)
+{
+#if DEBUG
+	if(currentNode)
+	currentNode->tNode.Validate();
+#endif
+	Type* retNode = currentNode;
+	if(currentNode)
+		currentNode = currentNode->tNode.Parent();
+	return(retNode);
+}
+
+//==============================================================================
+
+template<class Type> inline
+Type*
+hierarchyIteratorParent<Type>::operator*(void)
+{
+#if DEBUG
+	if(currentNode)
+		currentNode->tNode.Validate();
+#endif
+	return(currentNode);
+}
+
+//==============================================================================
+//==============================================================================
+
+template<class Type> inline
+hierarchyIteratorChildren<Type>::hierarchyIteratorChildren(Type& node)
+{
+	currentNode =  node.tNode.FirstChild();
+#if DEBUG
+	if(currentNode)
+	currentNode->tNode.Validate();
+#endif
+//	currentNode  = node.FirstChild();
+}
+
+//==============================================================================
+
+template<class Type> inline
+hierarchyIteratorChildren<Type>::~hierarchyIteratorChildren(void)
+{
+#if DEBUG
+	if(currentNode)
+	currentNode->tNode.Validate();
+#endif
+}
+
+//==============================================================================
+
+template<class Type> inline
+Type*
+hierarchyIteratorChildren<Type>::operator++()
+{
+#if DEBUG
+	if(currentNode)
+	currentNode->tNode.Validate();
+#endif
+	if(currentNode)
+		currentNode = currentNode->tNode.NextSibling();
+	return(currentNode);
+}
+
+//==============================================================================
+
+template<class Type> inline
+Type*
+hierarchyIteratorChildren<Type>::operator++(int)
+{
+#if DEBUG
+	if(currentNode)
+	currentNode->tNode.Validate();
+#endif
+	Type* retNode = currentNode;
+	if(currentNode)
+		currentNode = currentNode->tNode.NextSibling();
+	return(retNode);
+}
+
+//==============================================================================
+
+template<class Type> inline
+Type*
+hierarchyIteratorChildren<Type>::operator*(void)
+{
+#if DEBUG
+	if(currentNode)
+	currentNode->tNode.Validate();
+#endif
+	return(currentNode);
+}
+
+//==============================================================================
+//==============================================================================
+
+template<class Type> inline
+hierarchyIteratorDescendants<Type>::hierarchyIteratorDescendants(Type& start)
+{
+	startNode = currentNode = &start;
+	assert(startNode);
+#if DEBUG
+	if(currentNode)
+		currentNode->tNode.Validate();
+#endif
+	while(currentNode->tNode.FirstChild())
+		currentNode  = currentNode->tNode.FirstChild();				// go to bottom left node
+	if(currentNode == startNode)
+		currentNode = NULL;
+}
+
+//==============================================================================
+
+template<class Type> inline
+hierarchyIteratorDescendants<Type>::~hierarchyIteratorDescendants(void)
+{
+#if DEBUG
+	if(currentNode)
+		currentNode->tNode.Validate();
+#endif
+}
+
+//==============================================================================
+
+template<class Type> inline
+Type*
+hierarchyIteratorDescendants<Type>::operator++()
+{
+#if DEBUG
+	if(currentNode)
+		currentNode->tNode.Validate();
+#endif
+	if(currentNode)
+	 {
+		if(currentNode->tNode.NextSibling())
+		 {
+			currentNode = currentNode->tNode.NextSibling();
+			while(currentNode->tNode.FirstChild())
+				currentNode = currentNode->tNode.FirstChild();
+		 }
+		else
+		 {
+			currentNode = currentNode->tNode.Parent();
+		 }
+	 }
+	if(currentNode == startNode)
+		currentNode = NULL;
+	return(currentNode);
+}
+
+//==============================================================================
+
+template<class Type> inline
+Type*
+hierarchyIteratorDescendants<Type>::operator++(int)
+{
+#if DEBUG
+	if(currentNode)
+		currentNode->tNode.Validate();
+#endif
+	Type* retNode = currentNode;
+	++(*this);
+	return(retNode);
+}
+
+//==============================================================================
+
+template<class Type> inline
+Type*
+hierarchyIteratorDescendants<Type>::operator*(void)
+{
+#if DEBUG
+	if(currentNode)
+		currentNode->tNode.Validate();
+#endif
+	return(currentNode);
+}
+
+//==============================================================================
+//==============================================================================
+
+template<class Type> inline
+hierarchyIteratorDescendantsAndThis<Type>::hierarchyIteratorDescendantsAndThis(Type& start)
+{
+	startNode = currentNode = &start;
+	assert(startNode);
+#if DEBUG
+	if(currentNode)
+		currentNode->tNode.Validate();
+#endif
+	while(currentNode->tNode.FirstChild())
+		currentNode  = currentNode->tNode.FirstChild();				// go to bottom left node
+}
+
+//==============================================================================
+
+template<class Type> inline
+hierarchyIteratorDescendantsAndThis<Type>::~hierarchyIteratorDescendantsAndThis(void)
+{
+#if DEBUG
+	if(currentNode)
+		currentNode->tNode.Validate();
+#endif
+}
+
+//==============================================================================
+
+template<class Type> inline
+Type*
+hierarchyIteratorDescendantsAndThis<Type>::operator++()
+{
+#if DEBUG
+	if(currentNode)
+		currentNode->tNode.Validate();
+#endif
+	if(currentNode == startNode)
+		currentNode = NULL;
+	if(currentNode)
+	 {
+		if(currentNode->tNode.NextSibling())
+		 {
+			currentNode = currentNode->tNode.NextSibling();
+			while(currentNode->tNode.FirstChild())
+				currentNode = currentNode->tNode.FirstChild();
+		 }
+		else
+		 {
+			currentNode = currentNode->tNode.Parent();
+		 }
+	 }
+	return(currentNode);
+}
+
+//==============================================================================
+
+template<class Type> inline
+Type*
+hierarchyIteratorDescendantsAndThis<Type>::operator++(int)
+{
+#if DEBUG
+	if(currentNode)
+		currentNode->tNode.Validate();
+#endif
+	Type* retNode = currentNode;
+	++(*this);
+	return(retNode);
+}
+
+//==============================================================================
+
+template<class Type> inline
+Type*
+hierarchyIteratorDescendantsAndThis<Type>::operator*(void)
+{
+#if DEBUG
+	if(currentNode)
+		currentNode->tNode.Validate();
+#endif
+	return(currentNode);
+}
+
+//==============================================================================

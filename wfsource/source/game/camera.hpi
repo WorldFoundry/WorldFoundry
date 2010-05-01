@@ -1,0 +1,87 @@
+//==============================================================================
+// camera.hpi:  Inlines for camera class
+// Copyright (c) 1994,1995,1996,1997,1999,2000,2002,2003 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//==============================================================================
+// Description: Camera represents a camera in the world, and uses camera movement handlers
+//
+//==============================================================================
+
+#include "movecam.hp"
+
+//==============================================================================
+
+INLINE const Vector3&
+Camera::GetLookAt() const
+{
+	return(((CameraHandler*)&(_nonStatPlat->_movementManager.GetMovementHandler(*this)))->GetLookAt(*this));
+//	cameraData* cd = ((cameraData*)_nonStatPlat->_movementManagerData);
+//	return(cd->direction);
+}
+
+//==============================================================================
+// C++ doesn't allow access to protected members of an object of type base class
+// so I had to put an public accessor on Actor to get to RenderActor, which sucks
+
+INLINE void
+Camera::Render(Actor& actor, const Clock& currentTime)				// render this RenderActor into the viewport through the camera
+{
+//	std::cout << "c::r: camera matrix = " << _renderCamera.GetPosition() << std::endl;
+	actor.GetRenderActor().Validate();
+	actor.GetRenderActor().Render(_renderCamera,actor,currentTime);
+}
+
+//=============================================================================
+
+INLINE void
+Camera::SetCameraMatrix(const Matrix34& _matrix)
+{
+//	std::cout << "setting camera matrix to " << _matrix << std::endl;
+//	std::cout << "matrix address = " << &_matrix << std::endl;
+//	_cameraMatrix = _matrix;
+	_renderCamera.SetPosition(_matrix);
+	_physicalAttributes.SetPosition(_matrix[3]);
+//	std::cout << "resulting in " << _cameraMatrix << std::endl;
+}
+
+//==============================================================================
+
+INLINE RenderCamera&
+Camera::GetRenderCamera()
+{
+	return(_renderCamera);
+}
+
+//=============================================================================
+
+INLINE void
+Camera::RenderBegin()
+{
+	_renderCamera.RenderBegin();
+}
+
+//=============================================================================
+
+INLINE void
+Camera::RenderEnd()
+{
+	_renderCamera.RenderEnd();
+}
+
+//==============================================================================

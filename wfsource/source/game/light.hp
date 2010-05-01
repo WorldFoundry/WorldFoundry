@@ -1,0 +1,86 @@
+//============================================================================
+// Light.hp:
+// Copyright ( c ) 1997,1999,2000,2003 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+//==============================================================================
+//
+//
+//	Abstract: Header file for Actor subclass Light (directional and ambient lights)
+//	History:
+//			Created	6/2/97 16:50 by Phil Torre
+//
+//	Class Hierarchy:
+//			none
+//
+//	Dependancies:
+//
+//	Restrictions:
+//
+//	Example:
+//
+//============================================================================
+
+#ifndef _Light_HP
+#define _Light_HP
+
+//============================================================================
+
+#include "level.hp"
+#include <gfx/color.hp>
+
+//============================================================================
+
+struct _Light;
+
+//============================================================================
+
+class Light: public Actor
+{
+public:
+	Light(const SObjectStartupData* startupData);
+	virtual ~Light()			{ }
+
+	virtual EActorKind kind() const;
+	virtual void initPath( QInputDigital* inp );
+
+	virtual bool CanRender() const;					// kts until I can re-compile levelcon to know about a MODEL_TYPE of LIGHT
+
+	void Set(Camera& camera, int index) const;
+	int Type() const;
+
+protected:
+	INLINE const _Light* getOad() const		{ return (const _Light*)_oadData; }
+
+private:
+	Color	_color;
+
+};
+
+//============================================================================
+
+Actor*
+OadLight(const SObjectStartupData* startupData);
+
+//==============================================================================
+#if		USE_INLINE_DEFS || defined(_LIGHT_CC)
+#include "light.hpi"	// include all inline definitions as appropriate
+#endif
+//============================================================================
+#endif // !_Light_HP
+//============================================================================
+

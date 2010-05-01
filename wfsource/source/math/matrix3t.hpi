@@ -1,0 +1,142 @@
+//=============================================================================
+// matrix3t.hpi:
+//=============================================================================
+
+#ifndef MATRIX3T_HPI
+#define MATRIX3T_HPI
+
+#include <math/vector3.hp>
+
+// ------------------------------------------------------------------------
+
+#if 0
+
+INLINE Matrix3t::Matrix3t( const Matrix3t& x )
+{
+	(*this) = x;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Matrix3t&
+Matrix3t::operator = ( const Matrix3t& x )
+{
+	_matrix.m[0][0] = x._matrix.m[0][0]; _matrix.m[0][1] = x._matrix.m[0][1]; _matrix.m[0][2] = x._matrix.m[0][2];
+	_matrix.m[1][0] = x._matrix.m[1][0]; _matrix.m[1][1] = x._matrix.m[1][1]; _matrix.m[1][2] = x._matrix.m[1][2];
+	_matrix.m[2][0] = x._matrix.m[2][0]; _matrix.m[2][1] = x._matrix.m[2][1]; _matrix.m[2][2] = x._matrix.m[2][2];
+
+	_matrix.t[0] = x._matrix.t[0];
+	_matrix.t[1] = x._matrix.t[1];
+	_matrix.t[2] = x._matrix.t[2];
+	return *this;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE void
+Matrix3t::ConstructIdentity()
+{
+#define ONE12BIT ((1<<16) >> 4)
+	_matrix.m[0][0] = ONE12BIT; _matrix.m[0][1] = 0; _matrix.m[0][2] = 0;
+	_matrix.m[1][0] = 0; _matrix.m[1][1] = ONE12BIT; _matrix.m[1][2] = 0;
+	_matrix.m[2][0] = 0; _matrix.m[2][1] = 0; _matrix.m[2][2] = ONE12BIT;
+	_matrix.t[0] = 0; _matrix.t[1] = 0; _matrix.t[2] = 0;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE const Vector3&
+Matrix3t::GetTranslation() const
+{
+	return *( (Vector3 *)&_matrix.t );
+}
+
+// ------------------------------------------------------------------------
+
+Matrix3t::Matrix3t()
+{
+	ConstructIdentity();
+}
+
+// ------------------------------------------------------------------------
+
+Matrix3t::Matrix3t( const Vector3& translation )
+{
+	ConstructTranslation( translation );
+}
+
+// ------------------------------------------------------------------------
+
+//Matrix3t::Matrix3t( const Vector3& scale, const Vector3& translation )
+//{
+//	ConstructScale( scale, translation );
+//}
+
+// ------------------------------------------------------------------------
+
+//Matrix3t::Matrix3t( RotateX, const Angle& angle, const Vector3& translation )
+//{
+//	ConstructRotationX( angle, translation );
+//}
+
+// ------------------------------------------------------------------------
+
+//Matrix3t::Matrix3t( RotateY, const Angle& angle, const Vector3& translation )
+//{
+//	ConstructRotationY( angle, translation );
+//}
+
+// ------------------------------------------------------------------------
+
+//Matrix3t::Matrix3t( RotateZ, const Angle& angle, const Vector3& translation )
+//{
+//	ConstructRotationZ( angle, translation );
+//}
+
+// ------------------------------------------------------------------------
+
+//Matrix3t::Matrix3t( const Euler& euler, const Vector3& translation )
+//{
+//	ConstructEuler( euler, translation );
+//}
+
+// ------------------------------------------------------------------------
+
+//Matrix3t::Matrix3t( const Quaternion& quaternion, const Vector3& translation )
+//{
+//	ConstructQuaternion( quaternion, translation );
+//}
+
+// ------------------------------------------------------------------------
+
+Matrix3t::Matrix3t
+(
+	const Vector3& row0,
+	const Vector3& row1,
+	const Vector3& row2,
+	const Vector3& row3
+)
+{
+	Construct( row0, row1, row2, row3 );
+}
+
+// ------------------------------------------------------------------------
+
+void
+Matrix3t::SetTranslation( const Vector3& translation )
+{
+	_matrix.t = translation;
+}
+
+#endif
+
+// ------------------------------------------------------------------------
+
+Matrix3t::Matrix3t( const Matrix34& matrix34 )
+{
+	ConstructMatrix34( matrix34 );
+}
+
+// ------------------------------------------------------------------------
+#endif // MATRIX3T_HPI
+// ------------------------------------------------------------------------

@@ -1,0 +1,10 @@
+18 Mar 99
+* [cvs] rename *.cpp *.cc
+* [cvs] add unistd.h
+* fix expr_tab.cc.h => expr_tab.h
+* just forget building .dll files [especially since Linux is going to have a different way of building shared libraries]
+* create eval in wftools [the app] which uses eval.lib [the library]
+
+19 Mar 99
+* make symbol an abstract base class [reconcile with template] pigs2/symbol
+* [cvs] add unistd.h

@@ -1,0 +1,296 @@
+//============================================================================
+// actor.hp:
+// Copyright (c) 1994,1995,1996,1997,1998,1999,2001,2002,2003 World Foundry Group.  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//============================================================================
+// Description: Actor is the base classs for game world objects.
+//============================================================================
+
+#ifndef _ACTOR_HP
+#define _ACTOR_HP
+
+//============================================================================
+
+#include <hal/hal.h>
+#include <math/scalar.hp>
+#include <mailbox/mailbox.hp>
+#include <physics/colspace.hp>
+#include <oas/levelcon.h>
+#include <baseobject/msgport.hp>
+#include <physics/physicalobject.hp>
+#include <movement/movementobject.hp>
+#include <movement/movementmanager.hp>
+#include <movement/movement.hp>
+#include <cpplib/minlist.hp>
+#include <input/inputdig.hp>
+#include <anim/path.hp>
+#include <physics/physical.hp>
+#include <physics/colbox.hp>
+#include <oas/objectstartupdata.hp>
+#include <oas/movebloc.ht>
+#include <oas/toolset.ht>
+#include <oas/common.ht>
+#include <oas/mesh.ht>
+#include <oas/shadowp.ht>
+#include <renderassets/rendacto.hp>
+#include <anim/animmang.hp>
+
+//==============================================================================
+
+// keep this is sync with oas: mesh.inc, and the same enum in levelcon: level.hp
+enum
+{
+	MODEL_TYPE_BOX=0,
+	MODEL_TYPE_MESH,
+	MODEL_TYPE_SCARECROW,
+	MODEL_TYPE_NONE,
+	MODEL_TYPE_LIGHT,
+	MODEL_TYPE_MATTE,
+	MODEL_TYPE_EMITTER,
+	MODEL_TYPE_MAX
+};
+
+//==============================================================================
+
+class Actor;
+
+class ActorMailboxes : public MailboxesWithStorage
+{
+public:
+   ActorMailboxes(Actor& actor, long mailboxesBase, long numberOfLocalMailboxes, Mailboxes* parent);
+   virtual ~ActorMailboxes();
+   virtual Scalar ReadMailbox(long mailbox) const;
+   virtual void WriteMailbox(long mailbox, Scalar value);
+private:
+    Actor& _actor;          // kts temporary, eventually I will just put the mbox storage in here
+};
+
+//============================================================================
+// struct passed into game object's constructor
+// All data referenced by this struct is destroyed after level initialization
+// (except for animation / mesh data), so any data you wish to keep (i.e paths)
+// should be copied in your constructor
+//
+// NO LONGER TRUE.  data referenced is not destroyed, but it continues to
+// exist as *READ ONLY* data
+//============================================================================
+
+class Tool;
+class Shield;
+
+//============================================================================
+
+class Actor : public MovementObject
+{
+friend class AnimationManagerActual;
+friend class MovementManager;
+friend class PathHandler;
+friend class MovementHandler;
+friend class GroundHandler;
+friend class AirHandler;
+friend class ClimbHandler;
+friend class CameraHandler;
+
+public:
+	Actor(const SObjectStartupData* startupData );
+	virtual ~Actor();
+
+   virtual void Validate() const;
+
+	// oad
+	inline const _Common* GetCommonBlockPtr() const;
+	inline const _Toolset* GetToolsetBlockPtr() const;
+	inline const _Mesh* GetMeshBlockPtr() const;
+	inline const _ShadowPage* GetShadowPageBlockPtr() const;
+	inline int32 GetMeshName() const;
+	// each derived class includes
+	//private: inline const Class* getOad() const
+
+	// movement
+	inline const Vector3 GetPredictedPosition() const;
+	inline const Vector3& currentPos() const;
+	inline void setCurrentPos( const Vector3& pos );
+	inline void setSpeed( const Vector3& speed );				// kts 11-11-95 10:02pm
+
+	// input
+	inline QInputDigital* GetInputPointer() const;
+	inline void SetInputDevice(QInputDigital*);
+
+	// tool stuff [yuk]
+	inline bool IsNeedleGunTarget() const;
+
+	// actor
+	virtual bool CanCollide() const;				// used to decide which to put it the rooms render & update lists
+	virtual bool CanUpdate() const;				// used to decide which to put it the rooms render & update lists
+	virtual bool CanRender() const;          
+	virtual bool IsLight() const;
+	virtual bool IsActivationBox() const;
+
+	bool GetSpecialCollisionMessage(void* msgData, int32 maxsize);
+
+	virtual void reset();  
+	// actor "program" / "loop"
+    
+	virtual void predictPosition(const Clock& currentTime);		// Predict "desired" new position for this frame
+	virtual void update();
+	void UpdateAnimation();
+	void StartFrame();				// this is a catch all, it is guaranteed to run after all actors have run update, but before prepareToRender
+
+	inline bool hasRunUpdate() const;
+	inline bool hasRunPredictPosition() const;
+
+	virtual bool isVisible() const;
+
+	// high-level behaviours
+	virtual void die();
+	void spawnPoof() const;			// friend to level class only
+
+	// utility
+	Scalar GetDistanceTo( const Actor *pActor ) const;
+
+	// mailbox / messages / inter-object communication
+	Scalar ReadSystemMailbox( int boxnum ) const;
+	void WriteSystemMailbox( int boxnum, const Scalar value );
+
+	// hitpoints / health / shield-type stuff
+	static const Scalar INDESTRUCTIBLE_HP;
+	Scalar getHealth() const;
+	void deltaHealth( Scalar nHealth );
+	int32 getPower() const;
+
+	// room transitions
+	virtual void BindAssets(Memory& memory);					// bind into current room
+	virtual void UnBindAssets();				// unbind, get rid of all transient assets
+
+	// mesh
+	// C++ doesn't allow access to protected members of an object of type base class so I had to put this in so that Camera can get to it
+	inline RenderActor& GetRenderActor();			// don't use this!
+      
+	// handles
+	bool LocalHandleLocation( HandleID id, Vector3& dest ) const;
+	bool GlobalHandleLocation( HandleID id, Vector3& dest ) const;
+
+	// music & sfx
+	short PlaySoundEffect( int program );
+
+	// actor index
+	inline int GetActorIndex() const;
+	inline void SetActorIndex( int32 idxActor );				// Only call once (and only on templated objects) and only if you're level
+
+	// collision
+	inline const ColSpace& GetColSpace() const;		// optimization for room vs. actor collisions
+
+	enum { _MAX_TOOLS = 6 };
+
+   // base object required functions
+   virtual void KillSelf();      // cause this object to get deleted from the world
+   virtual MsgPort& GetMsgPort();
+   virtual Mailboxes& GetMailboxes();
+   virtual const Mailboxes& GetMailboxes() const;
+
+   // PhysicalObject interface/overrides
+   virtual const PhysicalAttributes& GetPhysicalAttributes() const;
+   virtual PhysicalAttributes& GetWritablePhysicalAttributes();
+   void Collision(PhysicalObject& other, const Vector3& normal);
+
+   // MovementObject interface/overrides
+	virtual const QInputDigital* GetInputDevice() const;
+   virtual MovementManager& GetMovementManager();
+	virtual Memory& GetMemory() const;
+
+	virtual void MovementStateChanged( const MovementObject::EMovementState newState );    // so we can notify the animation system
+
+protected:
+	// DATA BEGIN
+	struct NonStatPlatData
+	{
+		NonStatPlatData(SMemPool * memPool, const _Movement* moveBlock);  
+
+		Scalar 					_hitPoints;
+		Shield* 				_shield;			// pointer to shield if this actor has one	// will go away
+
+		InputScript*			_inputScript;		// contained in _input in case of _input mapping to a mailbox
+		QInputDigital*			_input;				// used everywhere in game to get input, must be written to by script
+		const void*          _pScript;
+
+      MovementManager         _movementManager;
+		AnimationManager*	_animManager;
+		MsgPort					_msgPort;
+		Tool* 					_tool[ _MAX_TOOLS ];
+		int						_nTools;			// not strictly necessary, but code can determine if it should bother
+													// to traverse the _tool array. Get rid of when/if we move to STL vector
+	};
+#pragma message( __FILE__ ": I guess I should make protected accessor functions for these data members" )
+// I'm not defining macros for new members of NonStatPlatData because there isn't existing code which relies on that name
+
+	// N.B.: when you add new data members, add to NonStatPlat data if possible [update constructor at end of actor.cc]
+	// Regardless, be sure to initialize these [in Actor::Actor or NonStatPlat::NonStatPlat] in the same order
+	// so correctness is easy to verify
+
+	struct NonStatPlatData*		_nonStatPlat;		// move statplat to end [after _renderActor]
+
+	struct
+	{
+		unsigned				_ : 10;
+//         unsigned                _hasRunPredictPosition : 1;
+//         unsigned                _hasRunUpdate : 1;
+		unsigned 				_lastVisibility : 1;
+		unsigned 				_visibility : 1;
+		unsigned				_idxActor : 11;				// 2048 objects max.
+	} _flags;
+// #define _hasRunPredictPosition  _flags._hasRunPredictPosition
+// #define _hasRunUpdate           _flags._hasRunUpdate
+#define _lastVisibility         _flags._lastVisibility
+#define _visibility             _flags._visibility
+#define _idxActor				_flags._idxActor
+
+	PhysicalAttributes			_physicalAttributes;
+	RenderActor*				_renderActor;
+
+	// DATA END
+
+#if SW_DBSTREAM
+	// IOSteam support
+public:
+	std::ostream& printDetailed( std::ostream& s ) const;
+protected:
+	virtual std::ostream& Print( std::ostream& ) const;
+#endif
+	static const Actor::NonStatPlatData _statPlatData;
+
+private:	// Helper constructor functions
+	void _InitShadow();
+	void _InitTools();
+// #if defined(DESIGNER_CHEATS)
+//    void _InitPositionBox( const SObjectStartupData* startupData );
+// #endif
+	void _InitScript( const SObjectStartupData* startupData );
+	void _InitInput( const SObjectStartupData* startupData );
+	//void _InitTools( const SObjectStartupData* startupData );
+
+    ActorMailboxes _mailboxes;
+};
+
+//==============================================================================
+
+#include "actor.hpi"	// include all inline definitions as appropriate
+
+//==============================================================================
+#endif // !_ACTOR_HP
+//==============================================================================

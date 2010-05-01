@@ -1,0 +1,129 @@
+@*=============================================================================
+@* gfx/directxpipeline/render.ccs: 3D renderable object, software version, prep source to generate a renderer
+@* Copyright ( c ) 1998,99 World Foundry Group  
+@*
+@* // Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description:
+//
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+#define PRINT_EVERYTHING 0
+
+#include <gfx/rendobj3.hp>
+#include <gfx/material.hp>
+#include <math/vector3p.hp>
+#	include <gfx/directx/wfprim.h>
+#include <gfx/psx/gteflags.h>
+#include <math/scalar.hp>
+#include <math/scalarps.hp>
+#include <math/vector3.hp>
+#include <math/vector3p.hp>
+
+@*#include <math/matrix3t.hp>
+#include <cpplib/libstrm.hp>
+#include <gfx/prim.hp>
+
+#define FLAG_TEXTURE TEXTURE_FLAG
+#define FLAG_GOURAUD GOURAUD_FLAG
+#define FLAG_LIGHTING LIGHTING_FLAG
+
+//============================================================================
+
+#if defined( __PSX__ )
+#define abs(val) ((val)<0?-(val):(val))
+#endif
+
+#define ADDPRIM_SHIFT_VALUE 1
+
+// these globals are defined in rendobj3.cc
+extern RendererVariables globalRendererVariables;
+//extern const TriFace* currentRenderFace;
+//extern const Material* currentRenderMaterial;
+
+// these globals are defined in camera.cc
+extern int32 gte_DQA;
+extern int32 gte_DQB;
+extern Color gte_lcm[3];
+extern Color gte_farColor;
+extern Color gte_ambientColor;
+extern Matrix34 gte_llm;
+
+
+//============================================================================
+
+#if DO_IOSTREAMS
+INLINE ostream&
+operator<<(ostream& out, const SVECTOR& vect)
+{
+	out << vect.vx << "," << vect.vy << "," << vect.vz;
+	return(out);
+}
+#endif
+
+@*@include sub2d.ccs
+
+@*@include sub3d.ccs
+
+@*@include clip3d.ccs
+
+//============================================================================
+// recursive, called by Clip3D
+
+void
+RenderObject3D::RenderPoly3D@+RENDER_TYPE(POLYVECT& gteVect,Primitive& primitive)
+{
+	assert(0);
+}
+
+//-----------------------------------------------------------------------------
+
+#if 0
+int
+RenderObject3D::RenderPoly3D@+RENDER_TYPE()
+{
+
+	// kts test code
+	static int x = 0;
+	x++;
+	if ( x > 200)
+		x = 0;
+	// Render a triangle
+	D3DTLVERTEX v[3];
+
+
+	// Render a triangle
+//	D3DTLVERTEX v[3];
+
+	v[0] = D3DTLVERTEX(D3DVECTOR(x,50,0),1,D3DRGB(1,0,0),D3DRGB(0,0,0),0,0);
+	v[1] = D3DTLVERTEX(D3DVECTOR(240,200,0),1,D3DRGB(0,1,0),D3DRGB(0,0,0),0,0);
+	v[2] = D3DTLVERTEX(D3DVECTOR(80,200,0),1,D3DRGB(0,0,1),D3DRGB(0,0,0),0,0);
+	m_pDevice->DrawPrimitive(D3DPT_TRIANGLELIST,D3DVT_TLVERTEX,(LPVOID)v,3,NULL);
+
+
+
+
+
+	assert(0);
+	return 1;
+}
+#endif
+
+//============================================================================

@@ -1,0 +1,131 @@
+//=============================================================================
+// gfx/software/sub3d.ccs: 3d poly subdivision, software version, included by render.ccs
+// Copyright ( c ) 1997,99 World Foundry Group  
+//
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//===========================================================================
+// Original Author: Kevin T. Seghetti
+//============================================================================
+// poly too big, need to divide it into 4 polys, like so:
+
+//									|
+// 		  	  v0                    |
+//		 	  /\                    |
+//	 		 /  \                   |
+//	        /    \                  |
+//	       /   0  \                 |
+//	 (v20)/________\ (v01)          |
+//	     /\        /\               |
+//	    /  \   3  /  \              |
+//	   /    \    /    \             |
+//	  /  2   \  /  1   \            |
+//	 /________\/________\           |
+//	v2	    (v12)        v1         |
+
+#if 0			// kts not used 12/6/97 11:57
+void
+RenderObject3D::Subdivide3D@+RENDER_TYPE(ViewPort& vp, POLYVECT& gteVect,Primitive& primitive)
+{
+@*	FntPrint("Subdivide3D\n");
+#if DO_ASSERTIONS
+	static int recurseCount = 0;
+	recurseCount++;
+	if(recurseCount > 4)			// kts test
+		return;
+	assert(recurseCount < 10);
+#endif
+
+	Primitive* prims = vp.DuplicatePrimitive(primitive,4);
+	assert(ValidPtr(prims));
+	if(prims)
+	{
+		// just need to calc new coordinates (end eventually new texture coordindates)
+		// creating each new triangle from the upper left, clockwise
+		Vector3_PS sub01 =	Vector3_PS((gteVect[0].X() + gteVect[1].X())/2,(gteVect[0].Y() + gteVect[1].Y())/2,(gteVect[0].Z() + gteVect[1].Z())/2);
+		Vector3_PS sub02 =	Vector3_PS((gteVect[0].X() + gteVect[2].X())/2,(gteVect[0].Y() + gteVect[2].Y())/2,(gteVect[0].Z() + gteVect[2].Z())/2);
+		Vector3_PS sub12 =	Vector3_PS((gteVect[1].X() + gteVect[2].X())/2,(gteVect[1].Y() + gteVect[2].Y())/2,(gteVect[1].Z() + gteVect[2].Z())/2);
+
+#if FLAG_TEXTURE
+	POLY_@+POLY_TYPE poly = *(POLY_@+POLY_TYPE*)&primitive;
+	unsigned char u01 = (unsigned char) (( ((unsigned int)poly.u0) + ((unsigned int)poly.u1) )/2);
+	unsigned char v01 = (unsigned char) (( ((unsigned int)poly.v0) + ((unsigned int)poly.v1) )/2);
+	unsigned char u02 = (unsigned char) (( ((unsigned int)poly.u0) + ((unsigned int)poly.u2) )/2);
+	unsigned char v02 = (unsigned char) (( ((unsigned int)poly.v0) + ((unsigned int)poly.v2) )/2);
+	unsigned char u12 = (unsigned char) (( ((unsigned int)poly.u1) + ((unsigned int)poly.u2) )/2);
+	unsigned char v12 = (unsigned char) (( ((unsigned int)poly.v1) + ((unsigned int)poly.v2) )/2);
+	POLY_@+POLY_TYPE* texPrims = (POLY_@+POLY_TYPE*)prims;
+#endif
+
+		Vector3_PS gteVect0[3];
+		gteVect0[0] = gteVect[0];
+		gteVect0[1] = sub01;
+		gteVect0[2] = sub02;
+#if FLAG_TEXTURE
+		texPrims[0].u1 = u01;
+		texPrims[0].v1 = v01;
+		texPrims[0].u2 = u02;
+		texPrims[0].v2 = v02;
+#endif
+		RenderPoly3D@+RENDER_TYPE(vp,gteVect0,prims[0]);
+
+		Vector3_PS gteVect1[3];
+		gteVect1[0] = sub01;
+		gteVect1[1] = gteVect[1];
+		gteVect1[2] = sub12;
+#if FLAG_TEXTURE
+		texPrims[1].u0 = u01;
+		texPrims[1].v0 = v01;
+		texPrims[1].u2 = u12;
+		texPrims[1].v2 = v12;
+#endif
+		RenderPoly3D@+RENDER_TYPE(vp,gteVect1,prims[1]);
+
+		Vector3_PS gteVect2[3];
+		gteVect2[0] = sub02;
+		gteVect2[1] = sub12;
+		gteVect2[2] = gteVect[2];
+#if FLAG_TEXTURE
+		texPrims[2].u0 = u02;
+		texPrims[2].v0 = v02;
+		texPrims[2].u1 = u12;
+		texPrims[2].v1 = v12;
+#endif
+		RenderPoly3D@+RENDER_TYPE(vp,gteVect2,prims[2]);
+
+  		Vector3_PS gteVect3[3];
+		gteVect3[0] = sub02;
+		gteVect3[1] = sub01;
+		gteVect3[2] = sub12;
+#if FLAG_TEXTURE
+		texPrims[3].u0 = u02;
+		texPrims[3].v0 = v02;
+		texPrims[3].u1 = u01;
+		texPrims[3].v1 = v01;
+		texPrims[3].u2 = u12;
+		texPrims[3].v2 = v12;
+#endif
+		RenderPoly3D@+RENDER_TYPE(vp,gteVect3,prims[3]);
+	}
+#if DO_ASSERTIONS
+	recurseCount--;
+#endif
+}
+#endif
+//==============================================================================
+

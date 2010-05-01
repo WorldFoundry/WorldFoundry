@@ -1,0 +1,24 @@
+@*============================================================================
+@* warp.oas
+@*
+@* Copyright 1996 Cave Logic Studios, Ltd.  
+@*
+@*  4 Feb 95	WBNIV	Created
+@*
+@*============================================================================
+
+@*============================================================================
+@* warp definition
+
+TYPEHEADER(Warp)
+    @include actor.inc
+
+	PROPERTY_SHEET_HEADER(Warp,1)
+@*	-----------------------------
+	TYPEENTRYOBJREFERENCE(Target)
+	LEVELCONFLAGCOMMONBLOCK(activate)
+	PROPERTY_SHEET_FOOTER
+
+TYPEFOOTER
+
+@*============================================================================

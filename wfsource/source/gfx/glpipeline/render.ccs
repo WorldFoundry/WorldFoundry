@@ -1,0 +1,207 @@
+@*=============================================================================
+@* gfx/software/render.ccs: 3D renderable object, software version, prep source to generate a renderer
+//==============================================================================
+// FILENAME@+.cc: Renderer for RENDER_TYPE
+// Automatically generated from render.ccs DO NOT MODOFIY
+// Copyright ( c ) 1997,98,99 World Foundry Group  
+//
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description:
+//
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+#define PRINT_EVERYTHING 0
+
+#include <gfx/display.hp>				// kts just to get switches
+#include <gfx/rendobj3.hp>
+#include <gfx/material.hp>
+#include <math/vector3p.hp>
+#include <gfx/renderer.hp>
+#include <math/scalar.hp>
+#include <math/scalarps.hp>
+#include <math/vector3.hp>
+#include <math/vector3p.hp>
+
+#include <cpplib/libstrm.hp>
+#include <gfx/prim.hp>
+
+#define FLAG_TEXTURE TEXTURE_FLAG
+#define FLAG_GOURAUD GOURAUD_FLAG
+#define FLAG_LIGHTING LIGHTING_FLAG
+
+//============================================================================
+
+// these globals are defined in rendobj3.cc
+extern RendererVariables globalRendererVariables;
+
+//============================================================================
+
+#if defined(USE_ORDER_TABLES)
+#error ORDER TABLES not used by glpipeline!
+#endif
+
+//==============================================================================
+
+inline void
+GL_3D_VERTEX(const Vector3& point)                                                                         
+{                                                                                              
+    glVertex4f(point.X().AsFloat(),point.Y().AsFloat(),point.Z().AsFloat(),1.0);
+}
+
+//==============================================================================
+
+inline void
+SetTexture(const PixelMap& texturePixelMap)
+{
+#if defined(VIDEO_MEMORY_IN_ONE_PIXELMAP)
+#else
+    texturePixelMap.SetGLTexture();
+#endif
+}
+
+static void 
+CalcAndSetUV(unsigned short tpage, unsigned char uin, unsigned char vin, const PixelMap& texturePixelMap) 
+{
+    ulong u(uin+DecodeTPageX(tpage)); 
+    ulong v(vin+DecodeTPageY(tpage)); 
+
+#if defined(VIDEO_MEMORY_IN_ONE_PIXELMAP)
+    float uResult(float(u)/VRAM_WIDTHF);                            
+    float vResult(float(v)/VRAM_HEIGHTF);                           
+#else
+    float uResult(float(u)/texturePixelMap.GetBaseXSize());                            
+    float vResult(float(v)/texturePixelMap.GetBaseYSize());
+#endif
+    glTexCoord2f(uResult, vResult);                         
+}
+
+//-----------------------------------------------------------------------------
+
+int
+RenderObject3D::RenderPoly3D@+RENDER_TYPE(Primitive* primitive)
+{
+   float color[4];
+   color[3] = 1.0;
+   assert(primitive);
+   POLY_@+POLY_TYPE@+& poly = (*(POLY_@+POLY_TYPE@+*)primitive);
+
+#if FLAG_TEXTURE
+   glEnable( GL_TEXTURE_2D );
+   assert(ValidPtr(poly.pPixelMap));
+   SetTexture(*poly.pPixelMap);
+#else
+   glDisable( GL_TEXTURE_2D );
+#endif
+   AssertGLOK();
+
+   glBegin( GL_TRIANGLES );
+
+   const Vector3_PS& glnormal = (globalRendererVariables.currentRenderFace->normal);
+   glNormal3f(glnormal.X().AsFloat(),glnormal.Y().AsFloat(),glnormal.Z().AsFloat());
+
+#if FLAG_TEXTURE == 0
+#if FLAG_GOURAUD == 0
+   // f3
+   //glColor3ub( poly.r0, poly.g0, poly.b0 );
+   color[0] = float(poly.r0)/256.0;
+   color[1] = float(poly.g0)/256.0;
+   color[2] = float(poly.b0)/256.0;
+   glMaterialfv(GL_FRONT, GL_AMBIENT, color);
+   glMaterialfv(GL_FRONT, GL_DIFFUSE, color);
+   GL_3D_VERTEX(globalRendererVariables.gteVect[0]);
+   GL_3D_VERTEX(globalRendererVariables.gteVect[1]);
+   GL_3D_VERTEX(globalRendererVariables.gteVect[2]);
+#else       // FLAG_GOURAUD
+   //g3 
+   color[0] = float(poly.r0)/256.0;
+   color[1] = float(poly.g0)/256.0;
+   color[2] = float(poly.b0)/256.0;
+   glMaterialfv(GL_FRONT, GL_AMBIENT, color);
+   glMaterialfv(GL_FRONT, GL_DIFFUSE, color);
+   GL_3D_VERTEX(globalRendererVariables.gteVect[0]);
+   color[0] = float(poly.r1)/256.0;
+   color[1] = float(poly.g1)/256.0;
+   color[2] = float(poly.b1)/256.0;
+   glMaterialfv(GL_FRONT, GL_AMBIENT, color);
+   glMaterialfv(GL_FRONT, GL_DIFFUSE, color);
+   GL_3D_VERTEX(globalRendererVariables.gteVect[1]);
+   color[0] = float(poly.r2)/256.0;
+   color[1] = float(poly.g2)/256.0;
+   color[2] = float(poly.b2)/256.0;
+   glMaterialfv(GL_FRONT, GL_AMBIENT, color);
+   glMaterialfv(GL_FRONT, GL_DIFFUSE, color);
+   GL_3D_VERTEX(globalRendererVariables.gteVect[2]);
+#endif
+#else         // FLAG_TEXTURE
+
+   assert(poly.pPixelMap);
+#if FLAG_GOURAUD == 0
+   //ft3
+//            glColor3ub( 255, 0, 0 );
+   color[0] = float(poly.r0)/256.0;
+   color[1] = float(poly.g0)/256.0;
+   color[2] = float(poly.b0)/256.0;
+
+   // kts temp
+   color[0] = 1.0;
+   color[1] = 1.0;
+   color[2] = 1.0;
+   glMaterialfv(GL_FRONT, GL_AMBIENT, color);
+   glMaterialfv(GL_FRONT, GL_DIFFUSE, color);
+   CalcAndSetUV(poly.tpage, poly.u0,poly.v0,*poly.pPixelMap);
+   GL_3D_VERTEX(globalRendererVariables.gteVect[0]);
+   CalcAndSetUV(poly.tpage, poly.u1,poly.v1,*poly.pPixelMap);
+   GL_3D_VERTEX(globalRendererVariables.gteVect[1]);
+   CalcAndSetUV(poly.tpage, poly.u2,poly.v2,*poly.pPixelMap);
+   GL_3D_VERTEX(globalRendererVariables.gteVect[2]);
+#else            // FLAG_GOURAUD
+   // gt3
+   CalcAndSetUV(poly.tpage, poly.u0,poly.v0,*poly.pPixelMap);
+   color[0] = float(poly.r0)/256.0;
+   color[1] = float(poly.g0)/256.0;
+   color[2] = float(poly.b0)/256.0;
+   glMaterialfv(GL_FRONT, GL_AMBIENT, color);
+   glMaterialfv(GL_FRONT, GL_DIFFUSE, color);
+   GL_3D_VERTEX(globalRendererVariables.gteVect[0]);
+   CalcAndSetUV(poly.tpage, poly.u1,poly.v1,*poly.pPixelMap);
+   color[0] = float(poly.r1)/256.0;
+   color[1] = float(poly.g1)/256.0;
+   color[2] = float(poly.b1)/256.0;
+   glMaterialfv(GL_FRONT, GL_AMBIENT, color);
+   glMaterialfv(GL_FRONT, GL_DIFFUSE, color);
+   GL_3D_VERTEX(globalRendererVariables.gteVect[1]);
+   CalcAndSetUV(poly.tpage, poly.u2,poly.v2,*poly.pPixelMap);
+   color[0] = float(poly.r2)/256.0;
+   color[1] = float(poly.g2)/256.0;
+   color[2] = float(poly.b2)/256.0;
+   glMaterialfv(GL_FRONT, GL_AMBIENT, color);
+   glMaterialfv(GL_FRONT, GL_DIFFUSE, color);
+   GL_3D_VERTEX(globalRendererVariables.gteVect[2]);
+#endif           // FLAG_GOURAUD
+#endif           // FLAG_TEXTURE
+
+   glEnd();
+   AssertGLOK();
+
+	return 1;
+}
+
+//============================================================================

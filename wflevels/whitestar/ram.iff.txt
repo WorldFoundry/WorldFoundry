@@ -1,0 +1,6 @@
+{ 'RAM'
+	'OBJD' 100000l
+	'PERM' 400000l
+	'ROOM' 100000l
+	'FLAG' 1l 0l					// doomstick, bungeecam
+}

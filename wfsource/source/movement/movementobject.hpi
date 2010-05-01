@@ -1,0 +1,98 @@
+//==============================================================================
+// MovementObject.hpi:
+// Copyright ( c ) 2003 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//=============================================================================
+// Description: The MovementObject is a virtual base class (derived from PhysicalObject), 
+// a client needs to derive from this and fill out the virutual functions to be able to 
+// use the movement handlers and collision system
+// This is how I am able to decouple the movement system from all of the other pieces it
+// needs to access
+//
+// Original Author: Kevin T. Seghetti
+//==============================================================================
+
+#include <oas/movement.h>
+#include <oas/oad.h>
+#include <cpplib/libstrm.hp>
+                                                 
+//==============================================================================
+                                                 
+inline void
+MovementObject::Validate() const
+{
+}
+
+//==============================================================================
+
+INLINE
+MovementObject::MovementObject(const SObjectStartupData* startupData, const void* oadData,  const CommonBlock& commonBlock, const Clock& currentTime) : PhysicalObject(oadData, commonBlock)
+{
+   if ( GetMovementBlockPtr()->Mobility == MOBILITY_PATH )
+   {
+      assert( ValidPtr( startupData->path ) );
+      DBSTREAM3( cmovement << "  Has path data" << std::endl; )
+      _path = new (*startupData->memory) Path(startupData->path,*startupData->memory,startupData->levelOnDisk);
+      assert( ValidPtr( _path ) );
+
+#pragma message (__LINE__: kts fix: pathed objects get their position set in game/actor.cc since we cant do it here (yet) )
+#if 0
+      DBSTREAM1
+      (
+         if ( !GetMovementBlockPtr()->Mobility )
+            cerror << "<MovementObject::SetPosition: " << *this << " doesn't have mobility set!" << std::endl;
+      )
+      GetWritablePhysicalAttributes().SetPosition( _path->Position(currentTime.Current()) );
+#endif
+   }
+   else
+      _path = NULL;
+}
+
+//==============================================================================
+   
+INLINE const MovementManager& 
+MovementObject::GetMovementManager() const
+{
+   MovementObject* temp = const_cast<MovementObject*>(this);
+   MovementManager& mm = temp->GetMovementManager();
+   return mm;
+}
+
+//==============================================================================
+
+inline Path* 
+MovementObject::GetPath()
+{
+   return _path;
+}
+
+//==============================================================================
+
+inline MovementObject&
+UpcastToMovementObject(BaseObject* base)
+{
+   assert(ValidPtr(base));
+   MovementObject* result = dynamic_cast<MovementObject*>(base);
+   assert(ValidPtr(result));
+   return *result;
+}
+
+//==============================================================================
+

@@ -1,0 +1,153 @@
+//==============================================================================
+// Memory.hpi
+// Copyright ( c ) 1997,1998,1999,2000,2003 World Foundry Group.  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//==============================================================================
+// Description:
+// Abstract Memory class, all memory allocators derive from this
+//============================================================================
+
+inline void
+Memory::Validate() const
+{
+	ASSERTIONS( Memory::_Validate(); )
+}
+
+//============================================================================
+//#if defined(MEMORY_DEFINE_NEW)
+//#if defined(LMALLOC_DEFINE_NEW)
+
+#if MEMORY_TRACK_FILE_LINE
+inline void *
+operator new(size_t size, Memory& memory, char* file, int line)
+{
+	assert(size > 0);
+	memory.Validate();
+	return memory.Allocate(size, file, line);
+}
+
+inline void
+operator delete(void* value, Memory& memory, char* file, int line)
+{
+	//assert(size > 0);
+	memory.Validate();
+	memory.Free(value);
+}
+
+#else
+
+inline void *
+operator new(size_t size, Memory& memory)
+{
+	assert(size > 0);
+	memory.Validate();
+	return memory.Allocate(size ASSERTIONS( COMMA "Unknown" COMMA 0) );
+}
+
+inline void
+operator delete(void* value, Memory& memory)
+{
+	//assert(size > 0);
+	memory.Validate();
+	memory.Free(value);
+}
+
+#endif
+//==============================================================================
+
+#if !defined(__WIN__)
+
+#if DO_ASSERTIONS
+inline void *
+operator new[] (size_t size, Memory& memory, char* file, int line)
+{
+	assert(size > 0);
+	memory.Validate();
+	return memory.Allocate(size, file, line);
+}
+
+#endif
+
+inline void *
+operator new[] (size_t size, Memory& memory)
+{
+	assert(size > 0);
+	memory.Validate();
+	return memory.Allocate(size ASSERTIONS( COMMA "Unknown Array" COMMA 0));
+}
+#endif
+//#endif
+
+//inline void
+//operator delete(void* data, Memory& memory)
+//{
+//	assert(size > 0);
+//	memory.Validate();
+//	assert(memory.ValidAllocation(data,4));
+//	// just throw it away
+//}
+
+//==============================================================================
+
+//inline void
+//operator delete[] (void* data, Memory& memory)
+//{
+//	assert(size > 0);
+//	memory.Validate();
+//	assert(memory.ValidAllocation(data,4));
+//}
+
+//============================================================================
+
+inline void
+Memory::Free(const void* mem,int /*size*/)
+{
+	Free(mem);
+}
+
+//============================================================================
+
+#if SW_MEMORY_NAMED
+inline const char*
+Memory::Name() const
+{
+	Validate();
+	return _name;
+}
+
+inline void
+Memory::Name( const char* name )
+{
+	Validate();
+	assert( strlen( name ) < sizeof( _name ) );
+	strcpy( _name, name );
+}
+#endif
+
+//============================================================================
+
+#if DO_IOSTREAMS
+
+inline std::ostream& operator<<(std::ostream& output, const Memory& memory)
+{
+	return memory._Print(output);
+}
+#endif
+
+//============================================================================

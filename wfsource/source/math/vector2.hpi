@@ -1,0 +1,253 @@
+
+#define _VECTOR2_HPI
+
+// ------------------------------------------------------------------------
+// Copyright( c ) 1997, World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ------------------------------------------------------------------------
+
+
+// ------------------------------------------------------------------------
+// 2D Vector Class: Inlined Functions
+// ------------------------------------------------------------------------
+
+INLINE
+Vector2::Vector2( void ) { }
+
+// ------------------------------------------------------------------------
+
+INLINE
+Vector2::Vector2( const Scalar x, const Scalar y )
+{
+	_arrScalar[0] = x;
+    _arrScalar[1] = y;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE
+Vector2::Vector2( const Vector2& v )
+{
+        _arrScalar[0] = v._arrScalar[0];
+    _arrScalar[1] = v._arrScalar[1];
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Scalar&
+Vector2::operator [] ( int i )
+{
+	assert( i >= 0 );
+	assert( i < 2 );
+	return _arrScalar[i];
+}
+
+// ------------------------------------------------------------------------
+
+INLINE const Scalar&
+Vector2::operator [] ( int i ) const
+{
+	assert( i >= 0 );
+	assert( i < 2 );
+	return _arrScalar[i];
+}
+
+// ------------------------------------------------------------------------
+
+INLINE const Scalar&
+Vector2::X( void ) const
+{
+    return _arrScalar[0];
+}
+
+// ------------------------------------------------------------------------
+
+INLINE const Scalar&
+Vector2::Y( void ) const
+{
+    return _arrScalar[1];
+}
+
+// ------------------------------------------------------------------------
+
+INLINE void
+Vector2::SetX( const Scalar& x )
+{
+    _arrScalar[0] = x;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE void
+Vector2::SetY( const Scalar& y )
+{
+    _arrScalar[1] = y;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Vector2&
+Vector2::operator = ( const Vector2& v )
+{
+    _arrScalar[0] = v._arrScalar[0];
+    _arrScalar[1] = v._arrScalar[1];
+    return *this;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE bool
+Vector2::operator == ( const Vector2& v ) const
+{
+    return ( (_arrScalar[0] == v._arrScalar[0]) && (_arrScalar[1] == v._arrScalar[1]) );
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Vector2
+Vector2::operator += ( const Vector2& b )
+{
+    _arrScalar[0] += b._arrScalar[0];
+    _arrScalar[1] += b._arrScalar[1];
+    return *this;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Vector2
+Vector2::operator + ( const Vector2& b ) const
+{
+    Vector2 result( b );
+    result += *this;
+    return result;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Vector2
+Vector2::operator -= ( const Vector2& b )
+{
+    _arrScalar[0] -= b._arrScalar[0];
+    _arrScalar[1] -= b._arrScalar[1];
+    return *this;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Vector2
+Vector2::operator - ( const Vector2 &b ) const
+{
+    Vector2 result( *this );
+    result -= b;
+    return result;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Vector2
+Vector2::operator *= ( const Scalar mult )
+{
+    _arrScalar[0] *= mult;
+    _arrScalar[1] *= mult;
+    return *this;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Vector2
+Vector2::operator * ( const Scalar mult ) const
+{
+    Vector2 result( *this );
+    result *= mult;
+    return result;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Vector2
+Vector2::operator /= ( const Scalar div )
+{
+    _arrScalar[0] /= div;
+    _arrScalar[1] /= div;
+    return *this;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Vector2
+Vector2::operator / ( const Scalar div ) const
+{
+    Vector2 result( *this );
+    result /= div;
+    return result;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Vector2
+Vector2::operator - ( void ) const
+{
+    return Vector2( -_arrScalar[0], -_arrScalar[1] );
+}
+
+// ------------------------------------------------------------------------
+// no check for zero length
+
+INLINE void
+Vector2::Normalize( void )
+{
+	Scalar scale = SCALAR_CONSTANT(1.0) / Length();
+
+	_arrScalar[0] *= scale;
+	_arrScalar[1] *= scale;
+}
+
+// ------------------------------------------------------------------------
+// result = (v)-1(v).  No check for zero length.  Low precision.
+
+INLINE void
+Vector2::NormalizeQuick( void )
+{
+	Scalar scale = RLength();
+
+	assert(scale != SCALAR_CONSTANT(0));
+	if(scale != SCALAR_CONSTANT(0))
+	{
+		_arrScalar[0] *= scale;
+		_arrScalar[1] *= scale;
+	}
+}
+
+//==============================================================================
+
+INLINE void
+Vector2::rotate(Angle angle)
+{
+    Scalar sinAngle(angle.Sin());
+    Scalar cosAngle(angle.Cos());
+
+    Scalar x(_arrScalar[0]);
+    Scalar y(_arrScalar[1]);
+
+    _arrScalar[0] = (x * cosAngle) - (y * sinAngle);
+    _arrScalar[1] = (x * sinAngle) + (y * cosAngle);
+
+}
+
+//==============================================================================

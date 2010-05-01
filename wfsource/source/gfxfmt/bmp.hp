@@ -1,0 +1,71 @@
+// bmp.hp
+// by William B. Norris IV
+// Copyright 1998,99 World Foundry Group.  
+
+#ifndef GFXFMT_BMP_HP
+#define GFXFMT_BMP_HP
+
+#include <gfxfmt/bitmap.hp>
+
+#if !defined( __WIN__ )
+#pragma pack( 2 )
+typedef struct
+{
+	char r, g, b, rgbReserved;
+} RGBQUAD;
+
+typedef struct
+{
+	int16 bfType;
+	int32 bfSize;
+	int16 bfReserved1;
+	int16 bfReserved2;
+	int32 bfOffBits;
+} BITMAPFILEHEADER;
+
+typedef struct
+{
+	int32 biSize;
+	int32 biWidth;
+	int32 biHeight;
+	int16 biPlanes;
+	int16 biBitCount;
+	int32 biCompression;
+	int32 biSizeImage;
+	int32 biXPelsPerMeter;
+	int32 biYPelsPerMeter;
+	int32 biClrUsed;
+	int32 biClrImportant;
+} BITMAPINFOHEADER;
+
+#pragma pack()
+#endif
+
+
+class WindowsBitmap : public Bitmap
+{
+public:
+	WindowsBitmap( std::istream& input, const char* szBitmapName );
+	WindowsBitmap( const int width, const int height, const uint16 bgColor );
+	WindowsBitmap( const Bitmap& );			// create bitmap from another bitmap [e.g., a palette]
+	~WindowsBitmap();
+
+	virtual void save( std::ostream& s ) const;
+
+protected:
+#pragma pack( 2 )
+	struct BmpHeader
+	{
+		BITMAPFILEHEADER fh;
+		BITMAPINFOHEADER ih;
+	} _header;
+#pragma pack()
+	RGBQUAD* palette;
+
+public:	// new (soon to be) .dll interface
+	bool Validate( void* header, size_t, std::string msg );
+	void ReadBitmap( std::istream& input );
+	void SaveBitmap( std::ostream& output );
+};
+
+#endif	// GFXFMT_BMP_HP

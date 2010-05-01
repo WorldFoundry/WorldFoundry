@@ -1,0 +1,19 @@
+When entering an object reference, you can type the name directly into the field or you can use the "pick" button (located to the right of the object reference field) to click on the object within the 3D Studio Editor.  After you click on the object, the Attributes dialog box will reappear with the name automatically entered.
+By pressing the "Reset" button you can reset the value of all the Attributes to what they were before any changes were made.
+In addition to entering constants, you can enter expressions into the number fields which are evaluated when you press "OK".
+You can use the "Copy" and "Paste" PlugIns to copy attributes and class from one object to another.Note that this does not override the mesh assignment.
+The name of the object's attribute you're editing is displayed (in yellow) in the upper-left hand corner of the dialog box.
+You can attach a shadow to any object.  Place shadows strategically since they are expensive in terms of execution speed.
+Always choose "Canel" if you get an "Assertion failed" error.  Also, write down the error and show it to a programmer.
+The version of the PlugIn is located in the upper-right hand corner.  Be sure to know the version if you need to report an error.
+You can start the "Attributes" PlugIn by hitting Alt-F2 instead of selecting it from the menu.
+DebugObj's are really helpful for designers.  But, be considerate of the artists and try to use DebugObj's of uniform sizes.
+There is a "Notes" button located on the "Common" page of every object.  Notes can be used to pass information about the object between the designer and the artist.If there are any notes entered, the button is red.
+You can press "ды" instead of clicking the "OK" button.You can press "Esc" instead of clicking the "Cancel" button.
+You can edit your "3ds.set" file and change the "PROJECT-PATH=" to point to the levels directory instead of the normal 3D Studio directory.  You'll then have to click a lot less to load a level.
+The class of the object you're editing is displayed in the top-center of the dialog box.
+Don't run with scissors.
+You can start the "Class" PlugIn by hitting Alt-F1 instead of selecting it from the menu.
+For color value fields you can click on the "Г" to bring up a color picker.  The color value you pick will automatically be entered into the color field.
+You can get field-specific help by clicking on the "?" button.  The cursor changes to a question mark.  Move the cursor over the fields in the dialog box to get a brief description of the field.  Right click the mouse to exit help mode.Fields which accept a range also display the valid range of numbers.
+You can add your own personalized Tips by editing the file "tips.txt" file located in the levels/oad directory.

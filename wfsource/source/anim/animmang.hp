@@ -1,0 +1,114 @@
+//============================================================================
+// Copyright (c) 1997,1999,2000,2002,2003 World Foundry Group.  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//============================================================================
+// Description: AnimationManager watches the state of the game and chooses
+// animations accordingly (for each actor)
+//============================================================================
+
+#ifndef _ANIMATIONMANAGER_HP
+#define _ANIMATIONMANAGER_HP
+
+//============================================================================
+// Includes
+//============================================================================
+
+#include <pigsys/pigsys.hp>
+#include <math/vector3.hp>
+#include <gfx/handle.hp>
+#include <timer/clock.hp>
+#include <physics/physicalobject.hp>
+#include <movement/movementobject.hp>
+#include <movement/movement.hp>
+#include <input/inputdig.hp>
+
+class RenderActor;
+
+//==============================================================================
+
+class AnimationManager
+{
+public:
+	enum
+	{
+		#undef ANIMATION
+		#define ANIMATION( name, number ) name,
+		#include <anim/anim.inc>
+		#undef ANIMATION
+		MAX_ANIMATION_CYCLES
+	};
+
+	virtual ~AnimationManager();
+	virtual void UpdateAnimation(RenderActor* renderActor, const QInputDigital& inputDevice, PhysicalObject& physicalObject,  BaseObjectIteratorWrapper& objectIter, const MovementHandlerData* handlerData, const Clock& currentTime )=0;
+	virtual void SetAnimCenter( const Vector3& animCenter, HandleID centerHandle )=0;
+	virtual void SetMovementState( const MovementObject::EMovementState newState )=0;
+	virtual void SetAnimCycle( RenderActor& renderActor, int newAnimCycle, const Clock& currentTime )=0;
+	virtual Scalar GetCycleDuration( )=0;
+	virtual void OverrideAnimCycle( int newAnimCycle, const Clock& currentTime )=0;
+};
+
+//==============================================================================
+// dummy for objects which don't animate
+
+class AnimationManagerNull : public AnimationManager
+{
+public:
+	virtual void UpdateAnimation(RenderActor* renderActor, const QInputDigital& inputDevice, PhysicalObject& physicalObject,  BaseObjectIteratorWrapper& objectIter, const MovementHandlerData* handlerData, const Clock& currentTime);
+	virtual void SetAnimCenter( const Vector3& animCenter, HandleID centerHandle );
+	virtual void SetMovementState( const MovementObject::EMovementState newState );
+	virtual void SetAnimCycle( RenderActor& renderActor, int newAnimCycle, const Clock& currentTime );
+	virtual Scalar GetCycleDuration( );
+	virtual void OverrideAnimCycle( int newAnimCycle, const Clock& currentTime );
+
+	//void operator delete( void* )	{ std::cout << "theNullAnimationManager delete" << std::endl; }
+
+	static AnimationManagerNull theAnimationManagerNull;
+};
+
+//==============================================================================
+// an AnimationManager which actually manages animations (instead of the NULL class above)
+
+class AnimationManagerActual : public AnimationManager
+{
+public:
+	AnimationManagerActual();
+	virtual ~AnimationManagerActual();
+	virtual void UpdateAnimation(RenderActor* renderActor, const QInputDigital& inputDevice, PhysicalObject& physicalObject,  BaseObjectIteratorWrapper& objectIter, const MovementHandlerData* handlerData, const Clock& currentTime);
+	virtual void SetAnimCenter( const Vector3& animCenter, HandleID centerHandle );
+	virtual void SetMovementState( const MovementObject::EMovementState newState );
+	virtual void SetAnimCycle( RenderActor& renderActor, int newAnimCycle, const Clock& currentTime );
+	virtual Scalar GetCycleDuration( );
+	virtual void OverrideAnimCycle( int newAnimCycle , const Clock& currentTime);
+
+private:
+	MovementObject::EMovementState	_movementState;
+	MovementObject::EMovementState	_previousMovementState;
+	Scalar			_currentCycleEndTime;
+	Scalar			_overrideEndTime;           // if 0, there is no override in place
+	Vector3			_overrideAnimCenter;		// relative to physical attribute center
+	HandleID		_overrideCenterHandle;
+	int32			_overrideAnimCycle;
+
+	Vector3		  	_animCenter;			// relative to physical attribute center
+	HandleID	  	_centerHandle;
+};
+
+//==============================================================================
+#endif	// _ANIMATIONMANAGER_HP
+//==============================================================================

@@ -1,0 +1,148 @@
+//============================================================================
+// Asset.hp:
+// Copyright ( c ) 1996,97,99 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+//============================================================================
+// Documentation:
+//=============================================================================
+//	Abstract:
+//			class containing array of assets, plua s class for packing asset id's
+//	History:
+//			Created	6/19/96 11:51AM Kevin T. Seghetti
+
+//	Class Hierarchy:
+//			none
+
+//	Dependancies:
+//		PIGS, STL, iostream
+//	Restrictions:
+
+//	Example:
+//==============================================================================
+// use only once insurance
+#ifndef _aSSET_HP
+#define _aSSET_HP
+
+//============================================================================
+
+#include <pigsys/pigsys.hp>
+#include <pigsys/assert.hp>
+
+//============================================================================
+
+#define _MAX_PATHNAME 80
+
+//============================================================================
+
+class packedAssetID
+{
+	enum
+	{
+		INDEX_BITLENGTH = 12,
+		ROOM_BITLENGTH = 12,
+		TYPE_BITLENGTH = 8,
+
+		// number of bits above bit field
+		INDEX_A = TYPE_BITLENGTH + ROOM_BITLENGTH,
+		ROOM_A  = TYPE_BITLENGTH,
+		TYPE_A = 0,
+
+		// number of bits below bit field
+		INDEX_B = 0,
+		ROOM_B = INDEX_B+INDEX_BITLENGTH,
+		TYPE_B = ROOM_B+ROOM_BITLENGTH,
+
+		INDEX_LENGTH = 1 << INDEX_BITLENGTH,
+		ROOM_LENGTH = 1 << ROOM_BITLENGTH,
+		TYPE_LENGTH = 1 << TYPE_BITLENGTH,
+
+		INDEX_M = 0XFFF,
+		ROOM_M = 0XFFF << 	ROOM_B,
+		TYPE_M = 0XFF << TYPE_B
+	};
+
+public:
+	enum AssetType
+	{
+		#define ASSET_EXTENSION( X ) X,
+		#include <streams/assets.inc>
+
+		AssetTypeLimit
+	};
+
+//	enum { PERMANENT_ROOM = 0xfff }; 						// set to 0xfff
+	packedAssetID();
+	packedAssetID(uint32 packedID);
+	packedAssetID(int32 room, int32 type, int32 index);
+
+	int ValidAssetID() const;
+	void Validate(void) const;
+	// accessors
+	int32 Room(void) const;
+	AssetType Type(void) const;
+	int32 Index(void) const;
+	int32 ID(void) const;
+	int operator!=(const packedAssetID& left) const;
+	int operator==(const packedAssetID& left) const;
+#if DO_IOSTREAMS
+	friend std::ostream& operator<<(std::ostream& s, const packedAssetID &a);
+#endif
+
+	// mutators
+	int32 Room(int32 newRoom);
+	int32 Type(int32 newType);
+	int32 Index(int32 newIndex);
+	int32 ID(int32 newID);
+	packedAssetID& operator=(const packedAssetID& left);
+
+private:
+	uint32 _packedID;
+};
+
+//============================================================================
+// asset numbering scheme: 32 bit #: type:8, room:12, id:12 bits
+
+#if 0
+#pragma message ("KTS: no longer used")
+
+class asset
+{
+public:
+	asset() : _id() { }
+	asset(char* name, packedAssetID id) { strcpy(_name, name); _id = id; }
+	asset(char* name, int32 id) { strcpy(_name, name); _id = packedAssetID(id); }
+	char* Name(void) { return _name; }
+	char* Name(char* newName) { strcpy(_name, newName); return _name; }
+	int32 ID(void) const { return _id.ID(); }
+	int32 ID(int32 newID) { _id = packedAssetID(newID); return newID; }
+
+	friend ostream& operator<<(ostream& s, const asset &a) { return s << a._name << ' ' << (void *)( a._id.ID() ); }
+	bool operator==(const asset &c) const { return ( (!strcmp(_name, c._name)) && (_id == c._id) ); }
+	asset& operator=(const asset& left) { strcpy(_name, left._name); _id = left._id; return *this; }
+
+private:
+	char _name[_MAX_PATHNAME];
+	packedAssetID _id;
+};
+#endif
+
+//==============================================================================
+#include "asset.hpi"	// include all inline definitions as appropriate
+//============================================================================
+#endif
+//============================================================================

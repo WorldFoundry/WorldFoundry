@@ -1,0 +1,45 @@
+// sgi.hp
+// by William B. Norris IV
+// Copyright 1998,99 World Foundry Group.  
+
+#ifndef GFXFMT_SGI_HP
+#define GFXFMT_SGI_HP
+
+#include <gfxfmt/bitmap.hp>
+
+#pragma pack(1)
+typedef struct _SGI_Header
+{
+	unsigned short  magic;     	// IRIS image file magic number
+	char   storage;   			// Storage format
+	char   bpc;       			// Number of bytes per pixel channel
+	unsigned short dimension;	// Number of dimensions
+	unsigned short ixsize;     	// X size in pixels
+	unsigned short iysize;     	// Y size in pixels
+	unsigned short zsize;     	// Number of channels
+	long   pixmin;    			// Minimum pixel value
+	long   pixmax;    			// Maximum pixel value
+	char   _[ 4 ];			// Ignored
+	char   imagename[ 80 ]; 	// Image name
+	long   colormap;			// Colormap ID
+	char   __[ 404 ];    	// Ignored
+} SGI_Header;
+#pragma pack()
+
+class SgiBitmap : public Bitmap
+{
+public:
+	SgiBitmap( std::istream& input, const char* szBitmapName );
+	SgiBitmap( const int width, const int height, const uint16 bgColor );
+	~SgiBitmap();
+	virtual void save( std::ostream& s ) const;
+
+protected:
+	SGI_Header	sh;
+
+public:	// new (soon to be) .dll interface
+	bool Validate( void* header, size_t, std::string msg );
+	void ReadBitmap( std::istream& input );
+};
+
+#endif	// GFXFMT_SGI_HP

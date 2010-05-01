@@ -1,0 +1,246 @@
+#-----------------------------------------------------------------------------
+# wfsrc/Makefile.bld: switches for different builds, used by source 
+#-----------------------------------------------------------------------------
+# there are two kinds of build switches:
+# those which work in any conbination, and those which only work in certain
+# combinations:
+# for example, JOYSTICK_RECORDER requires DO_DEBUG_FILE_SYSTEM to be set to work
+# whereas DESIGNER_CHEATS can be set with any other combination
+# I call then independent and dependant switches
+# dependent switch combinations should get their own buildmode
+# independent switches should just be read from the environment or something
+
+# kts what should control 2 vs 8 meg of psx ram?
+
+# come up with a dependancy list for each switch, so the Makefile knows what to
+# re-build if a switch is changed [which also means comming up with a way to
+# store what switches were used for each build mode]
+
+# there are two kinds of switches in the game:
+# those that begin with DO_ are always defined, 0 if not desired, 1 if desired
+# those switches which begin with SW_ are also always defined
+# those switches which don't are not defined if not wanted
+# we have not yet decided which we want [always defined or only defined if true]
+
+# here is a list of pros and cons for each:
+
+# always defined:
+#	pros
+#		user must consider every switch to build the game
+# 	cons
+#       more work in Makefile to pass each switch into the game
+#		some things are not on/off, like __PSX__ vs __WIN__
+
+#only when true:
+#	pros
+#		don't need to know about every switch to build game
+#       easy to add new switches to the Makefile
+# 	cons
+#		game will build SOMETHING even if you mess up your switch includes
+#		if defined(SWITCH) longer than if SWITCH
+
+
+# only one library changes between STREAMING == "hd" & STREAMING == "cd"
+# (source/hal.lib) so I use the same obj files if you set streaming to or
+# from "cd", you have to re-build hal
+
+#-----------------------------------------------------------------------------
+# attempt to document switch dependencies:
+
+# kts temp switch until the iostream code works
+#CCCARGS += -DOLD_IOSTREAMS
+
+#CCCARGS += -DSHOW_GEOMETRY_AS_BOXES
+#CCCARGS += -DSHOW_COLLISION_AS_BOXES			# re-build actor.cc
+
+# clear buildmode letters
+BUILDMODE_LETTERS=$(BUILDMODE)
+#-----------------------------------------------------------------------------
+# platform specific
+
+!if "$(WF_TARGET)" == "psx"
+!if "$(DO_STEREOGRAM)" == "true"
+CCCARGS += -DDO_STEREOGRAM
+CCCARGS += -DDO_SLOW_STEREOGRAM
+BUILDMODE_LETTERS +=stereo
+!endif
+
+CCCARGS += -DUSE_ORDER_TABLES
+RENDERER=psx
+RENDERER_PIPELINE?=psx
+!endif
+
+!if "$(WF_TARGET)" == "win"
+#RENDERER?=directx
+RENDERER?=gl
+
+#kts there isn't a directx pipeline yet
+!if "$(RENDERER)" == "directx"
+CCCARGS += -DVIDEO_MEMORY_IN_ONE_PIXELMAP
+RENDERER_PIPELINE=software
+!endif
+
+RENDERER_PIPELINE?=$(RENDERER)
+#RENDERER_PIPELINE?=software
+#RENDERER_PIPELINE?=gl
+#RENDERER_PIPELINE=directx
+SUBSYSTEM ?= console
+MULTITHREADED ?= s
+!if "$(RENDERER_PIPELINE)" == "software"
+CCCARGS += -DUSE_ORDER_TABLES
+!endif
+
+
+!endif
+
+BUILDMODE_LETTERS+=$(RENDERER)
+BUILDMODE_LETTERS+=$(RENDERER_PIPELINE)
+
+#-----------------------------------------------------------------------------
+# buildmodes
+#-----------------------------------------------------------------------------
+
+# set BUILD_DOVALIDATION=2 for excessive validation
+
+!if "$(BUILDMODE)" == "debug"
+BUILD_DO_DEBUGGING_INFO=1		# enable compiler output of debugging info
+BUILD_DO_ASSERTIONS=1			# switches all assertions and VALIDATE macros
+BUILD_DO_VALIDATION=1           # switches all validate funcions, and item tracking system, DO_ASSERTIONS must be on for this to work
+BUILD_DO_DEBUG_VARIABLES=1		# enable tracking variables in classes / extra debugging code
+BUILD_DO_TEST_CODE = 1
+BUILD_DO_DEBUG_FILE_SYSTEM=1	# allow direct access to the host file system ,  currently doesn't work on psx
+BUILD_DO_IOSTREAMS=1
+BUILD_DBSTREAM=3
+
+CCCARGS += -DDESIGNER_CHEATS=1
+BUILD_DO_OPTIMIZATIONS=0
+!endif
+
+#-----------------------------------------------------------------------------
+
+!if "$(BUILDMODE)" == "release"
+BUILD_DO_DEBUGGING_INFO=0
+BUILD_DO_ASSERTIONS=0
+BUILD_DO_VALIDATION=0
+BUILD_DO_DEBUG_VARIABLES=0
+BUILD_DO_TEST_CODE = 0
+BUILD_DO_DEBUG_FILE_SYSTEM=0
+BUILD_DO_IOSTREAMS=0
+BUILD_DBSTREAM=0
+
+CCCARGS += -DDESIGNER_CHEATS=1
+BUILD_DO_OPTIMIZATIONS=1
+!endif
+
+#-----------------------------------------------------------------------------
+# Same as release, but with assertions
+
+!if "$(BUILDMODE)" == "safe-fast"
+BUILDMODE=release
+!include "Makefile.bld"
+BUILDMODE=safe-fast
+
+BUILD_DO_ASSERTIONS=1
+BUILD_DO_IOSTREAMS=1
+BUILD_DO_DEBUG_FILE_SYSTEM=1	# allow direct access to the host file system ,  currently doesn't work on psx
+CCCARGS += -DJOYSTICK_RECORDER            # requires DEBUG_FILE_SYSTEM to be set
+!endif
+
+#-----------------------------------------------------------------------------
+
+!if "$(BUILDMODE)" == "final"
+BUILD_DO_DEBUGGING_INFO=0
+BUILD_DO_ASSERTIONS=0
+BUILD_DO_VALIDATION=0
+BUILD_DO_DEBUG_VARIABLES=0
+BUILD_DO_TEST_CODE = 0
+BUILD_DO_DEBUG_FILE_SYSTEM=0
+BUILD_DO_IOSTREAMS=0
+BUILD_DBSTREAM=0
+
+CCCARGS += -DDESIGNER_CHEATS=0
+
+BUILD_DO_OPTIMIZATIONS=1
+!endif
+
+#-----------------------------------------------------------------------------
+# note: must use -rate command, since profiler slows the game down enough
+# to trash the physics system
+
+!if "$(BUILDMODE)" == "profile"
+BUILDMODE="release"
+!include "Makefile.bld"             # derived from release
+BUILDMODE=profile
+
+CCCARGS += -DDO_PROFILE=1
+#CCCARGS += -DSW_PROFILE
+
+!if "$(WF_TARGET)" ==  "psx"
+LIBS += $(PIGS_OBJ_DIR)\profile\profile.lib
+!endif
+
+!endif
+
+#-----------------------------------------------------------------------------
+# tool = debug, windows, streaming off
+
+!if "$(BUILDMODE)" == "tool"
+!if "$(LIB_NAME)" == "game"
+!error cannot build game for tool
+!endif
+
+RENDERER=none
+RENDERER_PIPELINE=software
+#?CCCARGS=
+WF_TARGET=win
+STREAMING=off
+#BUILDMODE=release
+#iff2lvl needs binistream to open files, which only occurs in debug mode
+BUILDMODE=debug
+!include "Makefile.bld"             # derived from debug
+BUILDMODE=tool
+CCCARGS += -DSYS_TOOL
+!endif
+
+#-----------------------------------------------------------------------------
+# max = debug, windows, multi-threaded, streaming off
+
+!if "$(BUILDMODE)" == "max"
+!if "$(LIB_NAME)" == "game"
+!error cannot build game for max
+!endif
+
+CCCARGS=
+BUILDMODE=tool
+!include "Makefile.bld"             # derived from tool
+BUILDMODE=max
+CCCARGS += -DNO_CONSOLE -DASSERT_GUI
+MULTITHREADED=m
+!endif
+
+#-----------------------------------------------------------------------------
+# kts =whatever kts wants today
+
+!if "$(BUILDMODE)" == "kts"
+
+CCCARGS=
+BUILDMODE=debug
+!include "Makefile.bld"             # derived from
+BUILDMODE=kts
+WF_TARGET=win
+!endif
+
+#-----------------------------------------------------------------------------
+
+!if "$(BUILD_DBSTREAM)" == ""
+!error Invalid Build Mode [$(BUILDMODE)] specified
+!endif
+
+#-----------------------------------------------------------------------------
+# now do dependent switches
+
+!if "$(BUILD_DO_DEBUG_FILE_SYSTEM)" == "1"
+CCCARGS += -DJOYSTICK_RECORDER            # requires DEBUG_FILE_SYSTEM to be set
+!endif
+
+#-----------------------------------------------------------------------------

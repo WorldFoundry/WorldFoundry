@@ -1,0 +1,10 @@
+// loadfile.hp
+#ifndef LOADFILE_LOADFILE_HP
+#define LOADFILE_LOADFILE_HP
+
+#include <pigsys/pigsys.hp>
+
+void* LoadBinaryFile( const char* _szFilename, int32& nSize );
+char* LoadTextFile( const char* _szFilename, int32& nSize );
+
+#endif	// LOADFILE_LOADFILE_HP

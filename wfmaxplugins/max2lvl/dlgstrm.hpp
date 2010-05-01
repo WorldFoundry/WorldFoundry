@@ -1,0 +1,37 @@
+// dlgstream.hpp
+
+#include <ostream.h>
+#include <strstrea.h>
+
+class dialogstreambuf : public streambuf
+{
+public:
+	dialogstreambuf();
+	~dialogstreambuf();
+
+protected:
+	virtual int xsputn( const char* s, int n );
+	virtual int overflow( int c );
+	virtual int underflow()	{ return EOF; }
+};
+
+
+class dialogstream : public ostream
+{
+public:
+	dialogstream( const char* szTitle );
+	~dialogstream();
+
+protected:
+	dialogstreambuf buf;
+	char* _szTitle;
+//	HWND _hDlg;
+
+private:
+	dialogstream();
+};
+
+
+
+	
+

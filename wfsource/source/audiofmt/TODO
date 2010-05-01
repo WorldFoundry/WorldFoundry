@@ -1,0 +1,54 @@
+More handlers!  Everyone who adds sound hardware to a computer has the urge
+to come up with their own file format.
+
+More effects!  I don't know DSP at all.  An incremental FFT is the
+core tool for building analog-domain effects.  Hint.  A simple
+room reverb effect that does one sound bounce instead of feeding
+back would also be handy, and an easy coding project.
+
+Loop support for all formats that know about it.  WAV has
+some support for loops ("cue-points") but no support for
+MIDI note numbers.  Someone needs to add this in.
+
+Comment strings.  Some file formats have space for embedded comments.
+These are currently thrown away.  Printing them out, carrying them
+forward, and an to add new ones would be handy.
+
+SOX includes skeleton format files to assist you in supporting new 
+formats, sound effect loops, and special-purpose programs.
+The full skeleton format, skel.c, helps you write a driver 
+for a new format which has data structures.  Skeleffect.c is
+a starting point for writing a sound effect loop.  Sox.c is
+a good starting point for new programs.  (Someone finally
+did this and told me what was wrong...)
+
+In handlers.c, note that many formats set up the header and then
+use the raw driver for reading and writing.  
+
+An effect loop for mixing mono -> stereo -> quad with sound
+placement features: differential volume, phasing, and Doppler
+shifting when the sound moves.  Static placement would work as
+a SOX effect loop, but dynamic placement involves some scripting
+feature, or joystick input etc., and should be a separate program.
+
+Convolving filters are OK for massaging sound samples;
+a much more accurate (and slower) method is also needed for
+doing serious sound work.  As is, SOX is OK for PC sound 
+samples, but does not make it as a CD mastering tool.
+
+Sound needs its own compression techniques rather than text-based 
+ones.  The pred effect is a framework for experimenting with
+predictive/corrective compression.  Prediction via LPC
+or autocorrelation or the first few derivatives
+could make this a very powerful compressor.  
+
+This software wants to be a dataflow system with signal
+sources, sinks, and processors.  It wants to be class-based.
+It wants to have a scripting control language.
+It's really a shame I hate C++.
+
+A pitch-shifter is badly needed.  No, just resampling isn't
+good enough, because that changes the playback time.
+You have to repeat little chunks or something like that.
+See FFT stuff above.  The Mac SoundHack program does all
+this and more.

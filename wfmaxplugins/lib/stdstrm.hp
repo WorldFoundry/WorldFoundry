@@ -1,0 +1,91 @@
+//==============================================================================
+// stdstrm.hp
+//==============================================================================
+
+#ifndef _STDSTRM_HP
+#define _STDSTRM_HP
+
+#include "global.hp"
+
+#if SW_DBSTREAM
+
+// ------------------------------------------------------------------------
+// Standard Set of ostreams
+// ------------------------------------------------------------------------
+
+#if defined( __WATCOMC__ )
+#	define ostream_withassign ostream
+#define CREATEANDASSIGNOSTREAM(newstream,assignto) \
+ostream_withassign newstream( assignto)
+#endif
+
+#if defined(OLD_IOSTREAMS)
+//#error hey, trying new stuff
+#endif
+
+#if defined( _MSC_VER )
+#if !defined(OLD_IOSTREAMS)
+#	define ostream_withassign ostream
+#endif
+#define CREATEANDASSIGNOSTREAM(newstream,assignto) \
+ostream_withassign newstream( assignto)
+#endif
+
+#if defined( __PSX__ )
+#	define ostream_withassign ostream
+#define CREATEANDASSIGNOSTREAM(newstream,assignto) \
+ostream_withassign newstream( assignto)
+
+#endif
+
+#if defined( __LINUX__ )
+#	define ostream_withassign _IO_ostream_withassign
+
+// helper class to assign to withassign in global space
+// kts this is a major kludge, why am I not allowed to construct a withassign from another?
+
+class GlobalWithAssign
+{
+public:
+    GlobalWithAssign(_IO_ostream_withassign &left, _IO_ostream_withassign &right);
+};
+
+
+inline GlobalWithAssign::GlobalWithAssign(_IO_ostream_withassign &left, _IO_ostream_withassign &right)
+{
+    left = right;
+}
+
+#   define CREATEANDASSIGNOSTREAM(newstream,assignto) \
+_IO_ostream_withassign newstream; \
+GlobalWithAssign newstream##_helper(newstream,assignto)
+#endif
+
+// ------------------------------------------------------------------------
+// Useful ostreams
+// ------------------------------------------------------------------------
+
+extern ostream_withassign cnull;  	   	// null stream
+extern ostream_withassign cprogress;  	// progress reporting (% conplete, tasks completed, etc.)
+extern ostream_withassign cstats;	   	// statistics (# of lines compiled, etc)
+extern ostream_withassign cdebug;	   	// debugging information (internal information of use only to the tool programmer)
+extern ostream_withassign cwarn;	   	// warnings about data being processed (opinions can go here, i.e. excessive # ofr colors used)
+extern ostream_withassign cerror;	   	// errors in data being processed, i.e. too many colors used, or some sort of lossy behaviour
+extern ostream_withassign cfatal;		// bad data files, etc.  i.e. input file corrupt.
+extern ostream_withassign cver;		// program version #, and startup statistics (compile time switches, and other one time information)
+extern ostream_withassign cuser;
+#if defined( __PSX__ )
+extern ostream cscreen;
+#endif
+
+// ------------------------------------------------------------------------
+// Function Prototypes
+// ------------------------------------------------------------------------
+
+void RedirectStream( ostream_withassign& stream, const char * string );
+void RedirectStandardStream( const char * str );
+
+//==============================================================================
+#endif // SW_DBSTREAM
+#endif // _STDSTRM_HP
+//==============================================================================

@@ -1,0 +1,160 @@
+//=============================================================================
+// math/psx/MatrixPS.hpi:
+// Copyright (c) 1997,98,99 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//=============================================================================
+
+#ifndef MatrixPS_HPI
+#define MatrixPS_HPI
+
+#include <math/vector3.hp>
+
+// ------------------------------------------------------------------------
+
+#if 0
+
+INLINE Matrix34_PS::Matrix34_PS( const Matrix34_PS& x )
+{
+	(*this) = x;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Matrix34_PS&
+Matrix34_PS::operator = ( const Matrix34_PS& x )
+{
+	_matrix.m[0][0] = x._matrix.m[0][0]; _matrix.m[0][1] = x._matrix.m[0][1]; _matrix.m[0][2] = x._matrix.m[0][2];
+	_matrix.m[1][0] = x._matrix.m[1][0]; _matrix.m[1][1] = x._matrix.m[1][1]; _matrix.m[1][2] = x._matrix.m[1][2];
+	_matrix.m[2][0] = x._matrix.m[2][0]; _matrix.m[2][1] = x._matrix.m[2][1]; _matrix.m[2][2] = x._matrix.m[2][2];
+
+	_matrix.t[0] = x._matrix.t[0];
+	_matrix.t[1] = x._matrix.t[1];
+	_matrix.t[2] = x._matrix.t[2];
+	return *this;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE void
+Matrix34_PS::ConstructIdentity()
+{
+#define ONE12BIT ((1<<16) >> 4)
+	_matrix.m[0][0] = ONE12BIT; _matrix.m[0][1] = 0; _matrix.m[0][2] = 0;
+	_matrix.m[1][0] = 0; _matrix.m[1][1] = ONE12BIT; _matrix.m[1][2] = 0;
+	_matrix.m[2][0] = 0; _matrix.m[2][1] = 0; _matrix.m[2][2] = ONE12BIT;
+	_matrix.t[0] = 0; _matrix.t[1] = 0; _matrix.t[2] = 0;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE const Vector3&
+Matrix34_PS::GetTranslation() const
+{
+	return *( (Vector3 *)&_matrix.t );
+}
+
+// ------------------------------------------------------------------------
+
+Matrix34_PS::Matrix34_PS()
+{
+	ConstructIdentity();
+}
+
+// ------------------------------------------------------------------------
+
+Matrix34_PS::Matrix34_PS( const Vector3& translation )
+{
+	ConstructTranslation( translation );
+}
+
+// ------------------------------------------------------------------------
+
+//Matrix34_PS::Matrix34_PS( const Vector3& scale, const Vector3& translation )
+//{
+//	ConstructScale( scale, translation );
+//}
+
+// ------------------------------------------------------------------------
+
+//Matrix34_PS::Matrix34_PS( RotateX, const Angle& angle, const Vector3& translation )
+//{
+//	ConstructRotationX( angle, translation );
+//}
+
+// ------------------------------------------------------------------------
+
+//Matrix34_PS::Matrix34_PS( RotateY, const Angle& angle, const Vector3& translation )
+//{
+//	ConstructRotationY( angle, translation );
+//}
+
+// ------------------------------------------------------------------------
+
+//Matrix34_PS::Matrix34_PS( RotateZ, const Angle& angle, const Vector3& translation )
+//{
+//	ConstructRotationZ( angle, translation );
+//}
+
+// ------------------------------------------------------------------------
+
+//Matrix34_PS::Matrix34_PS( const Euler& euler, const Vector3& translation )
+//{
+//	ConstructEuler( euler, translation );
+//}
+
+// ------------------------------------------------------------------------
+
+//Matrix34_PS::Matrix34_PS( const Quaternion& quaternion, const Vector3& translation )
+//{
+//	ConstructQuaternion( quaternion, translation );
+//}
+
+// ------------------------------------------------------------------------
+
+Matrix34_PS::Matrix34_PS
+(
+	const Vector3& row0,
+	const Vector3& row1,
+	const Vector3& row2,
+	const Vector3& row3
+)
+{
+	Construct( row0, row1, row2, row3 );
+}
+
+// ------------------------------------------------------------------------
+
+void
+Matrix34_PS::SetTranslation( const Vector3& translation )
+{
+	_matrix.t = translation;
+}
+
+#endif
+
+// ------------------------------------------------------------------------
+
+Matrix34_PS::Matrix34_PS( const Matrix34& matrix34 )
+{
+	ConstructMatrix34( matrix34 );
+}
+
+// ------------------------------------------------------------------------
+#endif // MatrixPS_HPI
+// ------------------------------------------------------------------------

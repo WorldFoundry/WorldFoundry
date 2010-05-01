@@ -1,0 +1,13 @@
+19 Mar 99
+* [cvs] delete strmnull.*
+* [cvs] rename timestam.cc -> timestamp.cc
+* [cvs] delete loadfile.*
+* move round() function somewhere
+* Make out_comment() take a *stream*, not a string
+* Use streams instead of out_xxx (?)
+* [cvs] delete todo.txt
+* [cvs] add TODO CHANGELOG
+* [cvs] delete id.hpp [?]
+* [cvs] rename printf.h -> printf.hp
+* [cvs] rename iffwrite.h -> iffwrite.hp
+* [cvs] rename backptch.hp -> backpatch.hp

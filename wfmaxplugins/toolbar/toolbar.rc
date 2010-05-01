@@ -1,0 +1,300 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include "windows.h"
+#undef APSTUDIO_HIDDEN_SYMBOLS
+
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""windows.h""\r\n"
+    "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_TARGETPLATFORM DIALOG DISCARDABLE  0, 0, 108, 47
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "Target",IDC_STATIC,5,0,100,32
+    CONTROL         "&Windows 9x / NT 4",IDC_WIN,"Button",BS_AUTORADIOBUTTON,
+                    10,9,78,10
+    CONTROL         "Sony &Playstation",IDC_PSX,"Button",BS_AUTORADIOBUTTON,
+                    10,19,68,10
+    CONTROL         "&Run game after make",IDC_RUN_AFTER_MAKE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,5,34,84,10
+END
+
+IDD_HDUMP DIALOG DISCARDABLE  0, 0, 439, 323
+STYLE DS_MODALFRAME | WS_CAPTION | WS_SYSMENU
+CAPTION "hdump"
+FONT 8, "Courier New"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,382,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,382,24,50,14
+    LISTBOX         IDC_LIST1,7,7,368,309,LBS_USETABSTOPS | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | 
+                    WS_TABSTOP
+END
+
+IDD_COMMAND_LINE_PARAMETERS DIALOG DISCARDABLE  0, 0, 108, 199
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "Game Run Mode",IDC_STATIC,5,1,100,31,WS_GROUP
+    CONTROL         "Debug",IDC_DEBUG,"Button",BS_AUTORADIOBUTTON,10,11,37,
+                    10
+    CONTROL         "Release",IDC_RELEASE,"Button",BS_AUTORADIOBUTTON,55,11,
+                    42,10
+    GROUPBOX        "Display",IDC_STATIC,10,57,90,45,WS_GROUP
+    CONTROL         "Window",IDC_WINDOW,"Button",BS_AUTORADIOBUTTON,15,67,42,
+                    10
+    CONTROL         "Full-Screen",IDC_FULLSCREEN,"Button",BS_AUTORADIOBUTTON | 
+                    WS_DISABLED,15,77,51,10
+    COMBOBOX        IDC_HEIGHT,65,87,30,115,CBS_DROPDOWN | WS_DISABLED | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Display Height",IDC_STATIC,15,89,46,8
+    CONTROL         "Paranoid",IDC_PARANOID,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,15,21,44,10
+    CONTROL         "Show Boxes",IDC_SHOWBOXES,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,10,131,55,10
+    CONTROL         "No Initial Rotation",IDC_NOINITIALROTATION,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,152,72,10
+    GROUPBOX        "Sony Playstation",IDC_STATIC,5,117,100,11
+    GROUPBOX        "Windows 9x / NT 4",IDC_STATIC,5,47,100,67
+    CONTROL         "Show Positions",IDC_SHOWPOSITIONS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,141,64,10
+    GROUPBOX        "Other Command Line",IDC_STATIC,5,174,100,22
+    LTEXT           "Simulated Framerate",IDC_STATIC,5,164,65,8
+    COMBOBOX        IDC_FRAMERATE,73,162,30,60,CBS_DROPDOWN | WS_DISABLED | 
+                    WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Perspective Correction",IDC_PERSPECTIVECORRECT,"Button",
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,9,103,87,10
+    CONTROL         "",IDC_OTHERPARAMS,"CustEdit",WS_TABSTOP,10,184,90,10
+    CONTROL         "",IDC_LEVEL_NUMBER,"CustEdit",WS_TABSTOP,54,35,24,10
+    LTEXT           "Level Number",IDC_STATIC,6,36,45,8
+END
+
+IDD_BUILD DIALOG DISCARDABLE  0, 0, 108, 11
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+IDD_DEBUG_STREAMS DIALOG DISCARDABLE  0, 0, 108, 381
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Warnings",IDC_STATIC,10,10,31,8
+    LTEXT           "Errors",IDC_STATIC,10,25,19,8
+    LTEXT           "Fatal",IDC_STATIC,10,40,16,8
+    LTEXT           "Statistics",IDC_STATIC,10,55,29,8
+    LTEXT           "Progress",IDC_STATIC,10,70,28,8
+    LTEXT           "Debugging",IDC_STATIC,10,85,36,8
+    GROUPBOX        "Standard Streams",IDC_STATIC,5,0,100,105
+    COMBOBOX        IDC_WARNINGS,50,10,48,105,CBS_DROPDOWN | WS_DISABLED | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_ERRORS,50,25,48,105,CBS_DROPDOWN | WS_DISABLED | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FATAL,50,40,48,105,CBS_DROPDOWN | WS_DISABLED | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_STATISTICS,50,55,48,105,CBS_DROPDOWN | WS_DISABLED | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_PROGRESS,50,70,48,105,CBS_DROPDOWN | WS_DISABLED | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_DEBUGGING,50,85,48,105,CBS_DROPDOWN | WS_DISABLED | 
+                    WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Game Streams",IDC_STATIC,5,105,100,270
+    LTEXT           "Actor",IDC_STATIC,10,115,18,8
+    LTEXT           "Movement",IDC_STATIC,10,130,34,8
+    LTEXT           "Collision",IDC_STATIC,10,145,26,8
+    LTEXT           "Room",IDC_STATIC,10,161,20,8
+    LTEXT           "Flow",IDC_STATIC,10,175,16,8
+    LTEXT           "AI",IDC_STATIC,10,190,8,8
+    LTEXT           "Level",IDC_STATIC,10,206,18,8
+    LTEXT           "Logo",IDC_STATIC,10,220,17,8
+    LTEXT           "Tool",IDC_STATIC,10,235,15,8
+    LTEXT           "Camera",IDC_STATIC,10,250,25,8
+    LTEXT           "Texture",IDC_STATIC,10,265,25,8
+    LTEXT           "Memory",IDC_STATIC,10,281,26,8
+    LTEXT           "Script",IDC_STATIC,10,295,19,8
+    LTEXT           "Asset ID",IDC_STATIC,10,310,28,8
+    LTEXT           "Streaming",IDC_STATIC,10,326,32,8
+    LTEXT           "Mailbox",IDC_STATIC,10,340,25,8
+    LTEXT           "Frame Info",IDC_STATIC,10,355,34,8
+    COMBOBOX        IDC_ACTOR,50,115,48,105,CBS_DROPDOWN | WS_DISABLED | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_MOVEMENT,50,130,48,105,CBS_DROPDOWN | WS_DISABLED | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COLLISION,50,145,48,105,CBS_DROPDOWN | WS_DISABLED | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_ROOM,50,161,48,105,CBS_DROPDOWN | WS_DISABLED | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FLOW,50,175,48,105,CBS_DROPDOWN | WS_DISABLED | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_AI,50,190,48,105,CBS_DROPDOWN | WS_DISABLED | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_LEVEL,50,206,48,105,CBS_DROPDOWN | WS_DISABLED | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_LOGO,50,220,48,105,CBS_DROPDOWN | WS_DISABLED | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_TOOL,50,235,48,105,CBS_DROPDOWN | WS_DISABLED | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_CAMERA,50,250,48,105,CBS_DROPDOWN | WS_DISABLED | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_TEXTURE,50,265,48,105,CBS_DROPDOWN | WS_DISABLED | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_MEMORY,50,281,48,105,CBS_DROPDOWN | WS_DISABLED | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_SCRIPT,50,295,48,105,CBS_DROPDOWN | WS_DISABLED | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_ASSETID,50,310,48,105,CBS_DROPDOWN | WS_DISABLED | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_STREAMING,50,326,48,105,CBS_DROPDOWN | WS_DISABLED | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_MAILBOX,50,340,48,105,CBS_DROPDOWN | WS_DISABLED | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FRAMEINFO,50,355,48,105,CBS_DROPDOWN | WS_DISABLED | 
+                    WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_TOOLBAR_BUTTONS DIALOG DISCARDABLE  0, 0, 108, 75
+STYLE WS_CHILD | WS_VISIBLE
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "[ Make Level ]",IDC_MAKE_LEVEL,5,3,100,11
+    PUSHBUTTON      "[ Run Level ]",IDC_RUN_LEVEL,5,15,100,11
+    PUSHBUTTON      "[ Export Object ]",IDC_EXPORT_OBJECT,5,39,100,11
+    PUSHBUTTON      "[ Clean Level ]",IDC_CLEAN_LEVEL,5,27,100,11
+    PUSHBUTTON      "[ Lint Level ]",IDC_LINT_LEVEL,5,51,100,11
+    PUSHBUTTON      "Attributes ->",IDC_ATTRIBUTES,5,63,100,11
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_HDUMP, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 432
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 316
+    END
+
+    IDD_DEBUG_STREAMS, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 241
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "Recombinant Limited\0"
+            VALUE "FileDescription", "toolbar\0"
+            VALUE "FileVersion", "1, 0, 0, 1\0"
+            VALUE "InternalName", "toolbar\0"
+            VALUE "LegalCopyright", "Copyright © 1997 Recombinant Limited.  All Rights Reserved.\0"
+            VALUE "LegalTrademarks", "World Foundry is a trademark of Recombinant Limited.\0"
+            VALUE "OriginalFilename", "toolbar.dlu\0"
+            VALUE "ProductName", "World Foundry Toolbar\0"
+            VALUE "ProductVersion", "1, 0, 0, 1\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+#endif    // !_MAC
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

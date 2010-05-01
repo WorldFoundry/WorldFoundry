@@ -1,0 +1,21 @@
+@*============================================================================
+@* explode.oas
+@*============================================================================
+
+@*============================================================================
+@* explode definition
+
+@define DEFAULT_TEMPLATE 1
+
+TYPEHEADER(Explosion,Explode)
+	@include actor.inc
+
+	PROPERTY_SHEET_HEADER(Explosion,1)
+@*	----------------------------------
+	TYPEENTRYFIXED32(Health Modifier,,FIXED32(-100),FIXED32(100),FIXED32(-1))
+	TYPEENTRYFIXED32(Force,,FIXED32(0),FIXED32(100),FIXED32(10))
+	PROPERTY_SHEET_FOOTER
+
+TYPEFOOTER
+
+@*============================================================================

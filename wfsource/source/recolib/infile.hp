@@ -1,0 +1,35 @@
+//=============================================================================
+// infile.hp:
+// By Kevin T. Seghetti
+// Copyright (c) 1995,96,97,98 Kevin T. Seghetti All Rights Reserved
+//=============================================================================
+
+#ifndef _INFILE_HP
+#define _INFILE_HP
+
+#include "global.hp"
+#include <fstream>
+
+//=============================================================================
+
+class inputFile 
+{
+public:
+	inputFile(const std::string& newFileName);
+	~inputFile();
+	std::string ReadLine();
+	const std::string& Name();
+	long LineNum();					// returns current line #
+	bool good();
+	int rdstate() {
+		return instream.rdstate();
+	}
+private:
+	std::ifstream instream;
+	std::string fileName;
+	long lineNum;
+};
+
+//=============================================================================
+#endif
+//=============================================================================

@@ -1,0 +1,62 @@
+The latest runtime engine has been built on RedHat 6.1 with egcs 2.91.66
+
+In the past it has been built on a few linux installations (RedHat 5.2,6.0, OpenLinux2.2, Mandrake 6.0)
+using gcc 2.7.2.3, egcs-2.91.66, gcc 2.95.
+
+So if you build it on something else, let me know (I will add it to this list in the next release).
+
+There is an online cvs archive running on my home server over a 56K connection, as soon as I
+have taken some security precautions I will figure out how to grant anonymous read access.
+To get write access, send me so many updates and improvements I get tired of integrating them
+by hand. ;-)
+
+The runtime is broken down into several libraries in a loose heirarchy:
+
+HAL: Hardware Abstraction Layer: abstracts things like joysticks, task switching, game startup and shutdown, messaging, etc. Unfortunatly, mostly written with a C interface
+Pigsys (needs to be renamed to SAL): Software Abstraction Layer: abstract typical C operating system calls like file IO, memory managment, etc. 
+Memory: Functions to manage a chunk of memory, manages allocations inside of blocks of memory, both dynamic and static allocators 
+cpplib: general C++ stuff, contains our re-directable streams, and the null-stream implementation.
+streams: code to deal with streaming assets from disk
+iff: iff reader. All assets are stored as binary iff files, this is the reader.
+math: 1.15.16 bit fixed point package, and also portions of a 1.31.32 bit package
+input: upper level input handling (not hardware specific)
+gfx: entire 2d/3d renderer and pipeline
+anim: handles model animation
+audio: beginning of the music/sound effects code/interface
+physics: collision and movement handling
+particle: A particle system which makes lots of lightweight objects
+game: main game code. Needs to be broken into smaller libraries (first step is to reduce cross-linkage between pieces)
+
+the rest are less interesting or obsolete:
+profile: psx execution profiler
+midi: beginning of midi player
+movie: psx movie player
+menu: simple text based level selector
+
+savegame: code to seriallize game state data, probably out of date
+streams
+loadfile: Used to directly load a file without going through the asset system. Should only be used
+by debugging or test code.
+timer: thread based wakeup packet sender, not really used in the engine at this time
+console: simple printing into a text buffer which is then displayed (used on playstation for startup screen)
+shell: beginning of a game shell to go around the level engine. Since abandoned in favor of
+using the level engine to implement all of the startup screens, etc.
+
+not used by the engine, only by tools:
+eval		math expression parser
+attrib		stand alone version of attributes editor, currently only compiles for windows
+audiofmt	
+gfxfmt
+iffwrite	iff writer library
+ini		simple windows ini parser
+oas/oad
+recolib
+regexp 		regular expression expansion
+registry	window registry interface
+template
+toolstub
+
+To get started I would recomend looking over the code base and getting familiar with the role
+of each of the libraries.
+
+

@@ -1,0 +1,255 @@
+//=============================================================================
+// math/euler.hpi:
+// Copyright(c) 1996,1997,1998,1999,2000,2002 World Foundry Group.  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//=============================================================================
+
+//DEFINE_TYPED_NEW_AND_DELETE( Euler )
+//DEFINE_PLACEMENT_NEW( Euler )
+
+#include <math/vector3.hp>
+
+// ------------------------------------------------------------------------
+// assert that this object is still valid
+// call using the ValidateObject and ValidateObjectPtr macros
+
+inline void
+Euler::Validate( const char * /*file*/, const int /*line*/ ) const
+{
+}
+
+// ------------------------------------------------------------------------
+
+INLINE
+Euler::~Euler()
+{
+	ValidateObject( *this );
+}
+
+//==============================================================================
+
+inline void 
+Euler::Validate() const
+{
+   _a.Validate();
+   _b.Validate();
+   _c.Validate();
+}
+
+// ------------------------------------------------------------------------
+
+INLINE void
+Euler::SetA( const Angle& a )
+{
+	_a = a;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE void
+Euler::SetB( const Angle& b )
+{
+	_b = b;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE void
+Euler::SetC( const Angle& c )
+{
+	_c = c;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE const Angle&
+Euler::GetA() const
+{
+	return _a;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE const Angle&
+Euler::GetB() const
+{
+	return _b;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE const Angle&
+Euler::GetC() const
+{
+	return _c;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE void
+Euler::Construct
+(
+	const Angle a, const Angle b, const Angle c
+)
+{
+	SetA( a );
+	SetB( b );
+	SetC( c );
+}
+
+// ------------------------------------------------------------------------
+
+INLINE void
+Euler::Read( binistream& binis )
+{
+	// simple error checking
+	AssertMsg( !binis.bad(), "Stream is not valid" );
+	DBSTREAM4( cbrstrm << "operator >> ( binistream& " << (void *)&binis
+		<< ", Euler& " << (void *)this << " )" << endl; )
+
+	binis.align( binis.alignobject() );
+#if DO_ASSERTIONS
+	binios::streampos data_start = binis.tellg();
+#endif
+
+	binis >> _a >> _b >> _c;
+
+	AssertMsg( binis.tellg() - data_start == sizeof( Euler ),
+		"Size of Euler read != sizeof( Euler )" );
+}
+
+// ------------------------------------------------------------------------
+
+INLINE binistream&
+operator >> ( binistream& binis, Euler& euler )
+{
+	euler.Read( binis );
+	ValidateObject( euler );
+	return binis;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Euler&
+Euler::operator += ( const Euler& other)
+{
+	_a += other._a;
+	_b += other._b;
+	_c += other._c;
+	return(*this);
+}
+
+//-----------------------------------------------------------------------------
+
+INLINE Euler
+Euler::operator + ( const Euler& other ) const
+{
+	return(Euler(*this) += other);
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Euler&
+Euler::operator -= ( const Euler& other)
+{
+	_a -= other._a;
+	_b -= other._b;
+	_c -= other._c;
+	return(*this);
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Euler
+Euler::operator - ( const Euler& other ) const
+{
+	return(Euler(*this) -= other);
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Euler&
+Euler::operator *= ( const Scalar& other)
+{
+	_a *= other;
+	_b *= other;
+	_c *= other;
+	return(*this);
+}
+
+//-----------------------------------------------------------------------------
+
+INLINE Euler
+Euler::operator * ( const Scalar& other ) const
+{
+	return(Euler(*this) *= other);
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Euler&
+Euler::operator /= ( const Scalar& other)
+{
+	_a /= other;
+	_b /= other;
+	_c /= other;
+	return(*this);
+}
+
+//-----------------------------------------------------------------------------
+
+
+INLINE Euler
+Euler::operator / ( const Scalar& other ) const
+{
+	return(Euler(*this) /= other);
+}
+
+//==============================================================================
+
+inline int
+Euler::operator == ( const Euler& b ) const
+{
+   Validate();
+   b.Validate();
+   return ((_a == b._a) && (_b == b._b) && (_c == b._c));
+
+}
+
+// ------------------------------------------------------------------------
+
+#if 0 		                            // kts untested
+Vector3& operator*=(Vector3& vect, const Euler& euler)
+{
+	vect.RotateX(euler.GetA());
+	vect.RotateY(euler.GetB());
+	vect.RotateZ(euler.GetC());
+	return vect;
+}
+
+
+Vector3 operator*(const Vector3& vect, const Euler& euler)
+{
+	Vector3 temp = vect;
+	temp *= euler;
+	return temp;
+}
+#endif
+// ------------------------------------------------------------------------
+

@@ -1,0 +1,104 @@
+// ===========================================================================
+// gfx/vertex.hpi: vertex structure inlines
+// Copyright ( c ) 1998,1999,2000 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description:
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+inline
+Vertex2D::Vertex2D( Scalar newU, Scalar newV, const Color& newColor, const Vector2& newPosition )
+{
+	u = newU;
+	v = newV;
+	color = newColor;
+	position = newPosition;
+}
+
+//============================================================================
+
+#if DO_IOSTREAMS
+INLINE std::ostream&
+operator<<( std::ostream& out, const Vertex2D vertex)
+{
+	out << "u = " << vertex.u << ", v = " << vertex.v << std::endl;
+	out << "color = " << vertex.color << std::endl;
+	out << "position = " << vertex.position << std::endl;
+	return out;
+}
+#endif
+
+//============================================================================
+
+inline void
+Vertex3D::Validate() const
+{
+		//u.Validate();
+		//v.Validate();
+		color.Validate();
+		//position.Validate();
+}
+
+//============================================================================
+
+inline
+Vertex3D::Vertex3D( Scalar newU, Scalar newV, const Color& newColor, const Vector3_PS& newPosition )
+{
+	u = newU;
+	v = newV;
+	color = newColor;
+	position = newPosition;
+	Validate();
+}
+
+//============================================================================
+
+INLINE bool
+Vertex3D::operator < (const Vertex3D& /*other*/ ) const
+{
+	return false;
+}
+
+//============================================================================
+
+INLINE bool
+Vertex3D::operator ==(const Vertex3D& other) const
+{
+	return	(u == other.u) &&
+			(v == other.v) &&
+			(color == other.color) &&
+			(position == other.position);
+}
+
+//============================================================================
+
+#if DO_IOSTREAMS
+
+inline std::ostream& operator << ( std::ostream& s, const Vertex3D& v3 )
+{
+	s << "uv: " << v3.u << "," << v3.v << std::endl;
+	s << "Color: " << v3.color << std::endl;						// vertex color, if shaded
+	s << "Vector3 " << v3.position << std::endl;					// position, in local coordinates
+	return s;
+}
+
+#endif
+
+//============================================================================

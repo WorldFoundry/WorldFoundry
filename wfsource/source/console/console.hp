@@ -1,0 +1,37 @@
+#ifndef CONSOLE_CONSOLE_HP
+#define CONSOLE_CONSOLE_HP
+
+#include <console/textbuff.hp>
+
+#if defined( __WIN__ )
+#ifndef STRICT
+#define STRICT
+#endif
+#include <windows.h>
+#endif
+#if 0
+void FntPrint( const char*, ... );
+void InitSimpleDisplay();
+void UpdateSimpleDisplay();
+#endif
+
+class Console
+{
+public:
+	Console();
+	~Console();
+
+	void print( const char* szMsg, ... );
+	void home();
+	void flush();
+	void clear();
+
+protected:
+	int _x;
+	int _y;
+	TextBuffer* _pTextBuffer;
+
+	void validate() const;
+};
+
+#endif	// CONSOLE_CONSOLE_HP

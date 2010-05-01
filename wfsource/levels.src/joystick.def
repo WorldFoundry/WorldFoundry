@@ -1,0 +1,31 @@
+; joystick.def: useding in scripts, we need a way to handle which platform
+
+
+;@ifdef PLATFORM_WIN
+;	( define  JOYSTICK_BUTTON_UP 8192 )
+;	( define 	JOYSTICK_BUTTON_DOWN 4096 )
+;	( define 	JOYSTICK_BUTTON_RIGHT 1024 )
+;	( define 	JOYSTICK_BUTTON_LEFT 2048 )
+;	( define 	JOYSTICK_BUTTON_A 1 )
+;	( define 	JOYSTICK_BUTTON_B 2 )
+;	( define 	JOYSTICK_BUTTON_C 4 )
+;	( define 	JOYSTICK_BUTTON_D 8 )			;/* X on DaveStick */
+;	( define 	JOYSTICK_BUTTON_E 16 )      ;/* Y on DaveStick */
+;	( define 	JOYSTICK_BUTTON_F 32 )      ;/* Z on DaveStick */
+;@endif
+
+;@ifdef PLATFORM_PSX
+	( define  JOYSTICK_BUTTON_UP 4096 )
+	( define 	JOYSTICK_BUTTON_DOWN 16384 )
+	( define 	JOYSTICK_BUTTON_RIGHT 8192 )
+	( define 	JOYSTICK_BUTTON_LEFT 32768 )
+	( define 	JOYSTICK_BUTTON_A 128 )
+	( define 	JOYSTICK_BUTTON_B 16 )
+	( define 	JOYSTICK_BUTTON_C 32 )
+	( define 	JOYSTICK_BUTTON_D 64 )
+	( define 	JOYSTICK_BUTTON_E 1 )
+	( define 	JOYSTICK_BUTTON_F 4 )
+	( define 	JOYSTICK_BUTTON_G 2 )
+	( define 	JOYSTICK_BUTTON_H 8 )
+	( define 	JOYSTICK_BUTTON_I 256 )
+;@endif

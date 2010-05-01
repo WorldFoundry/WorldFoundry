@@ -1,0 +1,30 @@
+@*============================================================================
+@* Player.oas
+@*============================================================================
+
+@*============================================================================
+@* override defaults
+
+@define DEFAULT_MASS 50.0
+@define DEFAULT_MOBILITY 1
+@define DEFAULT_MOVESBETWEENROOMS 1
+
+@define DEFAULT_HITPOINTS 1
+
+@*============================================================================
+@* Player definition
+
+TYPEHEADER(Player)
+	@include actor.inc
+
+	PROPERTY_SHEET_HEADER(Player,1)
+@*	-------------------------------
+@*	GROUP_START(Initial Gold,250)
+@*	TYPEENTRYINT32(Minimum Initial Gold,Minimum,0, LONG_MAX, 0, , SHOW_AS_NUMBER,"Make sure player has at least this much gold")
+@*	TYPEENTRYINT32(Maximum Initial Gold,Maximum,0, LONG_MAX, 32767, , SHOW_AS_NUMBER,"Make sure player has no more than this much gold")
+@*	GROUP_STOP()
+	PROPERTY_SHEET_FOOTER
+
+TYPEFOOTER
+
+@*============================================================================

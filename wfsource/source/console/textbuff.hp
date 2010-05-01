@@ -1,0 +1,27 @@
+#ifndef CONSOLE_TEXTBUFF_HP
+#define CONSOLE_TEXTBUFF_HP
+
+class TextBuffer
+{
+public:
+	TextBuffer( int width, int height );
+	~TextBuffer();
+
+	void print( int x, int y, const char* szMsg, int nChars );
+	void clear();
+
+#pragma message( "Where to put?" )
+	void flush();
+
+	int width() const	{ return _width; }
+	int height() const	{ return _height; }
+
+protected:
+	int _width;
+	int _height;
+	char* _screen;
+
+	void validate() const;
+};
+
+#endif	// CONSOLE_TEXTBUFF_HP

@@ -1,0 +1,174 @@
+//==============================================================================
+// pixelmap.hpi: rectangle of pixels, either in main memory or video memory
+// Copyright ( c ) 1997,1998,1999,2000,2001 World Foundry Group.  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//==============================================================================
+// Original Author: Kevin T. Seghetti
+//==============================================================================
+
+#include <gfx/display.hp>
+
+#if defined( __PSX__ )
+#include <libgpu.h>
+#endif
+
+//==============================================================================
+
+inline void
+PixelMap::Validate() const
+{
+	assert(_flags == MEMORY_VIDEO);
+	RangeCheck(0,_xPos,Display::VRAMWidth);
+	RangeCheck(0,_yPos,Display::VRAMHeight);
+
+	RangeCheckInclusive(0,_xSize,Display::VRAMWidth);
+	RangeCheckInclusive(0,_ySize,Display::VRAMHeight);
+
+	RangeCheckInclusive(0,_xPos + _xSize,Display::VRAMWidth);
+	RangeCheckInclusive(0,_yPos + _ySize,Display::VRAMHeight);
+
+#if defined(RENDERER_GL)
+    if(_pixelBuffer)
+        ValidatePtr(_pixelBuffer);
+#endif
+}
+
+//==============================================================================
+
+#if defined ( RENDERER_DIRECTX)
+#include <ddraw.h>
+extern LPDIRECTDRAWSURFACE lpTextureSurface;      // DirectDraw texture surface
+#endif
+
+inline void
+PixelMap::Clear(const Color& color)
+{
+	(void)color;
+#if defined(__PSX__)
+	RECT	rect;
+	setRECT(&rect, _xPos, _yPos, _xSize, _ySize);
+	ClearImage(&rect, color.Red(), color.Green(), color.Blue());
+#endif
+#if defined ( RENDERER_DIRECTX)
+//	DDBLTFX BltFX;
+//	BltFX.dwSize = sizeof(BltFX);
+//	uint16 colorWord =
+//		((color.Red()&0xf8)<<10) ||
+//		((color.Green()&0xf8)<<5) ||
+//		(color.Blue()&0xf8);
+//	BltFX.dwFillColor = colorWord;
+//	lpTextureSurface->Blt(NULL,NULL,NULL,DDBLT_COLORFILL, &BltFX);
+#endif
+}
+
+//==============================================================================
+
+inline int
+PixelMap::GetFlags() const
+{
+	Validate();
+	return _flags;
+}
+
+//=============================================================================
+
+inline int
+PixelMap::GetXSize() const
+{
+	Validate();
+	return _xSize;
+}
+
+//=============================================================================
+
+inline int
+PixelMap::GetYSize() const
+{
+	Validate();
+	return _ySize;
+}
+
+
+//==============================================================================
+
+inline int
+PixelMap::GetBaseXSize() const
+{
+	Validate();
+   const PixelMap* pm = this;
+
+   while(pm->_parent)
+      pm = pm->_parent;
+	return pm->GetXSize();
+}
+
+//=============================================================================
+
+inline int
+PixelMap::GetBaseYSize() const
+{
+	Validate();
+   const PixelMap* pm = this;
+
+   while(pm->_parent)
+      pm = pm->_parent;
+	return pm->GetYSize();
+}
+
+//==============================================================================
+
+inline int
+PixelMap::GetXPositionInVideoMemory() const		// only valid for video memory pixelmaps
+{
+	Validate();
+	assert(_flags == MEMORY_VIDEO);
+	return _xPos;
+}
+
+//==============================================================================
+
+inline int
+PixelMap::GetYPositionInVideoMemory() const		// only valid for video memory pixelmaps
+{
+	Validate();
+	assert(_flags == MEMORY_VIDEO);
+	return _yPos;
+}
+
+//==============================================================================
+
+#if defined(RENDERER_GL)
+inline void
+PixelMap::SetGLTexture() const                 // make this pixelmap the current GL texture
+{
+    Validate();
+    //cout << "setGLTexture: glListIndex = " << _glListIndex << ",_parent = " << (void*)_parent << std::endl;
+
+    // kts this is incorrect, only like this for the transition, eventually will assert if has a parent
+    if(_parent)
+        _parent->SetGLTexture();
+    else
+        glBindTexture(GL_TEXTURE_2D,_glTextureName);
+    AssertGLOK();
+}
+
+#endif
+
+//==============================================================================
+

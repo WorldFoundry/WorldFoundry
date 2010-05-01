@@ -1,0 +1,21 @@
+// health.hp
+
+#include <math/scalar.hp>
+
+class Health
+{
+public:
+	Health( Scalar nHitPoints );
+	virtual ~Health();
+
+	virtual Scalar operator()() const;
+	virtual void deltaHealth( int nHitPoints );
+	const Health* next() const;
+
+	//?virtual bool isIndestructable();
+
+protected:
+public:
+	Scalar _nHitPoints;
+	Health* _pHealth;
+};

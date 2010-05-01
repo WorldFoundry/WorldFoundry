@@ -1,0 +1,114 @@
+// ------------------------------------------------------------------------
+// Copyright(c) 1996,1997,1998,1999,2000 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// Original Author: Kevin T. Seghetti
+// ------------------------------------------------------------------------
+
+#ifndef _VECTOR3_HP
+#define _VECTOR3_HP
+
+// ------------------------------------------------------------------------
+// 3D Vector Class
+// ------------------------------------------------------------------------
+
+#include <pigsys/pigsys.hp>
+#include <math/scalar.hp>
+class Angle;
+
+// ------------------------------------------------------------------------
+// Class Declaration
+// ------------------------------------------------------------------------
+
+class Vector3
+{
+  public:
+	// construct/destruct
+	inline Vector3();
+	inline Vector3( const Scalar x, const Scalar y, const Scalar z );
+	inline Vector3( const Vector3& );
+
+	inline Scalar& operator [] ( int i );					// read/write access to elements, i: 0..2
+	inline const Scalar& operator [] ( int i ) const;		// read-only access to elements, i: 0..2
+
+	inline const Scalar& X() const;							// query methods
+	inline const Scalar& Y() const;
+	inline const Scalar& Z() const;
+
+	inline Vector3& operator = ( const Vector3& );			// assignment/set methods
+	inline void SetX( const Scalar& x );
+	inline void SetY( const Scalar& y );
+	inline void SetZ( const Scalar& z );
+
+	inline void RotateX(Angle x);
+ 	inline void RotateY(Angle y);
+ 	inline void RotateZ(Angle z);
+
+	// arithmetic operators
+	inline bool			operator == ( const Vector3& ) const;
+	inline Vector3		operator - () const;
+	inline Vector3		operator += ( const Vector3& b );
+	inline Vector3		operator + ( const Vector3& ) const;
+	inline Vector3		operator -= ( const Vector3& b );
+	inline Vector3		operator - ( const Vector3& ) const;
+	inline Vector3		operator *= ( const Scalar mult );
+	inline Vector3		operator * ( const Scalar mult ) const;
+	inline Vector3		operator /= ( const Scalar div );
+	inline Vector3		operator / ( const Scalar div ) const;
+
+	inline void		Normalize();
+	inline void		NormalizeQuick();
+
+	Vector3	CrossProduct(const Vector3& other) const;
+	inline  Scalar	DotProduct(const Vector3& other) const;
+
+	inline const Vector3& Square();
+
+	Scalar		Length() const;
+	Scalar		RLength() const;
+
+#if DO_IOSTREAMS
+	friend std::ostream& operator << ( std::ostream&, const Vector3& );
+#endif
+
+#if defined( WRITER )
+	friend binostream& operator << ( binostream&, const Vector3& );
+#endif
+	friend binistream& operator >> ( binistream&, Vector3& );
+
+	// static data members
+	static const Vector3 zero;
+	static const Vector3 one;
+	static const Vector3 unitX;
+	static const Vector3 unitY;
+	static const Vector3 unitZ;
+	static const Vector3 unitNegativeX;
+	static const Vector3 unitNegativeY;
+	static const Vector3 unitNegativeZ;
+
+  private:
+	Scalar _arrScalar[3];
+};
+
+//=============================================================================
+
+#include <math/vector3.hpi>		// include all inline definitions as appropriate
+
+//=============================================================================
+#endif // _VECTOR3_HP
+//=============================================================================

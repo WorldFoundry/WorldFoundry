@@ -1,0 +1,91 @@
+//============================================================================
+// file3ds.hp:
+// Copyright(c) 1995 Cave Logic Studios / PF.Magic
+// By Kevin T. Seghetti
+//============================================================================
+/* Documentation:
+
+	Abstract:
+
+	History:
+			Created	05-16-95 01:07pm Kevin T. Seghetti
+
+	Class Hierarchy:
+			none
+
+*/
+//============================================================================
+// use only once insurance
+#ifndef _FILE3DS_HP
+#define _FILE3DS_HP
+
+//============================================================================
+
+#include "global.hp"
+
+#include <iostream.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+#include <iomanip.h>
+
+#pragma pack(1);
+extern "C" {
+#include "3dsftk.h"
+};
+#pragma pack();
+
+//============================================================================
+
+#define CHUNKBUFFERSIZE 30000
+
+class QFile3ds
+{
+public:
+	QFile3ds(const char* filename);
+	~QFile3ds();
+	database3ds* GetDatabase(void) const;
+	void DumpMeshes(ostream& output);
+	chunk3ds* FindMeshChunk(const char* name) const;		// lookup mesh chunk for named mesh
+	chunk3ds* FindXDataChunk(chunk3ds* mesh) const;			// lookup xdata chunk section of mesh chunk
+	chunk3ds* FindNamedXDataChunk(chunk3ds* xDataChunk,const char* name);	// find a particular xdata chunk in the xdata chunk
+	void DumpChunk3DS(chunk3ds* chunk, int indent, short dumpSib, const char* name);
+
+	ulong3ds GetChunkDataSize(chunk3ds* chunk) const;
+ 	void GetChunkData(chunk3ds* chunk,char* destBuffer) const;
+private:
+	void LoadChunkData(chunk3ds* chunk);
+	QFile3ds();				// prevent construction without parameters
+	database3ds *db;
+	file3ds *databasefile;
+
+#pragma pack(1);
+	struct _chunkOnDisk			// needs to match chunk on disk format
+	 {
+		chunktag3ds tag;
+		ulong3ds size;
+		char chunkData[CHUNKBUFFERSIZE];
+	 };
+#pragma pack();
+	_chunkOnDisk chunkBuffer;
+};
+
+const int chunkHeaderSize = sizeof(chunktag3ds) + sizeof(ulong3ds);
+
+//============================================================================
+// chunk manipulators
+
+chunk3ds*
+ChunkFindSibling(chunk3ds* chunk, chunktag3ds tag);
+
+chunk3ds*
+ChunkFindSelfOrSibling(chunk3ds* chunk, chunktag3ds tag);
+
+
+chunk3ds*
+ChunkFindChild(chunk3ds* chunk, chunktag3ds tag);
+
+//============================================================================
+#endif
+//============================================================================

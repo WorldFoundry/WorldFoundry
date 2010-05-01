@@ -1,0 +1,395 @@
+//==============================================================================
+// array.hpi:
+// Copyright (c) 1996,1997,1999,2000,2003 World Foundry Group 
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+//============================================================================
+
+#include <memory/memory.hp>
+
+//============================================================================
+// new iterator functions
+//============================================================================
+
+template< class T> INLINE
+Array<T>::Array() :
+	_items( NULL ),
+	_num( 0 ),
+	_max( -1 ),
+   _memory(NULL)
+{
+}
+
+
+template< class T> INLINE
+Array<T>::Array(int32 entries, Memory* memory) :
+	_items( NULL ),
+	_num( 0 ),
+	_max( -1 ),
+   _memory(NULL)
+{
+   SetMax(entries,memory);
+}
+
+//============================================================================
+
+template<class CONTAINED_CLASS> INLINE
+Array<CONTAINED_CLASS>::~Array()
+{
+   if(_items)
+   {
+      assert(ValidPtr(_items));
+      assert(ValidPtr(_memory));
+      MEMORY_DELETE_ARRAY(*_memory,_items,CONTAINED_CLASS,_max);
+   }
+}
+
+//============================================================================
+
+template<class T> INLINE void
+Array<T>::SetMax(int32 max,Memory* memory)
+{
+	assert(_items == NULL);
+	assert(_num == 0);
+	assert( _max == -1);
+	assert( max >= 0);
+    assert(ValidPtr(memory));
+    _memory = memory;
+
+	_max = max;
+
+    if(max)
+    {
+        _items = new (*memory) (T[_max]);
+        assert( ValidPtr(_items) );
+    }
+}
+
+//============================================================================
+
+template<class T> INLINE void
+Array<T>::Validate() const
+{
+    if(_max)
+    {
+        assert(ValidPtr(_items));
+    }
+    RangeCheck(0,_num,10000 );       // kts 10000 is arbitrary
+    assert(_num <= _max);
+    RangeCheck(0,_max,10000 );       // kts 10000 is arbitrary
+    assert(ValidPtr(_memory));
+    _memory->Validate();
+}
+
+//============================================================================
+
+template<class T> INLINE int32
+Array<T>::Size() const					// returns current # of entries
+{
+	return(_num);
+}
+
+//============================================================================
+
+template<class T> INLINE void
+Array<T>::Add(T value)
+{
+	assert(_items);
+	assert(_num <= _max);
+	int added = false;
+//	for (int listIndex = 0; listIndex < _num; listIndex++)
+//	{
+//		if (_items[listIndex] == -1)
+//		{
+//			_items[listIndex] = value;
+//			added = true;
+//			break;
+//		}
+//	}
+	if (!added)
+	{
+		assert(_num < _max);
+		_items[_num] = value;
+		_num++;
+	}
+	assert(_num <= _max);
+}
+
+//============================================================================
+// note: this only finds first occurance
+
+template<class T> INLINE int32
+Array<T>::Find(T value)
+{
+	assert(ValidPtr(_items));
+//	assert(actorIndex > 0);
+	int32 listIndex = 0;
+	while(listIndex < _max)
+	{
+		if(_items[listIndex] == value)
+			return listIndex;
+		listIndex++;
+	}
+	return(-1);
+//	AssertMsg(0,"Didn't find value " << value << "  in Array<T>");					// actor not found in this actor list
+}
+
+//============================================================================
+
+template<class T> INLINE const T&
+Array<T>::operator[](int32 index) const
+{
+	assert(index < _max);
+	assert(index < _num);         // can't read an object which hasn't been written to
+	assert(index >= 0);
+	assert(ValidPtr(_items));
+	return(_items[index]);
+}
+
+template<class T> INLINE T&
+Array<T>::operator[](int32 index)
+{
+	assert(index < _max);
+	assert(index >= 0);
+	assert(ValidPtr(_items));
+   if(index > _num)
+      _num = index+1;
+	return(_items[index]);
+}
+
+template<class T> inline ArrayIterConst<T> 
+Array<T>::begin() const
+{
+   return ArrayIterConst<T>(*this);
+}
+
+template<class T> inline ArrayIter<T> 
+Array<T>::begin() 
+{
+   return ArrayIter<T>(*this);
+}
+
+template<class T> inline ArrayIterConst<T> 
+Array<T>::end() const
+{
+   ArrayIterConst<T> iter(*this);
+   iter+=_num;
+   return iter;
+}
+
+template<class T> inline ArrayIter<T> 
+Array<T>::end() 
+{
+   ArrayIter<T> iter(*this);
+   iter+=Size();
+   return ArrayIter<T>(*this);
+}
+
+
+//==============================================================================
+
+#if SW_DBSTREAM
+
+template<class T> inline std::ostream& operator <<( std::ostream& s, const Array<T>& array  )
+{
+    ArrayIterConst<T> iter = array.begin();
+    while(iter != array.end())
+    {
+        s << *iter;
+        ++iter;
+        if(iter != array.end())
+            s << ",";
+    }
+    return s;
+}
+#endif // SW_DBSTREAM
+
+//============================================================================
+//============================================================================
+
+template<class T> INLINE bool
+ArrayIter<T>::Empty() const
+{
+	assert(ValidPtr(_pArray));
+	return(_itemIndex == _pArray->_num);
+}
+
+//============================================================================
+
+template<class T> INLINE
+ArrayIter<T>::ArrayIter(Array<T>& new_pArray)
+{
+	_pArray = &new_pArray;
+	assert(ValidPtr(_pArray));
+	assert(ValidPtr(_pArray->_items));
+	_itemIndex = 0;
+    Validate();
+}
+
+//============================================================================
+
+template<class T> INLINE ArrayIter<T>&
+ArrayIter<T>::operator++()
+{
+	assert(ValidPtr(_pArray));
+	assert(_pArray->_num);
+	assert( _itemIndex < _pArray->_num );
+
+	++_itemIndex;
+//#if DEBUG > 0
+//	if(_itemIndex < _pArray->_num)
+//		assert(_pArray->_items[_itemIndex] >= 0);
+//#endif
+	return(*this);
+}
+
+//============================================================================
+
+template<class T> INLINE ArrayIter<T>&
+ArrayIter<T>::operator+=(int offset)
+{
+	while(offset-- && !Empty())
+		operator++();
+	return(*this);
+}
+
+//============================================================================
+
+template<class T> INLINE const T&
+ArrayIter<T>::operator*() const				// dereference operator, used to read the current object from the interator
+{
+	assert(_itemIndex >= 0);
+	assert(ValidPtr(_pArray));
+	assert(_itemIndex <= _pArray->_num);
+
+	if(_itemIndex >= _pArray->_num)
+	{
+		assert(0);				// should de-reference an iterator which is off the end of the list
+		return((const T&)(0));
+	}
+
+	assert(ValidPtr(_pArray->_items));
+	return(_pArray->_items[_itemIndex]);
+}
+
+//============================================================================
+
+template<class T> INLINE ArrayIter<T>&
+ArrayIter<T>::operator= (const ArrayIter<T>& i)
+{
+	assert(ValidPtr(i._pArray));
+	_pArray = i._pArray;
+	_itemIndex = i._itemIndex;
+	return *this;
+}
+
+//==============================================================================
+
+template<class T> INLINE bool
+ArrayIter<T>::operator==(const ArrayIter<T>& i) const
+{
+    Validate();
+	return(_itemIndex == i._itemIndex);
+}
+
+//============================================================================
+//============================================================================
+
+template<class T> INLINE  void
+ArrayIterConst<T>::Validate() const
+{
+    assert(ValidPtr(_pArray));
+    _pArray->Validate();
+    RangeCheck(0,_itemIndex,10000);         // kts arbitray
+	assert(_itemIndex <= _pArray->_num);
+}
+
+
+template<class T> INLINE bool
+ArrayIterConst<T>::Empty() const
+{
+    Validate();
+	assert(ValidPtr(_pArray));
+	return(_itemIndex == _pArray->_num);
+}
+
+//==============================================================================
+
+template<class T> INLINE bool
+ArrayIterConst<T>::operator==(const ArrayIterConst<T>& i) const
+{
+    Validate();
+	return(_itemIndex == i._itemIndex);
+}
+
+//============================================================================
+
+template<class T> INLINE
+ArrayIterConst<T>::ArrayIterConst(const Array<T>& new_pArray)
+{
+    new_pArray.Validate();
+	_pArray = &new_pArray;
+	assert(ValidPtr(_pArray));
+    if(_pArray->Size())
+       assert(ValidPtr(_pArray->_items));
+	_itemIndex = 0;
+    Validate();
+}
+
+//============================================================================
+
+template<class T> INLINE ArrayIterConst<T>&
+ArrayIterConst<T>::operator++()
+{
+    Validate();
+	assert(ValidPtr(_pArray));
+	assert(_pArray->_num);
+	assert( _itemIndex < _pArray->_num );
+
+	++_itemIndex;
+	return(*this);
+}
+
+//============================================================================
+
+template<class T> INLINE ArrayIterConst<T>&
+ArrayIterConst<T>::operator+=(int offset)
+{
+    Validate();
+	while(offset-- && !Empty())
+		operator++();
+	return(*this);
+}
+
+//============================================================================
+
+template<class T> INLINE const T&
+ArrayIterConst<T>::operator*() const				// dereference operator, used to read the current object from the interator
+{
+    Validate();
+
+	if(_itemIndex >= _pArray->_num)
+	{
+		assert(0);				// should de-reference an iterator which is off the end of the list
+        return(_pArray->_items[0]);         // kts just to make the compiler happy
+	}
+
+	assert(ValidPtr(_pArray->_items));
+	return(_pArray->_items[_itemIndex]);
+}
+
+//============================================================================

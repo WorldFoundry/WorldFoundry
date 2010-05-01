@@ -1,0 +1,91 @@
+//============================================================================
+// msgport.hp: Message Port class for Actor objects
+//============================================================================
+// Documentation:
+//
+//
+//	Abstract:
+//			Messaging system for communication between Actor objects.  This
+//			supliments the existing mailbox system rather than replacing it.
+//			(Mailboxes provide one-to-many broadcasts, while MsgPorts provide
+//			one-to-one message passing.)
+//
+//	History:
+//			Created	12:44 2/6/96 by Phil Torre
+//
+//	Class Hierarchy:
+//			none
+//
+//	Dependancies:
+//
+//	Restrictions:
+//
+//	Example:
+//
+//
+//============================================================================
+// use only once insurance
+#ifndef _MSGPORT_HP
+#define _MSGPORT_HP
+
+//============================================================================
+// includes:
+
+#include <pigsys/pigsys.hp>
+#include <memory/mempool.hp>
+#include <hal/_list.h>
+#include <hal/_mempool.h>
+#include <math/scalar.hp>
+
+//============================================================================
+
+struct SMsg
+{
+	SNode _link;
+	int16 _type;			// message type
+   union _data
+   {
+      int32 _message;			// actual message
+      char binary[sizeof(Scalar)];
+   } data;
+};
+
+const size_t msgDataSize = sizeof(SMsg::_data);
+
+//============================================================================
+
+class MsgPort
+{
+public:
+	// public functions
+	MsgPort(SMemPool* msgPortMemPool);
+	~MsgPort();
+	bool PutMsg(int16 msgType, int32 msgData);		// Send a message
+	bool PutMsg(int16 msgType, const void* data, uint32 size);		// Send a message
+	bool GetMsg(int16& msgType, void* data, uint32 maxsize);	// Receive a message
+	bool GetMsgByType(const int16& msgType, void* data, uint32 size);
+	bool Empty();								// if msgport empty, returns true
+
+	typedef enum				// Message Types
+	{
+#include "msgtypes.hp" 			// types need to be readable by 3d-studio also!!
+	} MSG_TYPE;
+
+#if SW_DBSTREAM > 0
+	friend std::ostream& operator<<(std::ostream& s, const MsgPort &mp);
+	friend std::ostream& operator<<(std::ostream& s, MsgPort::MSG_TYPE theType);
+#endif
+
+protected:
+	SList _messages;				// Message queue for this port
+   static SMemPool* _msgPortMemPool;
+   static int       _portCount;     // used to keep track of when I should zero out _msgPortMemPool
+};
+
+//=============================================================================
+#if		USE_INLINE_DEFS || defined(_MSGPORT_CC)
+#include "msgport.hpi"	// include all inline definitions as appropriate
+#endif
+//============================================================================
+#endif	// _MSGPORT_HP
+//============================================================================

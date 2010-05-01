@@ -1,0 +1,98 @@
+// handle.hpi
+
+// ------------------------------------------------------------------------
+
+INLINE
+HandleID::HandleID() :
+	_id( *( (uint32 *)( "NULL" ) ) )
+{
+}
+
+// ------------------------------------------------------------------------
+
+INLINE
+HandleID::HandleID( const char id[4] ) : _id( *( (uint32 *)( &id[0] ) ) )
+{
+}
+
+// ------------------------------------------------------------------------
+
+INLINE
+HandleID::HandleID( uint32 id ) : _id( id )
+{
+}
+
+// ------------------------------------------------------------------------
+INLINE
+HandleID::HandleID( const HandleID& x ) : _id( x._id )
+{
+}
+
+// ------------------------------------------------------------------------
+
+INLINE int
+operator == ( const HandleID& a, const HandleID& b )
+{
+	return a._id == b._id;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE int
+operator != ( const HandleID& a, const HandleID& b )
+{
+	return a._id != b._id;
+}
+
+#if 0
+
+// ------------------------------------------------------------------------
+
+INLINE int
+operator <= ( const HandleID& a, const HandleID& b )
+{
+	return a._id <= b._id;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE int
+operator >= ( const HandleID& a, const HandleID& b )
+{
+	return a._id >= b._id;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE int
+operator > ( const HandleID& a, const HandleID& b )
+{
+	return a._id > b._id;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE int
+operator < ( const HandleID& a, const HandleID& b )
+{
+	return a._id < b._id;
+}
+
+#endif
+
+// ------------------------------------------------------------------------
+
+INLINE HandleID
+Handle::ID() const
+{
+	return _id;
+}
+
+INLINE int32
+Handle::Vertex() const
+{
+	return _vertexNum;
+}
+
+// ------------------------------------------------------------------------
+

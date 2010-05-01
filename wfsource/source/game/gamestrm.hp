@@ -1,0 +1,33 @@
+//==============================================================================
+// gamestrm.hp
+//==============================================================================
+
+#ifndef _GAMESTRM_HP
+#define _GAMESTRM_HP
+
+#if SW_DBSTREAM
+
+// ------------------------------------------------------------------------
+// Standard Set of std::ostreams
+// ------------------------------------------------------------------------
+
+// ------------------------------------------------------------------------
+// game modules debugging std::ostreams
+// ------------------------------------------------------------------------
+
+#define STREAMENTRY(stream,where,initial,helptext) extern ostream_withassign stream;
+#define EXTERNSTREAMENTRY(stream,where,initial,helptext) extern ostream_withassign stream;
+#include "gamestrm.inc"
+#undef STREAMENTRY
+#undef EXTERNSTREAMENTRY
+
+// ------------------------------------------------------------------------
+// Function Prototypes
+// ------------------------------------------------------------------------
+
+void RedirectGameStream( char * str );
+
+//==============================================================================
+#endif // SW_DBSTREAM
+#endif // _GAMESTRM_HP
+//==============================================================================

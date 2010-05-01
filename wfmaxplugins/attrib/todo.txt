@@ -1,0 +1,11 @@
+TODO
+
+Add filename specs for filename buttons
+
+* Make file buttons accept files using drag and drop
+
+* Right button on cycle button brings up menu of choices
+
+* Object reference to use pick like R4
+
+Rename icon1.ico to clipboard.ico

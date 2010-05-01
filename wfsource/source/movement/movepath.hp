@@ -1,0 +1,70 @@
+//============================================================================
+// movepath.hp: Base class and derived classes for movement handlers
+// Copyright ( c ) 19996,1997,1998,2000,2002,2003 World Foundry Group.  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//============================================================================
+// Documentation:
+//
+//
+//	Abstract:
+//			Provides a base class for movement handlers and derived classes
+//			for state-specific handlers.  Actor objects will contain a pointer
+//			to the derived movement handler appropriate for their current state.
+//
+//	History:
+//			Created	14:49 2/11/96 by Phil Torre
+//
+//	Class Hierarchy:
+//
+//
+//	Dependancies:
+//
+//	Restrictions:
+//
+//	Example:
+//
+//
+//============================================================================
+
+#ifndef _MOVEPATH_HP
+#define _MOVEPATH_HP
+
+//==============================================================================
+         
+#include <physics/physical.hp>
+
+//============================================================================
+// Handler for following a path
+
+class PathHandler : public MovementHandler
+{
+public:
+	virtual void init(MovementManager& movementManager, MovementObject& movementObject);
+	virtual bool check();
+	virtual bool update(MovementManager& movementManager, MovementObject& movementObject, const BaseObjectList& baseObjectList );
+	virtual void predictPosition(MovementManager& movementManager, MovementObject& movementObject, const Clock& clock, const BaseObjectList& baseObjectList);
+};
+
+//============================================================================
+
+extern MovementHandler* pathHandlerTable[];
+
+//==============================================================================
+#endif // _MOVEPATH_HP
+//==============================================================================

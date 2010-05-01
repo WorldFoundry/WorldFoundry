@@ -1,0 +1,94 @@
+//==============================================================================
+// ode.hp: global wrapper for ode library
+// Copyright ( c ) 2002 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//=============================================================================
+// Description: this class bascally exists to insure ODE is properly initialzed,
+// and to hold the world ID
+// Original Author: Kevin T. Seghetti 
+//==============================================================================
+
+#ifndef _ODE_HP
+#define _ODE_HP
+
+#include <pigsys/pigsys.hp>
+namespace ode
+{
+    #include <ode/ode.h>
+}
+
+
+
+#if defined(SCALAR_TYPE_FIXED)
+#error have not made ODE work with fixed point math (should we bother?)
+#elif defined(SCALAR_TYPE_FLOAT) 
+#ifndef dSINGLE
+#error ODE and WF scalar types do not match
+// kts if you get this you probably need to set SCALAR_TYPE to double (setenv SCALAR_TYPE double)
+#endif
+#elif defined(SCALAR_TYPE_DOUBLE)
+#ifndef dDOUBLE
+#error ODE and WF scalar types do not match
+#endif
+#else
+#error SCALAR TYPE not defined
+#endif
+
+//==============================================================================
+
+class ODEWorld
+{
+public:
+    ODEWorld();
+    ~ODEWorld();
+    ode::dWorldID operator()() const;
+    void SetSpace(ode::dSpaceID space);
+    ode::dSpaceID Space() const;
+private:
+    ode::dWorldID _world;
+    ode::dSpaceID _space;
+};
+
+//==============================================================================
+
+inline ode::dWorldID 
+ODEWorld::operator()() const
+{ 
+    return _world; 
+}
+
+inline ode::dSpaceID 
+ODEWorld::Space() const
+{ 
+    return _space; 
+}
+
+inline void
+ODEWorld::SetSpace(ode::dSpaceID space)
+{ 
+    _space = space; 
+}
+
+//==============================================================================
+ 
+extern ODEWorld odeWorld;           // global instance
+
+//==============================================================================
+#endif
+//==============================================================================

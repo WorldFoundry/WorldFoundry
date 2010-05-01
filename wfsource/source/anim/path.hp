@@ -1,0 +1,82 @@
+// ===========================================================================
+//	Path.hp:
+// Copyright (c) 1997,2000,2002,2003 World Foundry Group. 
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+// ===========================================================================
+
+#ifndef _PATH_HP
+#define _PATH_HP
+
+// ===========================================================================
+
+#include <pigsys/pigsys.hp>
+#include <memory/memory.hp>
+#include <math/scalar.hp>
+#include <math/vector3.hp>
+#include <math/euler.hp>
+#include <oas/levelcon.h>          \
+
+// ===========================================================================
+
+class Channel;
+
+// ===========================================================================
+
+typedef enum
+{
+	AT_END_OF_PATH_PING_PONG,
+	AT_END_OF_PATH_STOP,
+	AT_END_OF_PATH_JUMPBACK,
+	AT_END_OF_PATH_DELETE,
+	AT_END_OF_PATH_DERAIL,
+	AT_END_OF_PATH_WARPBACK,	// jumpback WITHOUT interpolated collision box
+} AtEndOfPathOptions;
+
+// ===========================================================================
+
+class Path
+{
+friend class PathHandler;
+public:
+	Path( const  _PathOnDisk* pathData, Memory& newMemory, const _LevelOnDisk* levelData );
+	virtual ~Path();
+
+	INLINE void SetBase( const Vector3 &newBase ) { _base = newBase; }
+	INLINE void SetBaseRot( const Euler& newBaseRot ) { _baseRot = newBaseRot; }
+
+	Vector3 Position( const Scalar time );
+	Euler Rotation( const Scalar time );
+	INLINE Scalar EndTime() { return _endTime; }
+
+private:
+	Scalar				_endTime;	// cached because we don't want to compute it every time
+	Vector3				_base;          	// for hierarchical paths
+	Euler				_baseRot;       	// for hierarchical paths
+	Channel*			_positionXChannel;
+	Channel*			_positionYChannel;
+	Channel*			_positionZChannel;
+	Channel*			_rotationAChannel;
+	Channel*			_rotationBChannel;
+	Channel*			_rotationCChannel;
+   Memory&        _memory;
+};
+
+
+// ===========================================================================
+#endif // !_PATH_HP
+// ===========================================================================

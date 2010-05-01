@@ -1,0 +1,27 @@
+
+inline int
+Bitmap::width() const
+{
+        return _width;
+}
+
+
+inline int
+Bitmap::height() const
+{
+        return _height;
+}
+
+
+inline int
+Bitmap::bitdepth() const
+{
+        return _bitdepth;
+}
+
+
+inline int
+Bitmap::coloursUsed() const
+{
+	return bitdepth() == 16 ? 0 : _CMapLength;
+}

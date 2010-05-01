@@ -1,0 +1,80 @@
+//==============================================================================
+// physicalobject.hp:
+// Copyright ( c ) 2002,2003 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//=============================================================================
+// Description: The PhysicalObject is a virtual base class, a client needs to derive
+// from this and fill out the virutual functions to be able to use the movement handlers
+// and collision system
+// This is how I am able to decouple the physics from all of the other pieces it
+// needs to access
+// Original Author: Kevin T. Seghetti 
+//==============================================================================
+
+#ifndef _PHYSICALOBJECT_HP
+#define _PHYSICALOBJECT_HP
+
+//==============================================================================
+
+#include <pigsys/pigsys.hp>
+#include <math/scalar.hp>
+#include <oas/levelcon.h>
+#include <oas/movebloc.ht>
+#include <physics/physical.hp>
+#include <cpplib/iterwrapper.hp>
+#include <baseobject/baseobject.hp>
+
+//==============================================================================
+
+class PhysicalObject : public BaseObject
+{
+public:
+	// C++ functions (constructors, assignment, etc.)
+   PhysicalObject(const void* oadData, const CommonBlock& commonBlock);
+	virtual ~PhysicalObject();
+
+   virtual const PhysicalAttributes& GetPhysicalAttributes() const = 0;
+   virtual PhysicalAttributes& GetWritablePhysicalAttributes() = 0;
+   virtual void Collision(PhysicalObject& other, const Vector3& normal);
+
+   Vector3 currentDir() const;
+
+   const _Movement* GetMovementBlockPtr() const;
+
+protected:
+#if SW_DBSTREAM >= 1
+	friend std::ostream& operator << ( std::ostream& s, const PhysicalObject& pa );
+	virtual std::ostream& Print( std::ostream& ) const = 0;
+#endif
+private:
+};
+
+//==============================================================================
+
+inline PhysicalObject&
+UpcastToPhysicalObject(BaseObject* base);
+
+inline const PhysicalObject&
+UpcastToPhysicalObject(const BaseObject* base);
+
+//==============================================================================
+#include "physicalobject.hpi"	// include all inline definitions as appropriate
+//==============================================================================
+#endif
+//==============================================================================

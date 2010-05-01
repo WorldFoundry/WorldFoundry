@@ -1,0 +1,96 @@
+//=============================================================================
+// math/psx/ScalarPS.hp: Playstation/gte specific Scalars
+// Copyright (c) 1997,98,99 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// Orignal Author: Kevin T. Seghetti
+//=============================================================================
+
+#include <math/scalar.hp>
+
+//=============================================================================
+
+typedef short Scalar_PS;
+#define PS_SCALAR_CONSTANT(x) Scalar_PS(((int16)(256 * (x))))
+#define PS_SCALAR_CONSTANT12(x) Scalar_PS(((int16)(4096 * (x))))
+
+//=============================================================================
+
+//	typedef Fixed16 Scalar_PS;			    // kts try this
+
+// 8.8
+class Fixed16
+{
+public:
+	Fixed16(short val) { _val = val; }
+#if DO_IOSTREAMS
+	friend ostream& operator<< (ostream& out, const Fixed16 num);
+#endif
+private:
+	short _val;
+	short _padding;
+};
+
+
+#if DO_IOSTREAMS
+	ostream& operator<< (ostream& out, const Fixed16 num);
+#endif
+
+#if 0
+// 4.12
+class Fixed412
+{
+public:
+	Fixed412(short val) { _val = val; }
+#if DO_IOSTREAMS
+	friend ostream& operator<< (ostream& out, const Fixed412 num);
+#endif
+private:
+	short _val;
+	short _padding;
+};
+
+#if DO_IOSTREAMS
+	ostream& operator<< (ostream& out, const Fixed412 num);
+#endif
+
+#endif
+
+//=============================================================================
+
+INLINE Scalar_PS
+S32ToS16(Scalar in)
+{
+	return Scalar_PS(in.AsLong() >> 8);
+}
+
+
+INLINE Scalar
+S16ToS32(Scalar_PS in)
+{
+	return Scalar(long(in) << 8);
+}
+
+
+INLINE Scalar_PS
+S32ToS12(Scalar in)
+{
+	return Scalar_PS(in.AsLong() >> 4);
+}
+
+//=============================================================================

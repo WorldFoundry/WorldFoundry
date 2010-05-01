@@ -1,0 +1,27 @@
+@*============================================================================
+@* room.oas
+@*============================================================================
+
+@*============================================================================
+@* room oas description
+
+@define DEFAULT_MASS 0.0
+
+@include xdata.inc
+
+TYPEHEADER(Room,room)
+	LEVELCONFLAGCOMMONBLOCK(common)
+	LEVELCONFLAGROOM
+
+	PROPERTY_SHEET_HEADER(Room,1)
+@*	-----------------------------
+	GROUP_START(Adjacent Rooms)
+	TYPEENTRYOBJREFERENCE(Adjacent Room 1,Room)
+	TYPEENTRYOBJREFERENCE(Adjacent Room 2,Room)
+@*	TYPEENTRYOBJREFERENCE(Adjacent Room 3,Room,,"0")
+	GROUP_STOP()
+	TYPEENTRYINT32(Room Loaded Mailbox,,0, 3999, 0, "", SHOW_AS_NUMBER)
+	PROPERTY_SHEET_FOOTER
+TYPEFOOTER
+
+@*============================================================================

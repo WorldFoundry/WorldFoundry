@@ -1,0 +1,1 @@
+cvs import -I ! -W "*.lib -k 'b'" -W "*.gif -k 'b'" -W "*.doc -k 'b'" -W "*.pdf -k 'b'" -W "*.exe -k 'b'" -W "*.bmp -k 'b'" -W "*.tga -k 'b'" -W "*.max -k 'b'" -m "Imported wfsource" Recombinant/WFSource Recombinant start

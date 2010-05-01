@@ -1,0 +1,49 @@
+AC_INIT(Makefile.am)
+#
+AC_CANONICAL_SYSTEM
+AC_ARG_PROGRAM
+PACKAGE=i3dplugins
+$I3DPLUGINS_VERSION=0.1
+
+AM_INIT_AUTOMAKE($PACKAGE, $I3DPLUGINS_VERSION)
+AM_CONFIG_HEADER(config.h)
+
+AC_MSG_CHECKING([for I3DDIR environment variable])
+if test -z "$I3DDIR"; then
+  AC_PREFIX_DEFAULT("/usr/local/i3d")
+  AC_MSG_RESULT(no)
+else
+  AC_PREFIX_DEFAULT($I3DDIR)
+  AC_MSG_RESULT($I3DDIR)
+fi
+
+AC_ENABLE_SHARED(yes)
+AC_ENABLE_STATIC(no)
+AC_PROG_CC
+AC_PROG_CXX
+FAMP_CPP_CHECK
+
+AC_LIBTOOL_DLOPEN
+AM_DISABLE_STATIC
+AM_PROG_LIBTOOL
+AM_SANITY_CHECK
+
+CONFIGURE_X11(, AC_MSG_ERROR([Cannot find X11]))
+CONFIGURE_QT(2.2.0,,AC_MSG_ERROR([Cannot find proper QT]))
+CONFIGURE_I3D(,, AC_MSG_ERROR([Cannot find proper I3D installation]))
+CONFIGURE_NURBS(,, AC_MSG_ERROR([Cannot find proper NURBS++ installation]))
+
+ACLOCAL="aclocal -I m4 \$(ACLOCAL_FLAGS)"
+
+AC_SUBST(ACLOCAL)
+
+includedir="$includedir"
+AC_SUBST(includedir)
+
+AC_OUTPUT([ \
+  Makefile \
+ AttribPlugin/Makefile \
+ LevelExportPlugin/Makefile 
+ GeometryExportPlugin/Makefile 
+]
+) 

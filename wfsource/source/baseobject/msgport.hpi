@@ -1,0 +1,54 @@
+//=============================================================================
+// msgport.hpi:
+// Copyright ( c ) 1994,95,6,97,99 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//=============================================================================
+
+#define LISTEMPTY(list) \
+	(list->_tail == (SNode*)list)
+
+//============================================================================
+
+INLINE SNode*
+ListRemoveHeadByType(SList* self, const int16 type)		// note: returns NULL if list empty
+{
+	SNode* nodePtr = self->_head;
+	VALIDATELIST(self);
+
+	if(LISTEMPTY(self))					// check if list is empty
+		return(NULL);
+
+	while ((((SMsg*)nodePtr)->_type != type) && (nodePtr->_next != NULL))
+		nodePtr = nodePtr->_next;
+
+	if (nodePtr->_next != NULL)
+		return(NodeRemove(nodePtr));
+	else
+		return NULL;
+}
+
+//============================================================================
+
+INLINE bool
+MsgPort::Empty()
+{
+	return(ListEmpty(&_messages));			// if list empty, returns true
+}
+
+//=============================================================================

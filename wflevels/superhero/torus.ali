@@ -1,0 +1,41 @@
+
+#include torus.mesh.iff
+
+{ 'ANMP'
+	// map of which of the following animation cycles  goes with each
+	// World Foundry game engine animation types (currently 30)
+
+	0w	//ANIMATION( IDLE, 			00 )
+	0w	//ANIMATION( BUMP_WALL_CORNER, 		01 )
+	0w	//ANIMATION( BUMP_WALL_CORNER_L, 		02 )
+	0w	//ANIMATION( BUMP_WALL_CT, 		03 )
+	0w	//ANIMATION( BUMP_WALL_CT_L, 		04 )
+	0w	//ANIMATION( BUMP_WALL_FLAT, 		05 )
+	0w	//ANIMATION( CLIMB_PULL_UP, 		06 )
+	0w	//ANIMATION( CRAWL, 			07 )
+	0w	//ANIMATION( DUCK,                        08 )
+	0w	//ANIMATION( EXPLODE_FRONT, 		09 )
+	0w	//ANIMATION( FALL_FAST, 			10 )
+	0w	//ANIMATION( FALL, 			11 )
+	0w	//ANIMATION( HANG, 			12 )
+	0w	//ANIMATION( HIT_CHEST_SOFT, 		13 )		// played when taking damage
+	0w	//ANIMATION( JUMP, 			14 )
+	0w	//ANIMATION( JUMP_UP, 			15 )
+	0w	//ANIMATION( LAND, 			16 )
+	0w	//ANIMATION( LAND_HARD, 			17 )
+	0w	//ANIMATION( LAND_SOFT, 			18 )
+	0w	//ANIMATION( PUSHED, 			19 )
+	0w	//ANIMATION( RUN_HARD, 			20 )
+	0w	//ANIMATION( RUN_MEDIUM, 			21 )
+	0w	//ANIMATION( RUN_MED_STOP_SHORT, 		22 )
+	0w	//ANIMATION( RUN_SOFT, 			23 )
+	0w	//ANIMATION( SLIDE_AGAINST_WALL, 		24 )
+	0w	//ANIMATION( SWORD_STRIKE_FORWARD, 	25 )
+	0w	//ANIMATION( SWORD_STRIKE_BACKWARD, 	26 )
+	0w	//ANIMATION( SWORD_STRIKE_LEFT, 		27 )
+	0w	//ANIMATION( SWORD_STRIKE_RIGHT, 		28 )
+	0w	//ANIMATION( SIDESTEP_LEFT, 		29 )
+	0w	//ANIMATION( SIDESTEP_RIGHT, 		30 )
+}
+#include torus.idle.iff
+

@@ -1,0 +1,202 @@
+//==============================================================================
+// actor.hpi:
+// Copyright ( c ) 1994,1995,1996,1997,1998,1999,2000,2002,2003 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description: Actor is the base class for game world objects.
+//==============================================================================
+
+#include <movement/movement.hp>
+#include <oas/actor.ht>
+                          
+//==============================================================================
+
+inline RenderActor&
+Actor::GetRenderActor()
+{
+	assert(ValidPtr(_renderActor));
+	return(*_renderActor);
+}
+
+//==============================================================================
+
+inline int
+Actor::GetActorIndex() const
+{
+	//assert( this - theLevel->_actors == _idxActor );
+	//assert ( _idxActor == theLevel->GetActorIndex( this ) );
+	//if ( theLevel ) theLevel->GetActorIndex( this );
+	return(_idxActor);
+}
+
+//============================================================================
+
+inline void
+Actor::SetActorIndex( int32 idxActor )
+{
+	AssertMsg( _idxActor == 0, *this << " attempted to redefine its _idxActor" << std::endl );
+	_idxActor = idxActor;
+}
+
+//==============================================================================
+
+inline bool
+Actor::hasRunUpdate() const
+{
+    return (GetPhysicalAttributes().HasRunUpdate());
+}
+
+//==============================================================================
+
+inline bool
+Actor::hasRunPredictPosition() const
+{
+    return GetPhysicalAttributes().HasRunPredictPosition();
+}
+
+//==============================================================================
+
+inline Scalar
+Actor::getHealth() const
+{
+	return _nonStatPlat->_hitPoints;
+}
+
+//==============================================================================
+
+inline void
+Actor::setCurrentPos( const Vector3& pos )
+{
+	DBSTREAM1
+	(
+		if ( !GetMovementBlockPtr()->Mobility )
+			cerror << "Actor::setCurrentPosition: " << *this << " doesn't have mobility set!" << std::endl;
+	)
+	_physicalAttributes.SetPosition(pos);
+}
+
+//============================================================================
+
+inline void
+Actor::setSpeed( const Vector3& speed )
+{
+	// Actors don't move, so ignore
+	_physicalAttributes.SetLinVelocity(speed);
+}
+
+//==============================================================================
+
+inline const Vector3&
+Actor::currentPos() const
+{
+	return _physicalAttributes.Position();
+}
+
+//==============================================================================
+
+inline const _ShadowPage*
+Actor::GetShadowPageBlockPtr() const
+{
+	_Actor* pActorData = (_Actor*)_oadData;
+	assert( ValidPtr( pActorData ) );
+   return (_ShadowPage*)GetBlockPtr(pActorData->shadowPageOffset);
+}
+
+//==============================================================================
+
+inline const _Toolset*
+Actor::GetToolsetBlockPtr() const
+{
+	_Actor* pActorData = (_Actor*)_oadData;
+	assert( ValidPtr( pActorData ) );
+   return (_Toolset*)GetBlockPtr(pActorData->toolsetPageOffset);
+}
+
+//==============================================================================
+
+inline const _Common*
+Actor::GetCommonBlockPtr() const
+{
+   assert(ValidPtr(_oadData));
+	_Actor* pActorData = (_Actor*)_oadData;
+	assert( ValidPtr( pActorData ) );
+   return (_Common*)GetBlockPtr(pActorData->commonPageOffset);
+}
+
+//==============================================================================
+
+inline const _Mesh*
+Actor::GetMeshBlockPtr() const
+{
+	_Actor* pActorData = (_Actor*)_oadData;
+	assert( ValidPtr( pActorData ) );
+   return (_Mesh*)GetBlockPtr(pActorData->meshPageOffset);
+}
+
+//==============================================================================
+
+inline int32
+Actor::GetMeshName() const
+{
+	assert( ValidPtr( _oadData ) );
+	return ((_Actor*)_oadData)->MeshName;
+}
+
+//==============================================================================
+
+inline const Vector3
+Actor::GetPredictedPosition() const
+{
+	return _physicalAttributes.PredictedPosition();
+}
+
+//==============================================================================
+
+inline const ColSpace&
+Actor::GetColSpace() const
+{
+	return _physicalAttributes.GetColSpace();
+}
+
+//==============================================================================
+
+inline QInputDigital*
+Actor::GetInputPointer() const
+{
+    return _nonStatPlat->_input;
+}
+
+//==============================================================================
+
+inline void
+Actor::SetInputDevice(QInputDigital* newInput)
+{
+    AssertMsg( newInput, *this );
+    _nonStatPlat->_input = newInput;
+}
+
+//==============================================================================
+
+inline bool
+Actor::IsNeedleGunTarget() const
+{
+	return GetCommonBlockPtr()->IsNeedleGunTarget;
+}
+
+//==============================================================================

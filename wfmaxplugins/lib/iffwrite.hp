@@ -1,0 +1,282 @@
+//=============================================================================
+// iffwrite.hp
+// Copyright 1997-1998,99 World Foundry Group. 
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// History:
+// ?? ??? ??	WBNIV	Created
+// 28 Feb 98	WBNIV   Updated to << operator
+//============================================================================
+
+#ifndef IFFWRITE_H
+#define IFFWRITE_H
+
+#include "global.hp"
+#include "id.hp"
+#include "backpatch.hp"
+#include "stl/bstring.h"
+//#include <cstdlib>
+//#include <cstring>
+//#include <limits>
+//#include <vector>
+//#include <ios>
+//#include <iomanip>
+//#include <string>
+//#include <strstream>
+//using namespace std;
+class Fixed;
+//#pragma comment(lib,"iffwrite")
+
+#pragma warning( disable : 4003 )
+
+class Comment
+{
+public:
+	//Comment( const string& str )		{ _str = str; }
+	//Comment( istream& istr )
+	//Comment( const char* szComment )	{ assert( szComment ); _str = string( szComment ); }
+
+	Comment()							{ _szComment = strdup( "" ); }
+	Comment( const char* szComment )	{ assert( szComment ); _szComment = szComment; }
+	const char* operator()() const		{ assert( _szComment ); return _szComment; }
+
+protected:
+	const char* _szComment;
+	//string _str;
+};
+
+
+class Timestamp
+{
+public:
+	Timestamp();
+	//Timestamp( time_t );
+	//static time_t now();
+
+//protected:
+	time_t _localtimestamp;
+	tm* pTime;
+};
+
+#include "printf.hp"
+
+class File
+{
+public:
+	File( const char* szFilename, long startPos = 0, long length = LONG_MAX )
+	{
+		assert( szFilename );
+		_szFilename = strdup( szFilename );
+		assert( _szFilename );
+		_startPos = startPos;
+		_length = length;
+	}
+	~File()
+	{
+		assert( _szFilename );
+		free( _szFilename );
+	}
+
+	const char* filename() const	{ assert( _szFilename ); return _szFilename; }
+	int startPos() const			{ return _startPos; }
+	int length() const				{ return _length; }
+
+protected:
+	char* _szFilename;
+	long _startPos;
+	long _length;
+};
+
+
+//	virtual void out_int( long i ) __fn__ ; \		dead?
+//	virtual void out_strstream( const strstream& ) __fn__; \
+//
+//	virtual void out_string( const char* ) __fn__ ; \
+
+#define IFF_WRITER_OUTPUT( __fn__ ) \
+public: \
+	virtual void out_comment( const Comment& ) __fn__ ; \
+	\
+	virtual void out_id( const ID& ) __fn__ ; \
+	virtual void out_int32( unsigned long i ) __fn__; \
+	virtual void out_int16( unsigned short i ) __fn__ ; \
+	virtual void out_int8( unsigned char i ) __fn__ ; \
+	virtual void out_string( const string& ) __fn__ ; \
+	virtual void out_string_continue( const string& ) __fn__; \
+	virtual void out_file( const File& ) __fn__; \
+	virtual void out_timestamp( const Timestamp& ) __fn__; \
+	virtual void out_fixed( const Fixed& ) __fn__; \
+protected: \
+	virtual void align( int ) __fn__ ; \
+	virtual void out_mem( void* ptr, size_t ) __fn__ ; \
+public: \
+	virtual void alignFunction( int ) __fn__ ; \
+
+
+//	virtual void out_scalar( const Scalar& ) __fn__; \
+
+
+
+class _IffWriter
+{
+public:
+	_IffWriter();
+	virtual ~_IffWriter();
+	IFF_WRITER_OUTPUT( =0 )
+
+	virtual void enterChunk( const ID& );
+	ChunkSizeBackpatch* exitChunk( const ID& );
+	virtual ChunkSizeBackpatch* exitChunk();
+
+//	virtual void out_string( const char*, int );
+
+	virtual unsigned char fillChar() const;
+	virtual void fillChar( unsigned char );
+
+	virtual const ChunkSizeBackpatch* findSymbol( const char* ) const;
+
+	ID chunkName() const;
+
+	ostream& log() const
+	{
+		return *_log;
+	}
+	void log( ostream& logParam )
+	{
+		_log = &logParam;
+	}
+
+protected:
+	ostream* _log;				// set if you want information to go somewhere
+	vector< ChunkSizeBackpatch* > chunkSize;
+	char _filename[ _MAX_PATH ];
+	ostream* _out;
+	unsigned char _fillChar;
+	vector< ChunkSizeBackpatch* > _chunkIdList;
+};
+
+
+class IffWriterNull : public _IffWriter
+{
+public:
+	IffWriterNull()				{}
+	virtual ~IffWriterNull()	{}
+	IFF_WRITER_OUTPUT( {} )
+};
+extern IffWriterNull theNullIffWriter;
+
+
+class IffWriterText : public _IffWriter
+{
+public:
+	IffWriterText( ostream& out );
+	virtual ~IffWriterText();
+	IFF_WRITER_OUTPUT(/*empty*/)
+
+	virtual void enterChunk( const ID& );
+	virtual ChunkSizeBackpatch* exitChunk();
+};
+
+class IffWriterBinary : public _IffWriter
+{
+public:
+	IffWriterBinary( ostream& out );
+	virtual ~IffWriterBinary();
+	IFF_WRITER_OUTPUT(/*empty*/)
+
+	virtual void enterChunk( const ID& );
+	virtual ChunkSizeBackpatch* exitChunk();
+
+protected:
+	char* translate_escape_codes( char* _str, int& );
+};
+
+
+#pragma warning( default : 4003 )
+
+#define IFF_LEFT_SHIFT_OPERATOR( type, fn ) \
+	inline _IffWriter& operator << ( _IffWriter& iff, type theData ) \
+	{	iff.out_##fn( theData ); \
+		return iff; \
+	}
+
+//IFF_LEFT_SHIFT_OPERATOR( out_mem( ptr, size_t ) )	help function
+//IFF_LEFT_SHIFT_OPERATOR( long, int )	dead
+IFF_LEFT_SHIFT_OPERATOR( unsigned long, int32 )
+IFF_LEFT_SHIFT_OPERATOR( const Comment&, comment )
+IFF_LEFT_SHIFT_OPERATOR( const File&, file )
+IFF_LEFT_SHIFT_OPERATOR( unsigned short, int16 )
+IFF_LEFT_SHIFT_OPERATOR( unsigned char, int8 )
+IFF_LEFT_SHIFT_OPERATOR( const char*, string )
+IFF_LEFT_SHIFT_OPERATOR( const string&, string )
+IFF_LEFT_SHIFT_OPERATOR( const ID&, id )
+//IFF_LEFT_SHIFT_OPERATOR( Scalar, scalar )
+IFF_LEFT_SHIFT_OPERATOR( const Timestamp&, timestamp )
+IFF_LEFT_SHIFT_OPERATOR( const Fixed&, fixed )
+
+
+inline _IffWriter&
+operator << ( _IffWriter& iff, istream& istr )
+{
+	for ( ;; )
+	{
+		unsigned char c;
+		istr >> c;
+		if ( istr.eof() )
+			break;
+		iff << c;
+
+	}
+
+	return iff;
+}
+
+
+#if 0
+inline _IffWriter&
+operator << ( _IffWriter& iff, const Euler& e )
+{
+	iff << e.GetA() << e.GetB() << e.GetC();
+	return iff;
+}
+#endif
+
+#include "fixed.hp"
+
+inline ostream&
+__tab( ostream& s, int _nLevel )
+{
+	for ( int i=1;i<_nLevel;++i )
+		s << '\t';
+	return s;
+}
+
+//inline OMANIP( int )	tab( int _p ) { return OMANIP(int)( __tab, _p ); }
+
+
+class tab
+{
+public:
+	int _count;
+	tab(int count) { _count = count; }
+};
+
+inline ostream& operator<< (ostream& out, tab newTab) { return __tab(out,newTab._count); }
+
+#endif	// IFFWRITE_H

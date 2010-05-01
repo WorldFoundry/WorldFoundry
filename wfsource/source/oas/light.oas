@@ -1,0 +1,48 @@
+@*============================================================================
+@* light.oas: light object
+@*============================================================================
+
+@*============================================================================
+
+@define DEFAULT_VISIBILITY	0
+@define DEFAULT_MODEL_TYPE	3
+
+TYPEHEADER(Light)
+	@include actor.inc
+
+	PROPERTY_SHEET_HEADER(Light,1)
+@*	------------------------------
+
+	LEVELCONFLAGEXTRACTLIGHT
+
+
+@* kts for now just reveal all of these parameters until I3D has lights
+
+@*	TYPEENTRYFIXED32(lightRed,, FIXED32(0), FIXED32(1), FIXED32(0), SHOW_AS_HIDDEN, "Directional light RED color value")
+@*	TYPEENTRYFIXED32(lightGreen,, FIXED32(0), FIXED32(1), FIXED32(0), SHOW_AS_HIDDEN, "Directional light GREEN color value")
+@*	TYPEENTRYFIXED32(lightBlue,, FIXED32(0), FIXED32(1), FIXED32(0), SHOW_AS_HIDDEN, "Directional light BLUE color value")
+
+@*	TYPEENTRYFIXED32(lightX,, FIXED32(-32768), FIXED32(32767), FIXED32(0), SHOW_AS_HIDDEN, "Directional light vector X")
+@*	TYPEENTRYFIXED32(lightY,, FIXED32(-32768), FIXED32(32767), FIXED32(0), SHOW_AS_HIDDEN, "Directional light vector Y")
+@*	TYPEENTRYFIXED32(lightZ,, FIXED32(-32768), FIXED32(32767), FIXED32(0), SHOW_AS_HIDDEN, "Directional light vector Z")
+
+@*	TYPEENTRYINT32(lightType,, 0, 1, 0, "Directional|Ambient", SHOW_AS_HIDDEN, "Light type (directional/ambient)")
+	
+
+	TYPEENTRYFIXED32(lightRed,, FIXED32(0), FIXED32(1), FIXED32(0),   , "Directional light RED color value")
+	TYPEENTRYFIXED32(lightGreen,, FIXED32(0), FIXED32(1), FIXED32(0), , "Directional light GREEN color value")
+	TYPEENTRYFIXED32(lightBlue,, FIXED32(0), FIXED32(1), FIXED32(0),  , "Directional light BLUE color value")
+
+	TYPEENTRYFIXED32(lightX,, FIXED32(-32768), FIXED32(32767), FIXED32(0), , "Directional light vector X")
+	TYPEENTRYFIXED32(lightY,, FIXED32(-32768), FIXED32(32767), FIXED32(0), , "Directional light vector Y")
+	TYPEENTRYFIXED32(lightZ,, FIXED32(-32768), FIXED32(32767), FIXED32(0), , "Directional light vector Z")
+
+	TYPEENTRYINT32(lightType,, 0, 1, 0, "Directional|Ambient", , "Light type (directional/ambient)")
+
+
+
+	PROPERTY_SHEET_FOOTER
+
+TYPEFOOTER
+
+@*============================================================================

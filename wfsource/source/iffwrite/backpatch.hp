@@ -1,0 +1,101 @@
+//=============================================================================
+// backpatch.hp
+// Copyright 1997,99 World Foundry Group. 
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// History:
+// ?? ??? ??	WBNIV	Created
+//============================================================================
+
+#ifndef IFFWRITE_BACKPATCH_HP
+#define IFFWRITE_BACKPATCH_HP
+
+// The compiler (gcc 2.95.x) complains about this: #pragma once
+
+#include <string>
+#include <cpplib/libstrm.hp>
+
+
+class ChunkSizeBackpatch
+{
+public:
+	ChunkSizeBackpatch(ID newID, int newPos, long newSize, const  char* name)	
+	{ 
+		id = newID; 
+		size = newSize; 
+		pos = newPos; 
+		strncpy(szID,name,256); 
+		DBSTREAM1(ciff << "ChunkSizeBackpatch::Constructor: name = " << name << ", pos = " << pos << ", size = " << size << std::endl; )
+	}
+	ChunkSizeBackpatch()	{ size = 0; pos = 0; szID[0] =0; }
+	~ChunkSizeBackpatch()	{}
+
+    int GetSize() const
+    {
+         return size;
+    }
+    int GetPos() const
+    {
+        return pos;
+    }
+
+
+    const ID& GetID() const
+    {
+        return id;
+    }
+
+
+    const char* GetName() const
+    {
+        return szID;
+    }
+
+    void AddToSize(int offset) 
+    {
+        assert(offset > 0);
+		DBSTREAM1(ciff << "Backpatch::AddToSize: offset = " << offset << ", old size = " << size << ", new size = " << size+offset << std::endl; )
+        size += offset;
+    }
+
+    void SubtractFromSize(int offset) 
+    {
+        assert(size >= offset);
+        assert(offset > 0);
+		DBSTREAM1(ciff << "Backpatch::SubtractFromSize: offset = " << offset << ", old size = " << size << ", new size = " << size-offset << std::endl; )
+        size -= offset;
+    }
+
+	//IOSTREAMS( friend std::ostream& operator<<(std::ostream& out, const ChunkSizeBackpatch &) const; )
+#if DO_IOSTREAMS
+    friend std::ostream& operator<<(std::ostream& out, const ChunkSizeBackpatch & csb) 
+    {
+        out << "size = " << csb.size << ", pos = " << csb.pos << ", id = " << csb.id << ", szID = " << csb.szID;
+        return out;
+    }
+#endif
+private:
+	long size;
+	int pos;
+	ID id;
+
+	char szID[ 256 ];
+};
+
+#endif	// IFFWRITE_BACKPATCH_HP

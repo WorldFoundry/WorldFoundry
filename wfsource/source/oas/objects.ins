@@ -1,0 +1,20 @@
+@*============================================================================
+@* objects.ins: creates a list of @includes for all game objects
+@*============================================================================
+/*============================================================================*/
+/* objects.inc: created from objects.ins, DO NOT MODIFY */
+/*============================================================================*/
+
+@define OBJECTSHEADER
+@define OBJECTSFOOTER
+@define OBJECTENTRY(name)	@n#include "@lowercase(name)@+.hp"
+@define OBJECTONLYTEMPLATEENTRY(name)	@n#include "@lowercase(name)@+.hp"
+@define OBJECTNOACTORENTRY(name)
+@define OBJECTSUBENTRY(name,parent)
+@define COLTABLEHEADER
+@define COLTABLEFOOTER
+@define COLTABLEENTRY(obj1,obj2,msg1,msg2)
+
+@include objects.mac
+
+/*============================================================================*/

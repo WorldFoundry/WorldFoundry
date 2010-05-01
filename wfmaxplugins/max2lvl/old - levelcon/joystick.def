@@ -1,0 +1,12 @@
+; joystick.def: useding in scripts, we need a way to handle which platform
+
+	( define  JOYSTICK_BUTTON_UP 8192 )
+	( define 	JOYSTICK_BUTTON_DOWN 4096 )
+	( define 	JOYSTICK_BUTTON_RIGHT 1024 )
+	( define 	JOYSTICK_BUTTON_LEFT 2048 )
+	( define 	JOYSTICK_BUTTON_A 1 )
+	( define 	JOYSTICK_BUTTON_B 2 )
+	( define 	JOYSTICK_BUTTON_C 4 )
+	( define 	JOYSTICK_BUTTON_D 8 )			;/* X on DaveStick */
+	( define 	JOYSTICK_BUTTON_E 16 )      ;/* Y on DaveStick */
+	( define 	JOYSTICK_BUTTON_F 32 )      ;/* Z on DaveStick */

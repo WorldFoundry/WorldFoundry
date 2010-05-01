@@ -1,0 +1,390 @@
+// ------------------------------------------------------------------------
+// scalar.hpi
+// Copyright (c) 1997, World Foundry Group   
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ------------------------------------------------------------------------
+
+extern long __upperResult;
+
+// ------------------------------------------------------------------------
+
+//long WFMul(long a, long b);
+//#pragma aux WFMul = \
+//	"imul	ebx" \
+//	"shrd	eax,edx,16" \
+//	parm nomemory [eax] [ebx] \
+//	modify nomemory [edx] \
+//	value [eax];
+
+// ------------------------------------------------------------------------
+
+INLINE Scalar&
+Scalar::operator *= ( const Scalar& other )
+{
+	__asm
+   	{
+		mov     ecx,this
+		mov		eax,[ecx]                   ; indirect through this to read _value
+		mov		ebx,other
+		mov		ebx,[ebx]					; indirect through b to read _value
+		imul	ebx
+		shrd	eax,edx,16
+		mov		[ecx],eax							; write result back into this->_value
+   	}
+
+//	_value = _value *  other._value;
+	return *this;
+}
+
+// ------------------------------------------------------------------------
+
+#include <windows.h>
+#include <winbase.h>
+
+INLINE Scalar&
+Scalar::operator /= ( const Scalar& other )
+{
+    __try
+	{
+		__asm
+		{
+			mov		ecx,this
+			mov		eax,[ecx]				; read this->_value
+			mov		edx,eax
+			mov		ebx,other
+			mov		ebx,[ebx]				; read other->_value
+			shl		eax,16
+			sar		edx,16
+			idiv    ebx
+			mov		[ecx],eax				; write to this->_value
+		};
+//	_value = _value / b._value;
+	}
+    __except ( EXCEPTION_EXECUTE_HANDLER )
+	{
+		assert( GetExceptionCode() == EXCEPTION_INT_DIVIDE_BY_ZERO || GetExceptionCode() == EXCEPTION_INT_OVERFLOW );
+		*this = SCALAR_CONSTANT( 32000 );
+    }
+
+	return *this;
+}
+
+//-----------------------------------------------------------------------------
+
+//INLINE Scalar
+//Scalar::Sqrt( void ) const
+//{
+//	return Scalar( BR_SQRT( _value ) );
+//}
+
+// ------------------------------------------------------------------------
+
+INLINE Scalar
+Scalar::Invert( void ) const
+{
+	Scalar result;
+//	return Scalar( WFRcp( _value ) );
+	__asm
+	{
+		mov		edx,1
+		xor		eax,eax
+		mov		ecx,this
+		mov		ebx,[ecx]			; read this->_value
+		idiv	ebx
+		mov		result._value,eax
+	}
+	return(result);
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Scalar
+Scalar::MulDiv(const Scalar b, const Scalar c) const
+{
+	Scalar result;
+
+	__asm
+	{
+		mov		ecx,this
+		mov		eax,[ecx]			; read this->_value
+		mov		ebx,b._value		; read b._value
+		imul	ebx
+		mov		ecx,c._value		; read c->_value
+		idiv	ecx
+		mov		result._value,eax
+	}
+
+	return result;
+}
+
+//=============================================================================
+
+INLINE void
+Multiply64(long __a,long __b,long& __m1,unsigned long& __m0)
+{
+//	__m0 = WFMultiply64(__a,__b);
+//	__m1 = __upperResult;
+	__asm
+	{
+		mov		eax,__a
+		mov		edx,__b
+		imul    edx
+		mov		ecx,__m1
+		mov		[ecx],edx
+		mov		ecx,__m0
+		mov		[ecx],eax
+	}
+}
+
+INLINE void
+Multiply64(unsigned long __a,unsigned long __b,unsigned long& __m1,unsigned long& __m0)
+{
+//	__m0 = WFMultiply64(__a,__b);
+//	__m1 = __upperResult;
+	__asm
+	{
+		mov		eax,__a
+		mov		edx,__b
+		imul    edx
+		mov		ecx,__m1
+		mov		[ecx],edx
+		mov		ecx,__m0
+		mov		[ecx],eax
+	}
+}
+
+#define MultiplyAndNop64(__a, __b, __m1, __m0) Multiply64(__a,__b,__m1,__m0)
+
+//=============================================================================
+
+INLINE void
+AddCarry64(unsigned long& __a1, unsigned long& __a0, unsigned long __b1, unsigned long __b0)
+{
+//	__a0 = WFAddCarry(__a1,__a0,__b1,__b0);
+//	__a1 = __upperResult;
+	__asm
+	{
+		mov		ecx,__a0
+		mov		eax,[ecx]
+		add		eax,__b0
+		mov		edx,__a1
+		mov		ebx,[edx]
+		adc		ebx,__b1
+		mov		[edx],ebx
+		mov		[ecx],eax
+	}
+}
+
+INLINE void
+AddCarry64( long& __a1, unsigned long& __a0, long __b1, unsigned long __b0)
+{
+//	__a0 = WFAddCarry(__a1,__a0,__b1,__b0);
+//	__a1 = __upperResult;
+	__asm
+	{
+		mov		ecx,__a0
+		mov		eax,[ecx]
+		add		eax,__b0
+		mov		edx,__a1
+		mov		ebx,[edx]
+		adc		ebx,__b1
+		mov		[edx],ebx
+		mov		[ecx],eax
+	}
+}
+
+//=============================================================================
+// kts it is not defined whether right shift is logical or arithmatic in C
+// so we have to implement both in assembly
+
+INLINE void
+ShiftRightLogical(long& __srl1,long __srl0,long __srln)
+{
+//	(__srl1 = WFShiftRightLogical(__srl0,__srln))
+	__asm
+	{
+		mov		eax,__srl0
+		mov		ecx,__srln
+		shr		eax,CL
+		mov		ecx,__srl1
+		mov		[ecx],eax
+	}
+}
+
+INLINE void
+ShiftRightLogical(unsigned long& __srl1,unsigned long __srl0, long __srln)
+{
+//	(__srl1 = WFShiftRightLogical(__srl0,__srln))
+	__asm
+	{
+		mov		eax,__srl0
+		mov		ecx,__srln
+		shr		eax,CL
+		mov		ecx,__srl1
+		mov		[ecx],eax
+	}
+}
+
+#define ShiftRightLogicalVar ShiftRightLogical
+
+//=============================================================================
+
+#if 1
+// kts new version
+// result a1:a0 = a1:a0 << shift
+INLINE
+void ShiftLeft64(unsigned long& __a1,unsigned long& __a0,int __shift)
+{
+	__a1 = __a1 << __shift;
+
+	int rightShift = 32 - __shift;
+
+	register unsigned long temp;
+	ShiftRightLogicalVar(temp,__a0,rightShift);
+
+	__a1 |= temp;
+	__a0 = __a0 << __shift;
+}
+#else
+INLINE
+void ShiftLeft64(unsigned long& __a1,unsigned long& __a0,int __shift)
+{
+	register long __tmp0;
+	register long __tmp1;
+	register long __tmp2;
+
+	// result a1:a0 = a1:a0 << shift
+
+	__tmp1 = __shift;
+	__tmp0 = __tmp1 << 26;
+
+	if(__tmp0 < 0)
+	{
+		__a1 = __a0 << __tmp1;
+		__a0 = 0;
+	}
+	else
+	{
+		__a1 = __a1 << __tmp1;
+		if(__tmp0 != 0)
+		{
+		    __tmp2 = - __tmp1;
+
+			ShiftRightLogicalVar(__tmp2,__a0,__tmp2);
+
+			__a1 |= __tmp2;
+		}
+		__a0 <<= __tmp1;
+	}
+}
+#endif
+
+
+//=============================================================================
+
+#if 1
+// result a1:a0 = a1:a0 >> shift
+INLINE
+void ShiftRight64(unsigned long& __a1,unsigned long& __a0,int __shift)
+{
+	ShiftRightLogicalVar(__a0,__a0,__shift);
+
+	int leftShift = 32 - __shift;
+
+	register long temp;
+	temp = __a1 << leftShift;
+	__a0 |= temp;
+	ShiftRightLogicalVar(__a1,__a1,__shift);
+}
+#else
+INLINE
+void ShiftRight64(unsigned long& __a1,unsigned long& __a0,int __shift)
+{
+	register long __tmp0;
+	register long __tmp1;
+	register long __tmp2;
+
+	// result a1:a0 = a1:a0 >> shift
+
+	__tmp1 = __shift;
+	__tmp0 = __tmp1 << 26;
+
+	if(__tmp0 < 0)
+	{
+		ShiftRightLogicalVar(__a0,__a1,__tmp1);
+		__a1 = 0;
+	}
+	else
+	{
+		ShiftRightLogicalVar(__a0,__a0,__tmp1);
+
+		if(__tmp0 != 0)
+		{
+			__tmp2 = - __tmp1;
+			__tmp2 = __a1 << __tmp2;
+			__a0 |= __tmp2;
+		}
+		ShiftRightLogicalVar(__a1,__a1,__tmp1);
+	}
+}
+#endif
+//==============================================================================
+
+#pragma warning( disable: 4035 )
+
+INLINE long
+JoinHiLo(long a, long b)
+{
+	__asm
+	{
+		mov		eax,a
+		mov		edx,b
+		shld	eax,edx,16
+	}
+	// returns result in eax
+}
+
+#pragma warning( default: 4035 )
+
+//==============================================================================
+
+INLINE
+int32
+FixedMac3(int32 a, int32 b, int32 c, int32 d, int32 e, int32 f)
+{
+   	register long unsigned out0;
+	register long out1;
+	register long unsigned out2;
+	register long out3;
+
+	// result = a*b + c*d + e*f
+	MultiplyAndNop64(a,b,out1,out0);
+
+	Multiply64(c,d,out3,out2);
+
+//	AddCarry(out1,out0,out3,out2);
+
+	Multiply64(e,f,out3,out2);
+
+//	AddCarry(out1,out0,out3,out2);
+
+	return JoinHiLo(out1,out0);
+}
+
+//=============================================================================

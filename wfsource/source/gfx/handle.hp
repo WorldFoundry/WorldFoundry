@@ -1,0 +1,65 @@
+
+#ifndef _HANDLE_HP
+#define _HANDLE_HP
+
+// handle.hp
+
+#include <pigsys/pigsys.hp>
+#include <streams/binstrm.hp>
+
+//=============================================================================
+
+#pragma message( "WBN: merge various ID/FOURCC classes into single one" )
+class HandleID
+{
+public:
+	INLINE HandleID( void );					// id == "NULL" is reserved
+	INLINE HandleID( const char id[4] );
+	INLINE HandleID( uint32 id );
+	INLINE HandleID( const HandleID& x );
+
+	// comparison operators
+	friend int operator == ( const HandleID&, const HandleID& );
+	friend int operator != ( const HandleID&, const HandleID& );
+#if 0
+	friend int operator <= ( const HandleID&, const HandleID& );
+	friend int operator >= ( const HandleID&, const HandleID& );
+	friend int operator <  ( const HandleID&, const HandleID& );
+	friend int operator >  ( const HandleID&, const HandleID& );
+#endif
+
+#if DO_IOSTREAMS
+	// binary i/o stream support
+	friend binistream& operator >> ( binistream&, HandleID& );
+#if defined( WRITER )
+	friend binostream& operator << ( binostream&, const HandleID& );
+#endif
+	// debug ostream support
+	friend std::ostream& operator << ( std::ostream&, const HandleID& );
+#endif
+
+protected:
+	uint32 _id;
+};
+
+//=============================================================================
+
+class Handle
+{
+public:
+	Handle();
+	Handle( HandleID thisID, int32 vertexNum );
+
+	INLINE HandleID ID() const;		// retrive handleID
+	INLINE int32 Vertex() const;	// retrive vertex number
+
+private:
+	HandleID	_id;
+	int32		_vertexNum;
+};
+
+//=============================================================================
+#include <gfx/handle.hpi>
+//=============================================================================
+#endif	// _HANDLE_HP
+//=============================================================================

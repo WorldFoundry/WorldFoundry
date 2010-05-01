@@ -1,0 +1,232 @@
+//==============================================================================
+// colspace.hpi:  Inlined functions for the ColSpace class
+//==============================================================================
+// Copyright (c) 1997,99 World Foundry Group, 
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+//==============================================================================
+// Description: The ColSpace class encapsulates an Actor's collision space, and
+//              offers methods to check collision at both fine (axis aligned box)
+//				and coarse levels of detail.  The only fine-grained collision
+//				space representation currently supported is a planar sloped surface.
+// Original Author: Phil Torre, 07/03/97
+//==============================================================================
+
+INLINE Vector3
+ColSpace::Min() const
+{
+	return _coarseExpandedColBox.Min();
+}
+
+//==============================================================================
+
+INLINE Vector3
+ColSpace::Max() const
+{
+	return _coarseExpandedColBox.Max();
+}
+
+//=============================================================================
+
+INLINE Vector3
+ColSpace::UnExpMin() const
+{
+	return _coarseColBox.Min();
+}
+
+//==============================================================================
+
+INLINE Vector3
+ColSpace::UnExpMax() const
+{
+	return _coarseColBox.Max();
+}
+
+//==============================================================================
+
+INLINE Vector3
+ColSpace::Min(const Vector3& curpos) const
+{
+	return _coarseExpandedColBox.Min(curpos);
+}
+
+INLINE Vector3
+ColSpace::Max(const Vector3& curpos) const
+{
+	return _coarseExpandedColBox.Max(curpos);
+}
+
+//==============================================================================
+
+INLINE Vector3
+ColSpace::UnExpMin(const Vector3& curpos) const
+{
+	return _coarseColBox.Min(curpos);
+}
+
+//==============================================================================
+
+INLINE Vector3
+ColSpace::UnExpMax(const Vector3& curpos) const
+{
+	return _coarseColBox.Max(curpos);
+}
+
+//==============================================================================
+
+INLINE void
+ColSpace::SetBox(const Vector3& min, const Vector3& max)
+{
+	_coarseColBox.SetBox(min, max);
+	_coarseExpandedColBox.SetBox(min, max);
+}
+
+//==============================================================================
+
+INLINE void
+ColSpace::SetSlope( Scalar slopeA, Scalar slopeB, Scalar slopeC, Scalar slopeD )
+{
+	_slope.A(slopeA);
+	_slope.B(slopeB);
+	_slope.C(slopeC);
+	_slope.D(slopeD);
+}
+
+//==============================================================================
+
+INLINE void
+ColSpace::Expand(const Vector3& delta)
+{
+	_coarseExpandedColBox = _coarseColBox;
+	_coarseExpandedColBox.Expand(delta);
+}
+
+//==============================================================================
+
+INLINE bool
+ColSpace::ContainsSlope() const
+{
+	return !(_slope.Zero());
+}
+
+//==============================================================================
+
+INLINE bool
+ColSpace::CheckCoarseCollision(const Vector3& mypos, const ColSpace& object, const Vector3& objpos) const
+{
+	return _coarseExpandedColBox.CheckCollision(mypos, object._coarseExpandedColBox, objpos);
+}
+
+//==============================================================================
+
+INLINE bool
+ColSpace::CheckCollision(const Vector3& mypos, const ColSpace& object, const Vector3& objpos) const
+{
+	if ( CheckCoarseCollision(mypos, object, objpos) )
+	{
+		if (ContainsSlope())
+			return CheckCollisionWithSlope(mypos, object, objpos);
+
+		if (object.ContainsSlope())
+			return object.CheckCollisionWithSlope(objpos, *this, mypos);
+
+		return true;
+	}
+
+	return false;
+}
+
+//==============================================================================
+
+INLINE bool
+ColSpace::CheckCollision(const Vector3& mypos, const Vector3& endpoint1, const Vector3& endpoint2) const
+{
+	return _coarseExpandedColBox.CheckCollision(mypos, endpoint1, endpoint2);
+}
+
+//==============================================================================
+
+INLINE bool
+ColSpace::CheckCollision(const Vector3& mypos, const Vector3& endpoint) const
+{
+	return _coarseExpandedColBox.CheckCollision(mypos, endpoint);
+}
+
+//==============================================================================
+
+INLINE bool
+ColSpace::CheckSurrounds(const Vector3& mypos, const ColSpace& object, const Vector3& objpos) const
+{
+	return _coarseColBox.CheckSurrounds(mypos, object._coarseColBox, objpos);
+}
+
+//==============================================================================
+
+INLINE bool
+ColSpace::PremoveCollisionCheck(const Vector3& mypos, const ColSpace& object, const Vector3& objpos) const
+{
+	if ( _coarseColBox.CheckCollision(mypos, object._coarseColBox, objpos) )
+	{
+		if (ContainsSlope())
+			return PremoveCollisionCheckWithSlope(mypos, object, objpos);
+
+		if (object.ContainsSlope())
+			return object.PremoveCollisionCheckWithSlope(objpos, *this, mypos);
+
+		return true;
+	}
+
+	return false;
+}
+
+//==============================================================================
+
+INLINE const Vector3&
+ColSpace::SlopeNormal() const
+{
+	return (_slope.Normal());
+}
+
+//==============================================================================
+
+INLINE const Scalar
+ColSpace::SlopeOffset() const
+{
+	return (_slope.Offset());
+}
+
+//==============================================================================
+
+INLINE int
+ColSpace::CheckBelow(const Vector3& mypos, const ColSpace& object, const Vector3& objpos) const
+{
+	return _coarseColBox.CheckBelow(mypos, object._coarseColBox, objpos);
+}
+
+//==============================================================================
+
+INLINE Vector3
+ColSpace::GetCenter( const Vector3& posCurrent ) const
+{
+	return _coarseColBox.GetCenter(posCurrent);
+}
+
+//==============================================================================
+
+
+
+

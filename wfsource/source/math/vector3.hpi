@@ -1,0 +1,351 @@
+
+#define _VECTOR3_HPI
+
+// ------------------------------------------------------------------------
+// Copyright( c ) 1996, World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ------------------------------------------------------------------------
+
+#include <math/angle.hp>
+
+// ------------------------------------------------------------------------
+// 3D Vector Class: Inlined Functions
+// ------------------------------------------------------------------------
+
+inline
+Vector3::Vector3( void ) { }
+
+// ------------------------------------------------------------------------
+
+inline
+Vector3::Vector3( const Scalar x, const Scalar y, const Scalar z )
+{
+	_arrScalar[0] = x;
+    _arrScalar[1] = y;
+    _arrScalar[2] = z;
+}
+
+// ------------------------------------------------------------------------
+
+inline
+Vector3::Vector3( const Vector3& v )
+{
+    _arrScalar[0] = v._arrScalar[0];
+    _arrScalar[1] = v._arrScalar[1];
+    _arrScalar[2] = v._arrScalar[2];
+}
+
+// ------------------------------------------------------------------------
+
+inline Scalar&
+Vector3::operator [] ( int i )
+{
+	assert( i >= 0 );
+	assert( i <= 2 );
+	return _arrScalar[i];
+}
+
+// ------------------------------------------------------------------------
+
+inline const Scalar&
+Vector3::operator [] ( int i ) const
+{
+	assert( i >= 0 );
+	assert( i <= 2 );
+	return _arrScalar[i];
+}
+
+// ------------------------------------------------------------------------
+
+inline const Scalar&
+Vector3::X( void ) const
+{
+    return _arrScalar[0];
+}
+
+// ------------------------------------------------------------------------
+
+inline const Scalar&
+Vector3::Y( void ) const
+{
+    return _arrScalar[1];
+}
+
+// ------------------------------------------------------------------------
+
+inline const Scalar&
+Vector3::Z( void ) const
+{
+    return _arrScalar[2];
+}
+
+// ------------------------------------------------------------------------
+
+inline void
+Vector3::SetX( const Scalar& x )
+{
+    _arrScalar[0] = x;
+}
+
+// ------------------------------------------------------------------------
+
+inline void
+Vector3::SetY( const Scalar& y )
+{
+    _arrScalar[1] = y;
+}
+
+// ------------------------------------------------------------------------
+
+inline void
+Vector3::SetZ( const Scalar& z )
+{
+    _arrScalar[2] = z;
+}
+
+// ------------------------------------------------------------------------
+
+inline Vector3&
+Vector3::operator = ( const Vector3& v )
+{
+    _arrScalar[0] = v._arrScalar[0];
+    _arrScalar[1] = v._arrScalar[1];
+    _arrScalar[2] = v._arrScalar[2];
+    return *this;
+}
+
+// ------------------------------------------------------------------------
+
+inline bool
+Vector3::operator == ( const Vector3& v ) const
+{
+    return ( (_arrScalar[0] == v._arrScalar[0]) && (_arrScalar[1] == v._arrScalar[1]) && (_arrScalar[2] == v._arrScalar[2]) );
+}
+
+// ------------------------------------------------------------------------
+
+inline Vector3
+Vector3::operator += ( const Vector3& b )
+{
+    _arrScalar[0] += b._arrScalar[0];
+    _arrScalar[1] += b._arrScalar[1];
+    _arrScalar[2] += b._arrScalar[2];
+    return *this;
+}
+
+// ------------------------------------------------------------------------
+
+inline Vector3
+Vector3::operator + ( const Vector3& b ) const
+{
+    Vector3 result( b );
+    result += *this;
+    return result;
+}
+
+// ------------------------------------------------------------------------
+
+inline Vector3
+Vector3::operator -= ( const Vector3& b )
+{
+    _arrScalar[0] -= b._arrScalar[0];
+    _arrScalar[1] -= b._arrScalar[1];
+    _arrScalar[2] -= b._arrScalar[2];
+    return *this;
+}
+
+// ------------------------------------------------------------------------
+
+inline Vector3
+Vector3::operator - ( const Vector3 &b ) const
+{
+    Vector3 result( *this );
+    result -= b;
+    return result;
+}
+
+// ------------------------------------------------------------------------
+
+inline Vector3
+Vector3::operator *= ( const Scalar mult )
+{
+    _arrScalar[0] *= mult;
+    _arrScalar[1] *= mult;
+    _arrScalar[2] *= mult;
+    return *this;
+}
+
+// ------------------------------------------------------------------------
+
+inline Vector3
+Vector3::operator * ( const Scalar mult ) const
+{
+    Vector3 result( *this );
+    result *= mult;
+    return result;
+}
+
+// ------------------------------------------------------------------------
+
+inline Vector3
+Vector3::operator /= ( const Scalar div )
+{
+    _arrScalar[0] /= div;
+    _arrScalar[1] /= div;
+    _arrScalar[2] /= div;
+    return *this;
+}
+
+// ------------------------------------------------------------------------
+
+inline Vector3
+Vector3::operator / ( const Scalar div ) const
+{
+    Vector3 result( *this );
+    result /= div;
+    return result;
+}
+
+// ------------------------------------------------------------------------
+
+inline Vector3
+Vector3::operator - ( void ) const
+{
+    return Vector3( -_arrScalar[0], -_arrScalar[1], -_arrScalar[2] );
+}
+
+// ------------------------------------------------------------------------
+// no check for zero length
+// Check for zero length added by Phil
+
+inline void
+Vector3::Normalize( void )
+{
+   //MATH_DEBUG( std::cout << "Vector3::Normalize: " << _arrScalar[0] << "," << _arrScalar[1] << ", " << _arrScalar[2] << std::endl);
+
+	Scalar length = Length();
+	AssertMsg (length.Abs() > Scalar(0,4), "Probably have a polygon which is too small, length = " << length);
+	if (length.Abs() > Scalar(0,4))
+	{
+//		Scalar scale = Scalar::one / length;
+		Scalar scale = SCALAR_CONSTANT(1) / length;
+		_arrScalar[0] *= scale;
+		_arrScalar[1] *= scale;
+		_arrScalar[2] *= scale;
+	}
+}
+
+// ------------------------------------------------------------------------
+// result = (v)-1(v).  No check for zero length.  Low precision.
+
+inline void
+Vector3::NormalizeQuick( void )
+{
+	Scalar scale = RLength();
+
+	assert(scale != SCALAR_CONSTANT(0));
+	if(scale != SCALAR_CONSTANT(0))
+	{
+		_arrScalar[0] *= scale;
+		_arrScalar[1] *= scale;
+		_arrScalar[2] *= scale;
+	}
+}
+
+// ------------------------------------------------------------------------
+
+inline void
+Vector3::RotateX(Angle angle)
+{
+    Scalar sinAngle(angle.Sin());
+    Scalar cosAngle(angle.Cos());
+
+    Scalar y(_arrScalar[1]);
+    Scalar z(_arrScalar[2]);
+
+    _arrScalar[1] = (y * cosAngle) - (z * sinAngle);
+    _arrScalar[2] = (y * sinAngle) + (z * cosAngle);
+}
+
+//==============================================================================
+
+inline void
+Vector3::RotateY(Angle angle)
+{
+    Scalar sinAngle(angle.Sin());
+    Scalar cosAngle(angle.Cos());
+
+    Scalar x(_arrScalar[0]);
+    Scalar z(_arrScalar[2]);
+
+    _arrScalar[0] = (x * cosAngle) - (z * sinAngle);
+    _arrScalar[2] = (x * sinAngle) + (z * cosAngle);
+}
+
+//==============================================================================
+
+inline void
+Vector3::RotateZ(Angle angle)
+{
+    Scalar sinAngle(angle.Sin());
+    Scalar cosAngle(angle.Cos());
+
+    Scalar x(_arrScalar[0]);
+    Scalar y(_arrScalar[1]);
+
+//	cscreen << "RZ: Angle" << angle << endl;
+//	cscreen << "RZ: ang:" << sinAngle << "," << cosAngle << endl;
+//	cscreen << "xy:" << x << "," << y << endl;
+
+    _arrScalar[0] = (x * cosAngle) - (y * sinAngle);
+    _arrScalar[1] = (x * sinAngle) + (y * cosAngle);
+}
+
+//==============================================================================
+
+inline Scalar
+Vector3::DotProduct(const Vector3& other) const
+{
+	return ( (_arrScalar[0] * other._arrScalar[0]) +
+			 (_arrScalar[1] * other._arrScalar[1]) +
+			 (_arrScalar[2] * other._arrScalar[2]) );
+}
+
+//==============================================================================
+
+//inline void
+//Vector3::rotateEuler(const Euler &euler)
+//{
+//	br_matrix34 matrix;
+//	BrEulerToMatrix34(&matrix, (br_euler *)&euler);
+//	applyMatrix34(matrix);
+//}
+
+//==============================================================================
+
+inline const Vector3&
+Vector3::Square()
+{
+	_arrScalar[0] *= _arrScalar[0];
+	_arrScalar[1] *= _arrScalar[1];
+	_arrScalar[2] *= _arrScalar[2];
+	return *this;
+}
+
+//==============================================================================

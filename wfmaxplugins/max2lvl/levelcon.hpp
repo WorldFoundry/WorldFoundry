@@ -1,0 +1,34 @@
+//============================================================================
+// levelcon.hp:
+// Copyright(c) 1995,96 Cave Logic Studios / PF.Magic
+// By Kevin T. Seghetti
+//============================================================================
+
+// use only once insurance
+#ifndef _LEVELCON_HP
+#define _LEVELCON_HP
+
+//============================================================================
+
+#include "global.hpp"
+
+//============================================================================
+
+enum targetSystem
+{
+	TARGET_PLAYSTATION,
+	TARGET_SATURN,
+	TARGET_WINDOWS,
+	TARGET_DOS,
+	TARGET_MAX
+};
+
+extern targetSystem levelconTargetSystem;
+
+extern char* targetNames[TARGET_MAX];
+
+extern bool mergeObjects;
+
+//============================================================================
+#endif
+//============================================================================

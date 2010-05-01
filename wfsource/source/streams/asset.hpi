@@ -1,0 +1,189 @@
+//============================================================================
+// Asset.hpi:
+// Copyright ( c ) 1996,97,99 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+//============================================================================
+// Documentation:
+//=============================================================================
+//	Abstract:
+//			class containing array of assets, plua s class for packing asset id's
+//	History:
+//			Created	6/19/96 11:51AM Kevin T. Seghetti
+
+//	Class Hierarchy:
+//			none
+
+//	Dependancies:
+//		PIGS, STL, iostream
+//	Restrictions:
+
+//	Example:
+//==============================================================================
+
+#include <pigsys/pigsys.hp>
+#include <pigsys/assert.hp>
+
+//============================================================================
+
+#if DO_IOSTREAMS
+inline std::ostream& operator<<(std::ostream& s, const packedAssetID &a) 
+{ 
+	return s << "Type: " << int(a.Type()) << "; Room: " << a.Room() << "; Index: " << a.Index(); 
+}
+#endif
+
+//	enum { PERMANENT_ROOM = 0xfff }; 						// set to 0xfff
+inline 
+packedAssetID::packedAssetID() 
+{ 
+	_packedID = 0; 
+}
+
+inline 
+packedAssetID::packedAssetID(uint32 packedID)
+{ 
+	_packedID = packedID; 
+}
+
+
+inline
+packedAssetID::packedAssetID(int32 room, int32 type, int32 index)
+{
+	assert(room >= -1);
+	assert(room < ROOM_LENGTH);
+	assert(type >= 0); 
+	assert(type < TYPE_LENGTH); 
+	assert(index >= 0); 
+	assert(index < INDEX_LENGTH); 
+	_packedID = ((room << ROOM_B) & ROOM_M) | ((type << TYPE_B) & TYPE_M) | ((index << INDEX_B) & INDEX_M); 
+
+	AssertMsg(ValidAssetID(), "this = " << *this);
+}
+
+
+inline int 
+packedAssetID::ValidAssetID() const
+{
+	return( ((_packedID << TYPE_A) >> (TYPE_A + TYPE_B)) > 0 );
+}
+
+inline void 
+packedAssetID::Validate(void) const
+{
+		if(!ValidAssetID())
+		{
+#if SW_DBSTREAM
+			std::cout << "id = <" << _packedID << ">" << std::endl;
+#endif
+			assert(0);
+		}
+//			AssertMsg(ValidAssetID(),"id = " << (*this));
+}
+
+
+
+
+	// accessors
+inline int32 
+packedAssetID::Room(void) const 
+{ 
+	assert(ValidAssetID()); 
+	return((_packedID << ROOM_A) >> (ROOM_A + ROOM_B)); 
+}
+
+inline packedAssetID::AssetType 
+packedAssetID::Type(void) const 
+{
+	assert(ValidAssetID()); 
+	return AssetType((_packedID << TYPE_A) >> (TYPE_A + TYPE_B)); 
+}
+
+inline int32 
+packedAssetID::Index(void) const 
+{ 
+	Validate(); 
+	return((_packedID << INDEX_A) >> (INDEX_A + INDEX_B)); 
+}
+
+inline int32 
+packedAssetID::ID(void) const 
+{ 
+	return(_packedID);
+}
+
+inline int 
+packedAssetID::operator!=(const packedAssetID& left) const 
+{ 
+	return (_packedID != left._packedID); 
+}
+
+inline int 
+packedAssetID::operator==(const packedAssetID& left) const 
+{
+	return (_packedID == left._packedID); 
+}
+
+// mutators
+inline int32 
+packedAssetID::Room(int32 newRoom)
+{
+	assert(newRoom >= -1);
+	assert(newRoom < ROOM_LENGTH);
+	AssertMsg(ValidAssetID(), "this = " << *this);
+	_packedID = (_packedID & ~ROOM_M) | ((newRoom << ROOM_B) & ROOM_M);
+	assert(ValidAssetID());
+	return(Room());
+}
+
+inline int32 
+packedAssetID::Type(int32 newType) 
+{ 
+	assert(newType >= 0); 
+	assert(newType < TYPE_LENGTH); 
+	_packedID = (_packedID & ~TYPE_M) | ((newType << TYPE_B) & TYPE_M); 
+	assert(ValidAssetID()); 
+	return(Type()); 
+}
+
+inline int32 
+packedAssetID::Index(int32 newIndex) 
+{ 
+	assert(newIndex >= 0); 
+	assert(newIndex < INDEX_LENGTH); 
+	_packedID = (_packedID & ~INDEX_M) | ((newIndex << INDEX_B) & INDEX_M); 
+	assert(ValidAssetID()); 
+	return(Index()); 
+}
+
+inline int32 
+packedAssetID::ID(int32 newID) 
+{ 
+	assert(newID); 
+	_packedID = newID; 
+	assert(ValidAssetID()); 
+	return(_packedID); 
+}
+
+inline packedAssetID& 
+packedAssetID::operator=(const packedAssetID& left) 
+{ 
+	_packedID = left._packedID; 
+	return *this; 
+}
+
+//============================================================================

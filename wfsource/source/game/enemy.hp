@@ -1,0 +1,101 @@
+//============================================================================
+// Enemy.hp:
+// Copyright ( c ) 1995,1996,1997,1999,2000,2003 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//=============================================================================
+//	Abstract: Enemy Header file
+//	History:
+//			Created	from object.hps using prep
+//
+//	Class Hierarchy:
+//			none
+//
+//	Dependancies:
+//
+//	Restrictions:
+//
+//	Example:
+//
+//============================================================================
+
+#ifndef _Enemy_HP
+#define _Enemy_HP
+
+//============================================================================
+
+#include "oas/enemy.ht"
+
+// GRENADE_GUARD_HACK synchronizes the grenade launch to the middle
+// of the "throw" animation.
+// this should be replaced by some event-driven trigger in the animation.
+#ifndef GRENADE_GUARD_HACK
+	#define GRENADE_GUARD_HACK true
+#endif
+
+struct _Enemy;
+
+class Enemy: public Actor
+{
+public:
+	Enemy(const SObjectStartupData* startupData);
+	virtual ~Enemy();
+
+	virtual EActorKind kind() const;
+
+	virtual void update();
+
+	// Enemy animations in WRL order (from Enemy.ali)
+//	enum
+//	{
+//		WRL_IDLE = 0,		// WRL_IDLE
+//		WRL_GRENADE,		// WRL_GRENADE
+//		WRL_BAZOOKA,		// WRL_BAZOOKA
+//		WRL_BLOWUP,			// WRL_BLOWUP
+//		WRL_RUNMED,			// WRL_RUNMED
+//		WRL_EXPLODE_LEFT,	// WRL_XPL2
+//		WRL_EXPLODE_FRONT,	// WRL_XPL3
+//		WRL_BLOWN_TO_WALL,	// WRL_BWL_
+//		WRL_HIT_HEAD_HARD,	// WRL_NDH_
+//		WRL_HIT_LEG_HARD,	// WRL_NDL_
+//		WRL_HIT_HEAD_SOFT,	// WRL_NDH2
+//		WRL_HIT_NUTS_HARD,	// WRL_NUT_
+//		WRL_HIT_CHEST_HARD,	// WRL_NDC1	// NDC1 and NDC2 are reversed
+//		WRL_HIT_CHEST_SOFT,	// WRL_NDC2	// these are reversed in the data
+//		WRL_READY,			// WRL_RDY_
+//		WRL_ANGRY,			// WRL_ANG_
+//		WRL_JUMP_LAND,		// WRL_JLD_
+//		WRL_HIT_LEG_SOFT,	// WRL_LEG_
+//	};
+
+protected:
+
+	Actor* pTarget;
+	Scalar timeThrowGrenade;
+	_Enemy _EnemyData;
+
+private:
+	INLINE const _Enemy* getOad() const			{ return (const _Enemy*)_oadData; }
+};
+
+
+Actor* OadEnemy( const SObjectStartupData* startupData );
+
+//============================================================================
+#endif // !_Enemy_HP
+//============================================================================

@@ -1,0 +1,61 @@
+//=============================================================================
+// time.hp: clock reading funcions
+//=============================================================================
+// Time Clock API
+//
+//			SYS_TICKS returns a number of ticks, as a long,
+// 					and is used by the Streamer
+//
+//			SYS_CLOCK returns a number of seconds since reset, as a Scalar
+//
+//			SYS_CLOCK_RESET resets the clock to zero
+//
+//=============================================================================
+
+#ifndef __TIME_HP_
+#define	__TIME_HP_
+
+#include <cpplib/scalar.hp>
+
+extern void SYS_CLOCK_RESET(void);
+extern long _nWallClockBaseTime;
+
+#ifdef __PSX__
+extern "C" {
+extern u_long _PigsRootCounter2;
+}
+#define SYS_TICKS()		(_PigsRootCounter2)
+extern Scalar SYS_CLOCK(void);
+#endif
+
+#ifdef __DOS__
+extern long getMsdosTimeOfDay( void );
+#define SYS_TICKS()		getMsdosTimeOfDay()
+extern Scalar SYS_CLOCK(void);
+#endif
+
+#if defined( __WIN__ )
+#include <time.h>
+// no longer used
+//#define SYS_TICKS()		clock()
+
+class Scalar;
+
+INLINE Scalar
+SYS_CLOCK()
+	{
+	assert(0); 			// no longer used
+	unsigned long cl = clock() - _nWallClockBaseTime;
+
+	assert(cl/CLOCKS_PER_SEC < 65536);
+	Scalar whole(short(cl/CLOCKS_PER_SEC),0);
+	Scalar frac(short(cl%CLOCKS_PER_SEC),0);
+	frac /= SCALAR_CONSTANT(CLOCKS_PER_SEC);
+	return(whole+frac);
+//	return Scalar(clock() - _nWallClockBaseTime) / SCALAR_CONSTANT(CLOCKS_PER_SEC);
+	}
+#endif
+
+#endif // defined __TIME_H
+
+//=============================================================================

@@ -1,0 +1,59 @@
+# wfsource/source/GNUMakefile.lib
+# Moved this to GNUMakefile.env where it seems more appropriate.
+#INCLUDE += -I../hal/$(WF_TARGET)
+
+#TOP-ALL : LIBRARY_NAMES_DEFINES OBJ_DIR PIGS_LIB
+# Moved this target here from the env file.
+ifdef LIB_NAME
+TOP-ALL : LIBRARY_NAMES_DEFINES $(OBJ_DIR) PIGS_LIB
+endif
+
+#I don't see the point in this, but moved it here from the env file.
+.PHONY : LIBRARY_NAMES_DEFINES
+LIBRARY_NAMES_DEFINES :
+	@echo 
+#  %foreach Dir pigsys cpplib iff math streams anim attrib audio audiofmt gfxfmt console gfx hal input savegame toolstub version ini fuzzy baseobject physical movement loadfile audiofmt gfxfmt attrib particle timer menu
+#    %set $(Dir,uc) $(PIGS_OBJ_DIR)/lib$(Dir).a
+#    %echo $($(Dir,UC))
+#  %end
+
+################################################################################
+## The library
+
+#.RESPONSE.PSYQ : pre=@ suf=.rsp in=128 psylib
+
+# I need this as a forward reference for $(PIGS_LIB)
+PIGS_LIB : $(PIGS_LIB)
+
+$(PIGS_LIB) : $(LIB_OBJS)
+	@echo pigslib is $(PIGS_LIB)
+	@echo libobjs are $(LIB_OBJS)
+	$(AR) $(LIBOUT)$@ $^ 
+
+################################################################################
+## Test program
+include ../GNUMakefile.test
+
+################################################################################
+## Clean
+
+clean :
+	-rm -r -f $(LIB_OBJ_DIR) 
+	-$(DEL) -f $(PIGS_LIB) 
+
+clean-lib :
+	-$(DEL) /y $(PIGS_LIB) 
+
+
+
+install :
+	mkdir -p $(INSTALLDIR)/lib/WorldFoundry
+	cp  $(PIGS_LIB) $(INSTALLDIR)/lib/WorldFoundry
+	mkdir -p $(INSTALLDIR)/include/WorldFoundry
+	cp *.hp *.hpi  $(INSTALLDIR)/include/WorldFoundry
+
+
+################################################################################
+# print: print all switch settings
+include ../GNUMakefile.print
+

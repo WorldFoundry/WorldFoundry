@@ -1,0 +1,8 @@
+#ifndef CONSOLE_MENU_HP
+#define CONSOLE_MENU_HP
+
+#include <console/menu.hp>
+
+int Menu();
+
+#endif	// CONSOLE_MENU_HP

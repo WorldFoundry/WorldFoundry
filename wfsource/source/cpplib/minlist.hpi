@@ -1,0 +1,174 @@
+//=============================================================================
+// minlist.hpi: double linked list handling for the game
+// Copyright ( c ) 1994,1995,1996,1997,1999,2000,2002 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//=============================================================================
+//=============================================================================
+// Documentation:
+//	Abstract:
+//			Intrusive doubly-linked list library
+//	History:
+//			Created	10-24-94 06:26pm Kevin T. Seghetti
+//			Adapted 02-29-96 06:56pm Les D. Hedger
+//	Class Hierarchy:
+//			none
+//	Dependancies:
+//	Restrictions:
+//		Nodes cannot be in more than one list at a time
+//	Example:
+//=============================================================================
+// dependencies
+
+//=============================================================================
+// validation
+
+inline void
+MinNode::Validate() const
+{
+#if DO_VALIDATION
+	assert(ValidPtr(this));
+	assert(_prev == NULL || ValidPtr(_prev));
+	assert(_next == NULL || ValidPtr(_next));
+#endif
+}
+
+inline void
+MinNode::ValidateNotInList() const
+{
+#if DO_VALIDATION
+	Validate();
+	assert(_prev == NULL);
+	assert(_next == NULL);
+#endif
+}
+
+inline void
+MinNode::ValidateInList() const
+{
+#if DO_VALIDATION
+	Validate();
+	assert(_prev == NULL || ValidPtr(_prev));
+	assert(_next == NULL || ValidPtr(_next));
+	assert(_next != NULL || _prev != NULL);			// one or the other must not be null if we are in a list
+#endif
+}
+
+//=============================================================================
+// node funcions
+
+INLINE
+MinNode::~MinNode()
+{
+	ValidateNotInList();
+}
+
+//=============================================================================
+
+INLINE void
+MinNode::SetPrev(MinNode *newPrev)
+{
+	Validate();
+	_prev = newPrev;
+	Validate();
+}
+
+//=============================================================================
+
+INLINE void
+MinNode::SetNext(MinNode *newNext)
+{
+	Validate();
+	_next = newNext;
+	Validate();
+}
+
+//=============================================================================
+
+INLINE void
+MinNode::Reset()				// clears existing node to NULL
+{
+	_next = NULL;				// must always do this, so that NodeDestruct
+	_prev = NULL;							// can detect whether the node is in a list
+								// or not
+	Validate();
+}
+
+//=============================================================================
+
+INLINE
+MinNode::MinNode()
+{
+	Reset();
+}
+
+//=============================================================================
+
+INLINE MinNode *
+MinNode::Prev()
+{
+	Validate();
+	return(_prev);
+}
+
+//=============================================================================
+
+INLINE MinNode *
+MinNode::Next()
+{
+	Validate();
+	return(_next);
+}
+
+//=============================================================================
+
+INLINE MinNode * 					// insert node after this in list chain
+MinNode::Insert(MinNode *newNode)
+{
+	newNode->ValidateNotInList();
+	Validate();
+	assert(newNode != this);			// don't add to self to self
+
+	newNode->SetPrev(this);
+	newNode->SetNext(Next());
+
+	if (Next())
+		Next()->SetPrev(newNode);
+	SetNext(newNode);
+
+	return(this);
+}
+
+//=============================================================================
+
+INLINE MinNode * // remove node from the chain
+MinNode::Remove()
+{
+	Validate();
+
+	if (Prev())
+		Prev()->SetNext(Next());			// unlink from list
+	if (Next())
+		Next()->SetPrev(Prev());
+	SetNext(NULL);
+	SetPrev(NULL);
+
+	return(this);
+}
+
+//=============================================================================

@@ -1,0 +1,77 @@
+//============================================================================
+// Director.hp:
+// Copyright ( c ) 1995,1996,1997,1999,2000,2003 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+//
+//	Abstract: Director Header file
+//	History:
+//			Created	from object.hps using prep
+//
+//	Class Hierarchy:
+//			none
+//
+//	Dependancies:
+//
+//	Restrictions:
+//
+//	Example:
+//
+//============================================================================
+
+#ifndef _Director_HP
+#define _Director_HP
+
+//============================================================================
+
+#include "actor.hp"
+#include "oas/director.ht"
+
+//============================================================================
+
+class Director: public Actor
+{
+public:
+	Director(const SObjectStartupData* startupData);
+	virtual ~Director();
+
+	virtual EActorKind kind() const;
+	virtual bool CanRender() const;
+	virtual bool CanUpdate() const;
+
+	virtual void update();
+
+protected:
+	_Director _directorData;
+
+private:
+	INLINE const _Director* getOad() const;
+};
+
+//============================================================================
+
+Actor* OadDirector( const SObjectStartupData* startupData );
+
+//============================================================================
+#if		USE_INLINE_DEFS || defined(_Director_CC)
+#include "director.hpi"	// include all inline definitions as appropriate
+#endif
+//============================================================================
+#endif // !_Director_HP
+//============================================================================

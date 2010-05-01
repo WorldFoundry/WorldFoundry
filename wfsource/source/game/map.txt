@@ -1,0 +1,67 @@
+velocity file map:
+
+	level.cc:
+		level loading
+		psx sound code
+		collision calling
+		main level loop
+
+	actor.cc					part of the object hierarchy
+	moving.cc					part of the object hierarchy
+	person.cc					part of the object hierarchy
+	main.cc                     game entry point
+	game.cc					application framework
+
+debugging or temp:
+	prof.cc						profiling code
+	profile.cc					.ini file reader
+	debugobj.cc					debug object, only for development
+	locfile.cc					used to find animation objects on disk, streamer should replace
+	fpath.cc					splitpath and mergepath replacements
+
+platform specific:
+	brpsyq.c					BRender file I/O for PSX
+	floatlib.c                  PSX
+
+game specific:
+	dogai.cc					dog brain, designer editable
+
+Input handlers:
+	inputai.cc					input handler for AI
+
+movement handlers:
+
+things which should be movement handlers but aren't
+	path.cc
+
+libraries:
+	video.cc					microsoft avi reader
+	animatio.cc	   				animation interface to the object animation system
+	assert.cc					better version of assert
+	camera.cc					camera code
+	vector.cc					defines a 3d vector, has some 8-way joystick grid-snap code
+	scalar.cc					defines a fixed or float scalar
+	space.cc					defines a 3d space, used for collision
+
+
+object files:
+	actbox.cc					activation box
+	actboxpt.cc					activation box with pointer
+	destroy.cc					object destroyer
+	dog.cc						evil dog character
+	explode.cc					explosion, pretty much same as spike
+	generato.cc					object generator
+	grenade.cc					throwable object which generates something when it dies
+	guard.cc					enemy guard
+	hologram.cc					object with no collision
+	matte.cc					object to put up background image (should have only one per level)
+	movie.cc					object to play movie on a texture map
+	rocketbd.cc                 rocket board
+	shadow.cc					shadow, may be applied to any object
+	spike.cc					touch-n-die, pretty much same as explosion
+	spring.cc					object to jump on and bounce up
+	statplat.cc					non-moving, non-animating platform, used for walls and floors
+	target.cc					no collision, invisible  box, used for defining a position in the level, for example, have the dogs run to a target
+	timeport.cc					object created by the main character, used to rewind time
+	platform.cc					moving, animating platform
+	velocity.cc					main character

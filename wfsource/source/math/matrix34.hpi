@@ -1,0 +1,197 @@
+//=============================================================================
+// math/matrix34.hpi: Actually a Matrix43, but in computing we like our rows contigous, se we flip them
+// Copyright (c) 1996,1997,1998,1999,2000,2002 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//=============================================================================
+
+#ifndef MATRIX34_HPI
+#define MATRIX34_HPI
+
+//-----------------------------------------------------------------------------
+
+#include <math/angle.hp>
+
+// ------------------------------------------------------------------------
+
+INLINE void
+Matrix34::ConstructIdentity()
+{
+	_matrix[0][0] = Scalar::one;  _matrix[0][1] = Scalar::zero; _matrix[0][2] = Scalar::zero;
+	_matrix[1][0] = Scalar::zero; _matrix[1][1] = Scalar::one;  _matrix[1][2] = Scalar::zero;
+	_matrix[2][0] = Scalar::zero; _matrix[2][1] = Scalar::zero; _matrix[2][2] = Scalar::one;
+	_matrix[3][0] = Scalar::zero; _matrix[3][1] = Scalar::zero; _matrix[3][2] = Scalar::zero;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE
+Matrix34::Matrix34()
+{
+	ConstructIdentity();
+}
+
+// ------------------------------------------------------------------------
+
+INLINE
+Matrix34::Matrix34( const Vector3& translation )
+{
+	ConstructTranslation( translation );
+}
+
+// ------------------------------------------------------------------------
+
+//INLINE
+//Matrix34::Matrix34( const Vector3& scale, const Vector3& translation )
+//{
+//	ConstructScale( scale, translation );
+//}
+
+// ------------------------------------------------------------------------
+
+INLINE
+Matrix34::Matrix34( const Euler& euler, const Vector3& translation )
+{
+	ConstructEuler( euler, translation );
+}
+
+// ------------------------------------------------------------------------
+
+INLINE
+Matrix34::Matrix34
+(
+	const Vector3& row0,
+	const Vector3& row1,
+	const Vector3& row2,
+	const Vector3& row3
+)
+{
+	Construct( row0, row1, row2, row3 );
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Matrix34&
+Matrix34::operator = ( const Matrix34& x )
+{
+	memcpy(_matrix,x._matrix,sizeof(_matrix));
+	return *this;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE
+Matrix34::Matrix34( const Matrix34& x )
+{
+	(*this) = x;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Vector3&
+Matrix34::operator [] ( int idxRow )
+{
+	assert( idxRow >= 0 );
+	assert( idxRow < 4 );
+	return *( (Vector3 *)&( _matrix[idxRow][0] ) );
+}
+
+// ------------------------------------------------------------------------
+
+INLINE const Vector3&
+Matrix34::operator [] ( int idxRow ) const
+{
+	assert( idxRow >= 0 );
+	assert( idxRow < 4 );
+	return *( (const Vector3 *)&( _matrix[idxRow][0] ) );
+}
+
+// ------------------------------------------------------------------------
+// ApplyPost
+
+INLINE const Matrix34&
+Matrix34::operator *= ( const Matrix34& rhs )
+{
+	Matrix34 temp;
+
+	temp._matrix[0][0] = Mac3(_matrix[0][0],rhs._matrix[0][0],_matrix[0][1],rhs._matrix[1][0],_matrix[0][2],rhs._matrix[2][0]);
+	temp._matrix[0][1] = Mac3(_matrix[0][0],rhs._matrix[0][1],_matrix[0][1],rhs._matrix[1][1],_matrix[0][2],rhs._matrix[2][1]);
+	temp._matrix[0][2] = Mac3(_matrix[0][0],rhs._matrix[0][2],_matrix[0][1],rhs._matrix[1][2],_matrix[0][2],rhs._matrix[2][2]);
+
+	temp._matrix[1][0] = Mac3(_matrix[1][0],rhs._matrix[0][0],_matrix[1][1],rhs._matrix[1][0],_matrix[1][2],rhs._matrix[2][0]);
+	temp._matrix[1][1] = Mac3(_matrix[1][0],rhs._matrix[0][1],_matrix[1][1],rhs._matrix[1][1],_matrix[1][2],rhs._matrix[2][1]);
+	temp._matrix[1][2] = Mac3(_matrix[1][0],rhs._matrix[0][2],_matrix[1][1],rhs._matrix[1][2],_matrix[1][2],rhs._matrix[2][2]);
+
+	temp._matrix[2][0] = Mac3(_matrix[2][0],rhs._matrix[0][0],_matrix[2][1],rhs._matrix[1][0],_matrix[2][2],rhs._matrix[2][0]);
+	temp._matrix[2][1] = Mac3(_matrix[2][0],rhs._matrix[0][1],_matrix[2][1],rhs._matrix[1][1],_matrix[2][2],rhs._matrix[2][1]);
+	temp._matrix[2][2] = Mac3(_matrix[2][0],rhs._matrix[0][2],_matrix[2][1],rhs._matrix[1][2],_matrix[2][2],rhs._matrix[2][2]);
+
+	temp._matrix[3][0] = Mac3(_matrix[3][0],rhs._matrix[0][0],_matrix[3][1],rhs._matrix[1][0],_matrix[3][2],rhs._matrix[2][0]) + rhs._matrix[3][0];
+	temp._matrix[3][1] = Mac3(_matrix[3][0],rhs._matrix[0][1],_matrix[3][1],rhs._matrix[1][1],_matrix[3][2],rhs._matrix[2][1]) + rhs._matrix[3][1];
+	temp._matrix[3][2] = Mac3(_matrix[3][0],rhs._matrix[0][2],_matrix[3][1],rhs._matrix[1][2],_matrix[3][2],rhs._matrix[2][2]) + rhs._matrix[3][2];
+	*this = temp;
+	return *this;
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Matrix34
+Matrix34::operator * ( const Matrix34& rhs ) const
+{
+	return Matrix34( *this ) *= rhs;
+}
+
+
+// ------------------------------------------------------------------------
+
+INLINE Vector3
+operator* (const Vector3& v,const Matrix34& matrix)
+{
+        Vector3 temp(v);
+	temp *= matrix;
+	return(temp);
+}
+
+// ------------------------------------------------------------------------
+
+INLINE Vector3
+MultiplyAcross (const Vector3& v,const Matrix34& matrix)
+{
+        Vector3 temp(v);
+	MultiplyEqualAcross(temp,matrix);
+	return(temp);
+}
+
+
+//==============================================================================
+
+#if defined(SCALAR_TYPE_FIXED)
+#elif defined(SCALAR_TYPE_FLOAT) || defined(SCALAR_TYPE_DOUBLE)
+
+INLINE const FLOAT_TYPE *
+Matrix34::AsFLoatArray() const
+{
+    return reinterpret_cast<const FLOAT_TYPE*>(&_matrix[0][0]);
+}
+#else
+#error SCALAR TYPE not defined
+#endif
+
+//=============================================================================
+#endif	// MATRIX34_HPI
+//=============================================================================

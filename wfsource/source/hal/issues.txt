@@ -1,0 +1,44 @@
+issues.txt:
+
+can we place the object files for a library in a sub-directory?
+	This would allow debug and non-debug versions to be in seperate obj directories,
+	and would allow easy switching between them.
+
+how should library test beds include other libraries .lib files?
+	how should cross-dependancies be resolved?
+
+we need makedepend asap
+
+*where should the version control data reside?
+
+*which version control system are we going to use?
+
+how are we going to manage all of the different versions of the HAL?
+
+can we make ERR_DEBUG not require two set of parenthesis?
+
+do we use null pointers, or avoid them?
+!avoid NULL pointers if possible
+
+!resource tracking system should have a switch to report ALL allocations
+and deallocations with addresses, which will make it easier to find
+who allocated the un-freed resources
+
+should concrete data types also start with "Q"? (see boolean)
+
+has everyone read "writing solid code" & "No bugs"?
+how much of "writing solid code" should we implement?
+
+!items will be used to track system resources for the purpose of debugging
+the final release of a product will not have resource tracking from items.
+
+how should all of the fields of a message(type, message, and possible reply port)
+be returned to the receiver?
+
+need an easy way for user to wait on more than one message port at a time
+
+messages which send a pointer to memory will need to be replied, or the
+sender must assume the reciever now owns the memory
+
+better assertion if adding a port to the public list more than once
+

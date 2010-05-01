@@ -1,0 +1,286 @@
+//==========================================================================
+// Copyright (c) 1994,1995,1996,1997,1999,2000,2001,2002,2003 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description: That most wonderful of macros...
+// Original Author: Andre Burgoyne
+// ===========================================================================
+
+//=============================================================================
+// We allow this file to be multiply included with different settings for
+// DO_ASSERT and NO_ASSERT_EXPR
+//
+// kts attempt to document all of these macros:
+// 	assert(expr): standard C assert macro
+// 	AssertMsg(expr, ostream commands): same as assert, but allows a message
+//		to be displayed (uses ostream, so any series of << operators work)
+//  AssertMsgFileLine(expr, ostream commands, file, line): same as above, but
+//		uses passed in file.line
+// ValdatePtr(ptr): asserts pointer is valid (same as AssertMsg(ValidPtr(ptr),"Invalid Ptr" << ptr)
+// ValidatePtrFileLine(ptr,file,line): same as above with file,line override
+// ValidateObject
+
+//	Fail(msg): same as AssertMsg(0, msg);
+//=============================================================================
+
+#undef	_ASSERT_HP
+#define	_ASSERT_HP
+#if !defined(OLD_IOSTREAMS)
+#   include <ostream>
+#   include <iostream>
+#   include <sstream>
+#else
+#   include <ostream.h>
+#   include <iostream.h>
+#   if defined(__LINUX__)
+#       include <strstream.h>
+#   elif defined(__WIN__)
+#       include <strstrea.h>
+#   elif defined(__PSX__)
+#   else
+#   error no strstream defined!
+#   endif
+#endif
+
+#undef assert
+#undef AssertMsg
+#undef AssertMsgFileLine
+#undef AssertEq
+#undef AssertNe
+#undef ValidatePtr
+#undef ValidatePtrFileLine
+#undef ValidateObject
+#undef ValidateObjectPtr
+#undef ValidateObjectFileLine
+#undef ValidateObjectPtrFileLine
+#undef Fail
+#undef RangeCheck
+#undef RangeCheckExclusive
+#undef RangeCheckInclusive
+
+
+//=============================================================================
+
+
+#ifndef	NO_ASSERT_EXPR
+#define	NO_ASSERT_EXPR		0
+#endif	// !defined(NO_ASSERT_EXPR)
+
+#ifndef	__GNUC__
+#undef	__attribute__
+#define	__attribute__(x)	//nothing
+#endif	//!defined(__GNUC__)
+
+#ifndef _ASSERT_DEFINED
+#define _ASSERT_DEFINED
+
+#if defined( __cplusplus )
+//extern "C" {
+#endif	//__cplusplus
+	extern void		_sys_assert( int _, const char * expr, const char *file, int line )
+//#if		!_SYS_SUPPRESS_EXIT
+		__attribute__ ((noreturn))
+//#endif	//!_SYS_SUPPRESS_EXIT
+		;
+#if defined( __cplusplus )
+//}
+#endif	//__cplusplus
+#endif	                                // ASSERT_DEFINED
+
+#if	DO_ASSERTIONS
+#	define ASSERTIONS(data) data 				// wrap around code you want only if assertions are enabled
+
+#	if NO_ASSERT_EXPR		// reduce size of app, but leave in assertions
+#		define assert(__expr__) \
+			( (__expr__) ? (void)0 : (_sys_assert((int)(__expr__), #__expr__, __FILE__, __LINE__ ) ) )
+#else	//!NO_ASSERT_EXPR	// full debug case
+
+#	define assert(__expr__) \
+		( (__expr__) ? (void)0 : (_sys_assert((int)(__expr__), #__expr__, __FILE__, __LINE__ ) ) )
+
+#	ifdef __cplusplus
+#	if defined(NO_CONSOLE)
+#ifndef EXPORTER_EXCEPTION_DEFINED
+#define EXPORTER_EXCEPTION_DEFINED
+class WRLExporterException
+{
+public:
+	long	exceptionData;
+};
+#include <windows.h>
+#include <winuser.h>
+#endif
+#	define AssertMsg(__cond__, __msg__)\
+		if (!(__cond__))\
+		{\
+			char messageBuffer[1024];\
+            std::strstream outputStream(messageBuffer,1024,std::ios::out|std::ios::binary);\
+            outputStream << __msg__ << std::endl << __FILE__ << ":" << __LINE__;\
+			outputStream << '\0';\
+			MessageBox(NULL, outputStream.str(), "Error", MB_OK);\
+			throw WRLExporterException();\
+		}
+#	define AssertMsgFileLine(__cond__, __msg__, file, line)\
+		if (!(__cond__))\
+		{\
+			char messageBuffer[1024];\
+            std::strstream outputStream(messageBuffer,1024,std::ios::out|std::ios::binary);\
+            outputStream << __msg__ << std::endl << file << ":" << line;\
+			outputStream << '\0';\
+			MessageBox(NULL, outputStream.str(), "Error", MB_OK);\
+			throw WRLExporterException();\
+		}
+
+#	else
+#		if SW_DBSTREAM
+#		define AssertMsg( exp, str )\
+	 		do\
+			{\
+	 			if( !( exp ) )\
+	 			{\
+                    std::cerr << "+- ASSERTION MESSAGE ---------------------------------------------------------+\n"; \
+                    std::cerr << "AssertMsg:" << str << std::endl;\
+	 				_sys_assert( int( exp ), #exp, __FILE__, __LINE__ );\
+	 			}\
+	 		} while( 0 )
+#		define AssertMsgFileLine( exp, str, file, line )\
+	 		do\
+	 		{\
+	 			if( !( exp ) )\
+	 			{\
+                    std::cerr << "+- ASSERTION MESSAGE ---------------------------------------------------------+\n"; \
+                    std::cerr << "AssertMsg:" << str << std::endl;\
+	 				_sys_assert( int( exp ), #exp, file, line );\
+	 			}\
+	 		} while( 0 )
+
+#		else			// SW_DBSTREAM
+
+#		define AssertMsg( exp, ignore2 )\
+	 		do\
+			{\
+	 			if( !( exp ) )\
+	 			{\
+	 				_sys_assert( int( exp ), #exp, __FILE__, __LINE__ );\
+	 			}\
+	 		} while( 0 )
+
+#		define AssertMsgFileLine( exp, ignore2 , file, line )\
+	 		do\
+			{\
+	 			if( !( exp ) )\
+	 			{\
+	 				_sys_assert( int( exp ), #exp, file, line );\
+	 			}\
+	 		} while( 0 )
+
+//#	define AssertMsg(ignore1,ignore2) ((void)0)
+#	endif		// SW_DBSTREAM
+#endif			// defined(NO_CONSOLE)
+
+#	define ValidateObject( x )\
+ 		( x ).Validate( __FILE__, __LINE__ )
+#	define ValidateObjectPtr( x )\
+ 		do\
+ 		{\
+ 			ValidatePtr( x );\
+ 			( x )->Validate( __FILE__, __LINE__ );\
+ 		} while( 0 )
+#	define ValidateObjectFileLine( x, file, line )\
+ 		( x ).Validate( file, line )
+#	define ValidateObjectPtrFileLine( x, file, line )\
+ 		do\
+ 		{\
+ 			ValidatePtrFileLine( x, file, line );\
+ 			( x )->Validate( file, line );\
+ 		} while( 0 )
+#	else			// __cplusplus
+#		define AssertMsg( exp, str )\
+            printf("+- ASSERTION MESSAGE ---------------------------------------------------------+\n" ); \
+ 			printf( "AssertMsg: text unknown\n" );\
+ 			( (exp) ? (void)0 : ( _sys_assert( (int)(exp), #exp, __FILE__, __LINE__ ) ) )
+#		define AssertMsgFileLine(exp,str,file,line)\
+            printf("+- ASSERTION MESSAGE ---------------------------------------------------------+\n" ); \
+ 			printf( "AssertMsg: text unknown\n" );\
+ 			( (exp) ? (void)0 : ( _sys_assert( (int)(exp), #exp, file, line ) ) )
+
+
+#	endif
+
+
+
+
+
+#	define Fail( msg )\
+ 		AssertMsg( 0, msg )
+#	define ValidatePtr( ptr )\
+ 		AssertMsg( ValidPtr( ptr ), "Invalid Pointer:" << ((ulong)ptr) )
+#	define ValidatePtrFileLine( ptr, file, line )\
+ 		AssertMsgFileLine( ValidPtr( ptr ), "Invalid Pointer" << ((ulong)ptr), file, line )
+
+#	define RangeCheck( min, value, max) \
+		{\
+		AssertMsg((value) >= (min), #min " = " << (min) << ", " << #value " = " << (value) ); \
+		AssertMsg((value) < (max), #value " = " << (value) << ", " #max " = " << (max) );\
+		}
+
+#	define RangeCheckInclusive( min, value,  max) \
+	{\
+		AssertMsg((value) >= (min), #min " = " << (min) << ", " << #value " = " << (value) ); \
+		AssertMsg((value) <= (max), #value " = " << (value) << ", " #max " = " << (max) ); \
+	}
+
+#	define RangeCheckExclusive( min, value, max) \
+	{\
+		AssertMsg((value) > (min), #min " = " << (min) << ", " << #value " = " << (value) ); \
+		AssertMsg((value) < (max), #value " = " << (value) << ", " << #max " = " << (max) ); \
+	}
+
+#	define assertEq(value1, value2) AssertMsg((value1) == (value2), #value1 " = " << (value1) << ", " #value2 " = " << (value2))
+#	define assertNe(value1, value2) AssertMsg((value1) != (value2), #value1 " = " << (value1) << ", " #value2 " = " << (value2))
+
+// kts doesn't work
+//#	define assertOp(value1, op, value2)	AssertMsg((value1) #op (value2), #value1 " = " << (value1) << ", " #value2 " = " << (value2))
+
+#	endif //!NO_ASSERT_EXPR
+#else	// !DO_ASSERTIONS
+#	define ASSERTIONS(ignore) 				// wrap around code you want only if assertions are enabled
+#	define assert(ignore) ((void)0)
+#	define AssertMsg(ignore1,ignore2) ((void)0)
+#	define AssertMsgFileLine( expression, string, file, line ) ((void)0)
+#	define Fail( msg ) ((void)0)
+#	define ValidatePtr( x ) ((void)0)
+#	define ValidatePtrFileLine( x, file, line ) ((void)0)
+
+#	define RangeCheck( nim, value, max)
+#	define RangeCheckInclusive( min, value, max)
+#	define RangeCheckExclusive( min, value, max)
+
+#	define ValidateObject( x ) ((void)0)
+#	define ValidateObjectFileLine( x, file, line ) ((void)0)
+#	define ValidateObjectPtr( x ) ((void)0)
+#	define ValidateObjectPtrFileLine( x, file, line ) ((void)0)
+#	define assertEq(value1, value2) 
+#	define assertNe(value1, value2) 
+
+
+
+//=============================================================================
+#endif	//!DO_ASSERTIONS
+//=============================================================================

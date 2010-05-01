@@ -1,0 +1,20 @@
+@*============================================================================
+@* statplat.oas
+@*============================================================================
+
+@*============================================================================
+@* Stationary Platform definition
+
+@define DEFAULT_MESH_PROPSHEET	1
+@define DEFAULT_MOBILITY_ENABLE_EXPR "0"
+
+TYPEHEADER(Stationary Platform,StatPlat)
+	@include actor.inc
+
+	PROPERTY_SHEET_HEADER(Stationary Platform)
+@*	------------------------------------------
+	PROPERTY_SHEET_FOOTER
+
+TYPEFOOTER
+
+@*============================================================================

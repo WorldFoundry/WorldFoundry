@@ -1,0 +1,70 @@
+//===========================================================================
+// disktoc.hp: sector align Table Of Contents array class
+// Copyright ( c ) 1998,99 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//===========================================================================
+// Description: sector align Table Of Contents array class
+// Original Author: Kevin T. Seghetti
+//==========================================================================
+
+#ifndef _DISKTOC_HP
+#define _DISKTOC_HP
+
+#include <pigsys/pigsys.hp>
+#include <hal/diskfile.hp>
+
+//=============================================================================
+
+class DiskTOC
+{
+public:
+	struct TOCEntry
+	{
+		int 	_offsetInDiskFile;
+		int32 	_size;
+	};
+
+	DiskTOC();
+	~DiskTOC();
+
+	inline void Validate() const;
+#if DO_ASSERTIONS
+	inline int32 GetName() const;
+#endif
+
+	void LoadTOC(_DiskFile& diskFile,int32 tocOffset);  			// offset = where in the diskfile the toc is
+	inline const TOCEntry& GetTOCEntry(int index);
+
+#if SW_DBSTREAM
+	friend inline std::ostream& operator<<(std::ostream& s, const DiskTOC& diskTOC);
+#endif
+
+private:
+	int	_tocEntries;
+	TOCEntry*	_toc;
+#if DO_ASSERTIONS
+	int32 _name;
+#endif
+};
+
+//=============================================================================
+#include "disktoc.hpi"
+//=============================================================================
+#endif
+//=============================================================================

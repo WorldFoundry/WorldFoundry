@@ -1,0 +1,113 @@
+//===========================================================================
+// Copyright (c) 1994,1995,1996,1997,1998,1999,2000,2001,2002,2003 World Foundry Group  
+
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//===========================================================================
+// Description: The Game class provides the application framework for the
+//              game.
+// Original Author: Ann Mei Chang
+//==========================================================================
+
+#ifndef _GAME_HP
+#define _GAME_HP
+
+//-----------------------------------------------------------------------------
+
+#include <hal/sjoystic.h>
+#include <hal/_mempool.h>
+#include <hal/diskfile.hp>
+#include <math/scalar.hp>
+#include <input/inputdig.hp>
+#include <iff/disktoc.hp>
+
+#include <gfx/display.hp>
+#include <gfx/vmem.hp>
+#include <gfx/viewport.hp>
+#include "actor.hp"
+
+//=============================================================================
+
+const int NumJoysticks = 2;
+
+//=============================================================================
+
+class WFGame
+{
+public:
+	WFGame( const int nStartingLevel = 0 );
+	~WFGame();
+
+	void RunLevel(_DiskFile* levelFile);		// executes a single level, returns when done
+	void RunGameScript();				// runs the whole game, returns when game (really) over (quit to OS)
+
+	SMemPool* MessagePortMemPool();
+
+	// mailbox methods
+	void WriteSystemMailbox( int boxnum, Scalar value );
+	Scalar ReadSystemMailbox( int boxnum ) const;
+
+#if SW_DBSTREAM			                // used to load objects.id for actor printing
+	inline int32 GetLevelNum() const;
+#endif
+
+	//const Actor&		GetActor() const    	{ return _ActorLevel; }
+
+protected:
+	void				DistributorLogo();
+	void	   		PublisherLogo();
+	void	  			DeveloperLogo();
+
+private:
+	Display* 			_display;
+	VideoMemory*      _videoMemory;
+	ViewPort* 			_viewPort;
+
+	// Memory pool for allocating MsgPort messages
+	enum { MSGPORTPOOLSIZE = 500 };	// Max number of MsgPort messages
+	SMemPool*			_msgPortMemPool;
+
+	// persistent system mailboxes
+	int32				_desiredLevelNum;  // which level will run next
+	int32				_overrideLevelNum;  // override from the command line
+	_DiskFile* 			_gameFile;				// cd.iff
+	DiskTOC				_gameTOC;
+
+public:
+//     class LevelActor : public Actor
+//     {
+//     public:
+//         LevelActor() : Actor()
+//         {
+//             _idxActor = 1;
+//         }
+//         ~LevelActor()           {}
+//         virtual EActorKind kind() const { return EActorKind( -1 ); }
+//     };
+	//static const LevelActor	_ActorLevel;
+};
+
+//=============================================================================
+
+extern WFGame* theGame;
+
+//=============================================================================
+#include "game.hpi"	// include all inline definitions as appropriate
+//=============================================================================
+#endif // !_GAME_HP
+//=============================================================================

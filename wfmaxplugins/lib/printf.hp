@@ -1,0 +1,36 @@
+#ifndef IFFWRITE_PRINTF_HP
+#define IFFWRITE_PRINTF_HP
+
+#include <stdarg.h>
+#include <string.h>
+
+class PrintF
+{
+public:
+	PrintF( const char* szFormat, ... )
+	{
+		char _szBuf[ 2048 ];
+
+		va_list pArg;
+
+		va_start( pArg, szFormat );
+		vsprintf( _szBuf, szFormat, pArg );
+		va_end( pArg );
+
+		_szComment = strdup( _szBuf );
+		assert( _szComment );
+
+	}
+	~PrintF()
+	{
+		assert( _szComment );
+		free( _szComment );
+	}
+
+	const char* operator()() const		{ assert( _szComment ); return _szComment; }
+
+protected:
+	char* _szComment;
+};
+
+#endif	// IFFWRITE_PRINTF_HP

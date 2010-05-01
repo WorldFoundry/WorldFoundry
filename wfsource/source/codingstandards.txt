@@ -1,0 +1,144 @@
+World Foundry coding standards:
+
+This is just slapped together, I realize it is not laid out very well, I
+just focused on getting the information down.
+
+Also, due to the size of WF (and the vintage of some of the code), these
+standards are not met everywhere in the code base. Think of it as where
+I wish it was and am working towards.
+
+Feel free to ask for the rationale behind any of this stuff.
+
+//==============================================================================
+
+recommended reading:
+
+Effective C++(ISBN 0-201-56364-9) and
+More Effective C++(ISBN 0-201-63371-X), by Scott Meyers. 
+	These rock. Any C++ programmer should learn everything in these.
+Writing Solid Code(ISBN 1-55615-551-4), by Steve Maguire
+	A good book on coding for the long term. 
+	Short version: ask these 2 questions whenever you find a bug:
+	1. How could I have automatically detected this bug, and
+	2. How could I have prevented this bug for occurring.
+	Apply these rules (and their answers) recursively over time
+	and your code will get better.
+Debugging the Development Process(ISBN 1-55615-650-2), by Steve Maguire
+	More usefully in a team environment, where there are a lot
+	of conflicting interests.	
+No Bugs, by David Thielen, ISBN 0-201-6080-1
+	A bit dated, more concrete version of Writing Solid Code, has
+	some good debugging code in it (this is where the kernel of the
+	redirectable streams came from)
+Industrial Strength C++, by Mats Henrichson / Erik Myquist, ISBN: 0-13-120965-5
+	Follow everything in this book, and your code will get better.
+	We attempt to follow most of these rules (our biggest offense
+	is using underscore in member names). 
+	I think there is an online version of this, I should look for it.
+The C++ Programming Language (third edition) (ISBN 0-201-88954-4)
+	Doesn't everyone have this? A bit dense, but when you need to be
+	a language lawyer, this is it.
+
+//==============================================================================
+// general / C stuff
+
+In addition to the build in integer types (char, short, int,long), we have
+defined types which have their size known: int32, uint32, int16, uint16,
+int8 and uint8. This makes it much easier to deal with on-disk structures,
+hardware registers, etc in a portable fashion.
+
+Bracing:
+	For clarity, closing braces should always be in the same column
+	as opening braces:
+	for(int index=0;index<foo;index++)
+	{
+		while(bar)
+		{
+			stuff;
+		}
+	}
+	There should be nothing else on the brace lines (except comments)
+
+
+4 character tabs are used throughout.
+
+Try to use meaningfully identifiers (single letter variable names suck, if for
+no other reason than it is not easy to search and replace it with something
+more meaningful).
+
+//==============================================================================
+c++ stuff
+
+Every class should have an inline function named Validate(). This function
+should be empty in release mode, and in debug mode should attempt to validate
+the class as much as possible. If the class is derived from or contains 
+instances of other classes, it should call their validate functions.
+
+Every member function should call Validate on its class upon entry and
+exit (verify it left the class in a valid state). Obviously this doesn't
+apply to con/destructors. Constructors should call Validate upon exit, 
+destructors should call Validate upon entry.
+
+Every function should validate every input parameter, first call any 
+Validate functions, then verify the state of the input is acceptable
+to that function. For concrete data types, use RangeCheck to verify
+the input is within the desired range.
+
+Multiple inheritance is forbidden (I have yet to see an example
+where I couldn't design a better way (yes, that includes I/O streams))
+
+Use const wherever possible (most importantly, declare references to inputs 
+you don't write to const). Also make as many class functions const as possible.
+If you don't make your classes/methods const when they should be, you'll never
+be able to use const-correctness at the higher level of your application.
+
+Prefer references over pointers unless you need the concept of an invalid
+object (NULL).
+
+Try to only use the pre-processor for conditional compilation, use enum or 
+const for constants, and inline for small code pieces.
+
+No public data: inline accessors are free, so there is no reason to ever
+have public data.
+
+Class organization:
+Classes are defined in the following order:
+public:
+	constructors
+	destructors
+	other public functions
+protected:
+	protected functions
+	protected data (try to avoid, just use protected inline accessors)
+private:
+	private functions
+	private data
+
+//==============================================================================
+Naming conventions:
+
+Constants are all uppercase, with underscore separators (just like macros)
+Bit flags use the Amiga convention: First word ends in B for the bit
+#, F for the flag:
+
+enum
+{
+	JOYSTICKB_LEFT = 1,
+	JOYSTICKF_LEFT = 1 << JOYSTICKB_LEFT
+};
+
+
+Everything else is mixed case, with everything lowercase except the first
+letter of each word after the first:
+
+Variable names have the first word start with a lower case letter, upper
+case for each subsequent word: mySmallCounter
+
+Function names have the first letter uppercase for all words: ThisIsAFunction.
+
+Class Names use the same convention as Function names: ThisIsAClass.
+
+Private data and functions begin with an underscore to distinguish them from 
+public variables: Position _position;
+
+//==============================================================================

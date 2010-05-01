@@ -1,0 +1,85 @@
+//==============================================================================
+// colbox.hpi:
+// Copyright ( c ) 1994,95,96,97,99,2000,2002 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description: The ColBox class describes different collision
+//              spaces and calculate whether a particular space collides with
+//              another.
+// Original Author: Ann Mei Chang
+// Rewrite: Kevin T. Seghetti, 2/25/96 7:42AM
+//==============================================================================
+
+INLINE Vector3
+ColBox::Min() const
+{
+	return _minPoint;
+}
+
+//=============================================================================
+
+INLINE Vector3
+ColBox::Max() const
+{
+	return _maxPoint;
+}
+
+//=============================================================================
+
+INLINE Vector3
+ColBox::Min(const Vector3& curpos) const
+{
+	return _minPoint + curpos;
+}
+
+//==============================================================================
+
+INLINE Vector3
+ColBox::Max(const Vector3& curpos) const
+{
+	return _maxPoint + curpos;
+}
+
+//==============================================================================
+
+INLINE void
+ColBox::SetBox(const Vector3& min, const Vector3& max)
+{
+	AssertMsg(max.X() > min.X(), "[" << min.X() << "," << max.X() << "]" );
+	AssertMsg(max.Y() > min.Y(), "[" << min.Y() << "," << max.Y() << "]" );
+	AssertMsg(max.Z() > min.Z(), "[" << min.Z() << "," << max.Z() << "]" );
+	_minPoint = min;
+	_maxPoint = max;
+}
+
+//==============================================================================
+
+#if 0
+INLINE	bool
+ColBox::operator==(const ColBox& right) const
+{
+	return
+	 (
+		_minPoint == right._minPoint &&
+		_maxPoint == right._maxPoint
+	 );
+}
+#endif
+
+//==============================================================================

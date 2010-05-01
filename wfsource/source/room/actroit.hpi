@@ -1,0 +1,316 @@
+//============================================================================
+// actroit.hpi:
+//============================================================================
+// Copyright ( c ) 1997,1999,2000,2002,2003 World Foundry Group.  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+#include "actrooms.hp"
+                                  
+//============================================================================
+// all objects in active rooms interators
+//============================================================================
+
+inline void
+ActiveRoomsIter::Validate() const
+{
+#if DO_VALIDATION
+	assert(ValidPtr(_activeRooms));
+	assert(ValidPtr(_activeRooms->_activeRooms[0]));
+	assert(_roomIndex <= MAX_ACTIVE_ROOMS);
+	assert(_roomIndex >= 0);
+#endif
+}
+
+//============================================================================
+
+INLINE bool
+ActiveRoomsIter::Empty() const
+{
+	Validate();
+	return(_roomIndex == MAX_ACTIVE_ROOMS);
+}
+
+//============================================================================
+
+INLINE void
+ActiveRoomsIter::SkipNullObjects()
+{
+	Validate();
+	assert(ValidPtr(_activeRooms));
+		// skip empty objects
+	for ( ; _roomIndex < MAX_ACTIVE_ROOMS; ++_roomIndex )
+	{
+		if ( _activeRooms->_activeRooms[_roomIndex] != 0 )
+		{
+			assert( ValidPtr(_activeRooms->_activeRooms[_roomIndex]) );
+			return;
+		}
+	}
+	assert(Empty());
+}
+
+//============================================================================
+
+INLINE
+ActiveRoomsIter::ActiveRoomsIter(const ActiveRooms& activeRooms)
+{
+	_activeRooms = &activeRooms;
+	assert(ValidPtr(_activeRooms));
+	_roomIndex = 0;
+	assert(ValidPtr(_activeRooms->_activeRooms[0]));
+//	 SkipNullObjects();
+	Validate();
+}
+
+//============================================================================
+
+INLINE ActiveRoomsIter&
+ActiveRoomsIter::operator++()
+{
+	Validate();
+	assert( _roomIndex < MAX_ACTIVE_ROOMS );
+
+	++_roomIndex;
+	 SkipNullObjects();
+#if DO_ASSERTIONS
+	if(_roomIndex < MAX_ACTIVE_ROOMS)
+		assert(ValidPtr(_activeRooms->_activeRooms[_roomIndex]));
+#endif
+	return(*this);
+}
+
+//============================================================================
+
+INLINE ActiveRoomsIter&
+ActiveRoomsIter::operator+=(int offset)
+{
+	Validate();
+	while(offset-- && !Empty())
+		operator++();
+	return(*this);
+}
+
+//============================================================================
+
+INLINE Room&
+ActiveRoomsIter::operator*() const				// dereference operator, used to read the current object from the interator
+{
+	Validate();
+
+	if(_roomIndex >= MAX_ACTIVE_ROOMS)
+	{
+		assert(0);				// should de-reference an iterator which is off the end of the list
+//		return(NULL);
+	}
+
+	assert(ValidPtr(_activeRooms->_activeRooms[_roomIndex]));
+	return(*_activeRooms->_activeRooms[_roomIndex]);
+}
+
+//============================================================================
+
+INLINE ActiveRoomsIter&
+ActiveRoomsIter::operator= (const ActiveRoomsIter& i)
+{
+	Validate();
+	i.Validate();
+	_activeRooms = i._activeRooms;
+	_roomIndex = i._roomIndex;
+	return *this;
+}
+
+//============================================================================
+//============================================================================
+
+inline void
+ActiveRoomsIterConst::Validate() const
+{
+#if DO_VALIDATION
+	assert(ValidPtr(_activeRooms));
+	assert(ValidPtr(_activeRooms->_activeRooms[0]));
+	assert(_roomIndex <= MAX_ACTIVE_ROOMS);
+	assert(_roomIndex >= 0);
+#endif
+}
+
+//============================================================================
+
+INLINE bool
+ActiveRoomsIterConst::Empty() const
+{
+	Validate();
+	return(_roomIndex == MAX_ACTIVE_ROOMS);
+}
+
+//============================================================================
+
+INLINE void
+ActiveRoomsIterConst::SkipNullObjects()
+{
+	Validate();
+		// skip empty objects
+	for ( ; _roomIndex < MAX_ACTIVE_ROOMS; ++_roomIndex )
+	{
+		if ( _activeRooms->_activeRooms[_roomIndex] != 0 )
+		{
+			assert( ValidPtr(_activeRooms->_activeRooms[_roomIndex]) );
+			return;
+		}
+	}
+	assert(Empty());
+}
+
+//============================================================================
+
+INLINE
+ActiveRoomsIterConst::ActiveRoomsIterConst(const ActiveRooms& activeRooms)
+{
+	_activeRooms = &activeRooms;
+	assert(ValidPtr(_activeRooms));
+	_roomIndex = 0;
+	assert(ValidPtr(_activeRooms->_activeRooms[0]));
+	Validate();
+//	 SkipNullObjects();
+}
+
+//============================================================================
+
+INLINE ActiveRoomsIterConst&
+ActiveRoomsIterConst::operator++()
+{
+	Validate();
+	++_roomIndex;
+	 SkipNullObjects();
+#if DO_ASSERTIONS
+	if(_roomIndex < MAX_ACTIVE_ROOMS)
+		assert(ValidPtr(_activeRooms->_activeRooms[_roomIndex]));
+#endif
+	return(*this);
+}
+
+//============================================================================
+
+INLINE ActiveRoomsIterConst&
+ActiveRoomsIterConst::operator+=(int offset)
+{
+	Validate();
+	while(offset-- && !Empty())
+		operator++();
+	return(*this);
+}
+
+//============================================================================
+
+INLINE const Room&
+ActiveRoomsIterConst::operator*() const				// dereference operator, used to read the current object from the interator
+{
+	Validate();
+	if(_roomIndex >= MAX_ACTIVE_ROOMS)
+	{
+		assert(0);				// should de-reference an iterator which is off the end of the list
+//		return(NULL);
+	}
+
+	assert(ValidPtr(_activeRooms->_activeRooms[_roomIndex]));
+	return(*_activeRooms->_activeRooms[_roomIndex]);
+}
+
+//============================================================================
+
+INLINE ActiveRoomsIterConst&
+ActiveRoomsIterConst::operator= (const ActiveRoomsIterConst& i)
+{
+	Validate();
+	i.Validate();
+	_activeRooms = i._activeRooms;
+	_roomIndex = i._roomIndex;
+	return *this;
+}
+
+//============================================================================
+//============================================================================
+// advances to next room
+
+INLINE BaseObjectIteratorWrapper
+ActiveRoomsBaseObjectIter::GetRoomIter()
+{
+	assert(poIter.Empty());
+	Validate();
+
+	if(currentActiveRoomIndex >= MAX_ACTIVE_ROOMS )
+		return(poIter);										// 	if at end, just return an empty iterator
+
+	do
+	{
+		Validate();
+		do
+		{
+			++currentActiveRoomIndex;
+		}
+		while(currentActiveRoomIndex < MAX_ACTIVE_ROOMS && !_activeRooms.GetActiveRoom(currentActiveRoomIndex));
+
+		if(currentActiveRoomIndex >= MAX_ACTIVE_ROOMS )
+			return(poIter);										// 	if at end, just return an empty iterator
+
+		if(currentActiveRoomIndex < MAX_ACTIVE_ROOMS)
+		 {
+			assert( ValidPtr( _activeRooms.GetActiveRoom(currentActiveRoomIndex)) );
+			poIter = _activeRooms.GetActiveRoom(currentActiveRoomIndex)->ListIter(_listIndex);
+		 }
+	} while(poIter.Empty());
+	return(poIter);
+}
+
+//============================================================================
+
+INLINE BaseObjectIterator&
+ActiveRoomsBaseObjectIter::operator++()
+{
+	Validate();
+	++poIter;
+	if(poIter.Empty())
+	{
+//		currentActiveRoomIndex++;
+		GetRoomIter();
+	}
+   return *this;
+}
+
+//============================================================================
+
+INLINE bool
+ActiveRoomsBaseObjectIter::Empty() const
+{
+	Validate();
+	return(poIter.Empty());
+}
+
+//==============================================================================
+
+INLINE void 
+ActiveRoomsBaseObjectIter::Validate() const
+{
+   _activeRooms.Validate();
+}
+
+//==============================================================================
+

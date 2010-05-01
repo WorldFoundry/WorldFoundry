@@ -1,0 +1,110 @@
+TODO:
+
+"Handle" collisions need to be re-done, right now the animation system is looping through 
+the list of objects checking for collisions, instead each handle should make a collision object
+and allow the normal collision code to handle it.
+
+work on consolidating activation code (Actbox, etc.), there are multiple copies of the code.
+
+look at moving viewport from Level/Game to Camera
+
+Move movement handlers out of game
+
+get rid of level::mainCharacter - need to have a way to determine which object the camera is watcing
+ instead
+
+move path information in level on disk into movement block (so that it is better encapsulated)
+(once this is done it should be possible to remove _path from actor)
+
+Design issue: the scripting mailbox system currently uses Scalars for all IO. In most cases this is correct,
+but there are a few cases where we really want a bit field or integer, like the joystick bits.
+When the Scalar type is a floating point number this doesn't work very well.
+
+Joystick recording needs to be tested with Scalars as floats (since it records the players 
+position as a checksum)
+
+wallclockbreakpoint needs to be tested with Scalars as floats
+
+Handle system needs to be revisited, it was using a long as a Scalar, which is no longer
+allowed since Scalars might be floats.
+
+inputdig needs to be cleaned up, there are mutliple copies (the whole input chain needs to be 
+re-examined)
+
+remove oas/cstruct.pl, replace with @replace in prep (which doesn't seem to work right now)
+(cstruct is used to remove spaces from paramter names, they are marked with double quotes)
+
+Delete libstrm.inc from wfsource/source, should be automatically built every time
+
+Not sure where to put this, so will just put it here:)
+Enable acceptance of an X display on the command line (-display :0.0).
+
+Add a divide by zero hander to : There is no divide by zero exception handler (in 3D, this occurs a 
+lot, it needs to return the largest possible signed integer and continue). This would go in
+the math library, see math/win/msvc/scalar.hpi line 60 for an example of how it was done on
+windows. If it needs to be installed globally instead of at each use, hal/linux/platform.cc would
+be the place to put it.
+
+Speed up renderer by double-buffering in Mesa/ write a proper interface to Mesa. The engine can already
+render to OpenGL, but I just hacked in the Mesa code to open and setup a window for GL to 
+render into, and the example I took it from happened to be single-buffered. So it needs to be
+re-done with double buffering. This is in gfx/gl/mesa.cc 
+
+
+Joystick support: currently I just have keyboard support. This would be in hal/input.cc. Note since
+the keyboard input comes from the window opened by the gfx library, I hacked in a global function
+to communicate that from the gfx code to here. I would like to come up with a better way.
+
+Write an overview of the code base to make it easier for someone to figure it out.
+
+Re-design the texture/assetslot/video memory handling. It is a mess. It has been adapted 5
+times or so to different renderers and platforms, and was never really designed at all. 
+
+Write a coding standards document.
+
+Convert HAL to a C++ interface, making more of it usefull to the rest of the system.
+
+add configure
+
+---- Old internal todo list ----
+
+17 Mar 99
+
+* midi doesn't build
+
+* move math/plane.* into new lib geometry
+
+* delete pclib directory [I think]
+
+
+
+18 Mar 99
+
+* automatic version.obj dependency and bumpver for .exe's
+
+* add new library for srccntrl [or actually, maybe don't bother for now]
+
+* make the local source code compile before trying to compile the libraries [I think this is done]
+
+
+
+19 Mar 99
+
+* [cvs] add recolib
+
+* break up recolib
+
+* gfx says move face.hp[i?] into math; I think it should go into the new geometry class
+
+** [cvs] rename profile -> profiler
+
+** [cvs] add registry
+
+
+
+29 Mar 99
+
+* [cvs] delete profile directory
+
+
+

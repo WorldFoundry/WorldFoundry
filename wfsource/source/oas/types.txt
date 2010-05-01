@@ -1,0 +1,443 @@
+//============================================================================*/
+// types.txt: description of various data types stored in IFF
+//============================================================================*/
+
+// type system definition in IFF
+
+TYPE
+// possible types:
+//	I32		32 bit int
+//  I16		16 bit int
+//  I8		8 bit int
+//	U32		32 bit unsigned int
+//  U16		16 bit unsigned int
+//  U8		8 bit unsigned int
+//  EN32	32 bit enum
+//  EN16	16 bit enum
+//  EN8		8 bit enum
+
+//  F32		fixed point 1.15.16
+//  F16		fixed point 1.7.8
+//  F8		fixed point 1.3.4
+//  BOOL	boolean (stored a 8 bits)
+
+//	STR		variable length string
+
+//	STRU	// struct, nested, contains sub-chunks of data types
+//  UNIO	// union, nested, contains overlapping sub-chunks of data types
+
+//	ARRY	// array, nested, contains array of single fixed size sub-chunks (which can, of course, be a struct)
+			// if no size given, use size of chunk
+// IFFC		// IFF chunk, starts with 4 char name and 4 char size, and contains
+			// arrau of sub-chunks
+
+kts questions:
+	should common blocks be nested like groups?
+	how to do object / class references? stored as string with some sort of modifier
+
+//  REF		// object reference / pointer
+
+detail of iff file containing a data description:
+
+all types contain 0 or more sub-chunks defining additional attributes
+possible sub-chunks are:
+	NAME	contains a string naming the field
+	DSNM	display name, contains a string providing a more descriptive english name for the field
+	HELP	string longer than the name desribing this field
+
+only in numeric chunks:
+	EXPR	string containing expression validating this field
+	RANG			does EXPR make this obsolete?
+	struct
+	{
+		(parent type) min;
+		(parent type) max;
+	}
+
+only in enumeration chunks:
+	ENVL	(enum values?) string containing | seperated names for each enum value
+
+only in strings
+	LEN	fixed length string
+
+
+
+// kind of attrib/wf specific (asset)
+	ASST		// inside of a string chunk
+	struct
+	{
+		char filespec[?];
+	}
+
+	DFLT		default, used by the WF attribute system
+	struct
+	{
+		(parent type) default;
+	}
+
+	OPEN	// property sheet default open param
+	struct
+	{
+		char open;
+	}
+
+	DISP	// showas data
+	struct
+	{
+		enum showas;
+	}
+
+//==========================================================================
+
+some examples:
+
+{ 'TYPE'
+	{ 'NAME' "Player" }
+	{ 'STRU'		// one struct per sheet in attrib
+		{ 'NAME' "Common" }
+		{ 'OPEN' false }
+		{ 'F32'
+			{ '..' 1 15 16}
+			{ 'NAME' "Mass" }
+			{ 'HELP' "Controls the mass of the character" }
+			{ 'RANG' 0.0L 100.0L }
+			{ 'DFLT' DEFAULT_MASS }
+		}
+		{ 'F32'
+			{ 'NAME' "Surface Friction" }
+			{ 'RANG' 0.0L 1.0L }
+			{ 'DFLT' DEFAULT_FRICTION }
+		}
+		{ 'I32'
+			{ 'NAME' "hp" }
+			{ 'RANG' 1L 32767L }
+			{ 'DFLT' DEFAULT_HITPOINTS }
+			{ 'DISP' SHOW_AS_NUMBER }
+		}
+	}
+
+
+//==========================================================================
+//==========================================================================
+//==========================================================================
+//  mesh.inc
+
+#ifndef DEFAULT_MODEL_TYPE
+@define DEFAULT_MODEL_TYPE 0
+#endif  //
+
+// if you change Model Type, be sure to update the enum in actor.hp and in levelcon:level.hp
+	{ 'E32'
+		{ 'NAME' "Model Type" }
+		{ 'RANG' 0L 4L }
+		{ 'DFLT' DEFAULT_MODEL_TYPE }
+		{ 'ENVL' "Box|Mesh|Scarecrow|None|Light" }
+		{ 'DISP' ,SHOW_AS_DROPMENU }
+	}
+
+	{ 'E32'
+		{ 'NAME' "Render Type" }
+		{ 'RANG' 0L 2L }
+		{ 'DFLT' 0L }
+		{ 'ENVL' "Actual|Wireframe|Collision Box" }
+		{ 'DISP' SHOW_AS_DROPMENU }
+	}
+	{ 'STRU'				// group start
+		{ 'NAME' "Z-Sort" }
+		{ 'BOOL'
+			{ 'NAME' "Has Order Table" }
+			{ 'DFLT' 0y }
+		}
+
+		{ 'BOOL'
+			{ 'NAME' "Sort Primitives" }
+			{ 'DFLT' 0y }
+			{ 'EXPR' "HasOrderTable" }
+		}
+
+		{ "E32"
+			{ 'NAME'  "Primitive Depth Value" }
+			{ 'DSNM' "Prim Depth" }
+			{ 'RANG' 0L 3L }
+			{ 'DFLT' 3l }
+			{ 'ENVL' "First Vertex|Min|Average|Max" }
+			{ 'DISP' SHOW_AS_RADIOBUTTONS
+			{ 'HELP' "How are depth values of graphics primitives computed?"
+			{ 'EXPR' "HasOrderTable" }
+		}
+
+		{ "I32"
+			{ 'NAME' "Order Table Size"
+			{ 'DSNM' "Size" }
+			{ 'RANG' 1L 32767L }
+			{ 'DFLT' 1L }
+			{ 'DISP' SHOW_AS_NUMBER }
+			{ 'EXPR' "HasOrderTable" }
+		}
+
+		{ 'E32'
+			{ 'NAME' "Order Table Range Update" }
+			{ 'DSNM' "Range Update" }
+			{ 'RANG' 0L 2L }
+			{ 'DFLT' 2l }
+			{ 'ENVL' "Preset|Each Frame|Once" }
+			{ 'DISP' SHOW_AS_RADIOBUTTONS }
+			{ 'HELP' "When is the z-range of the order table updated?" }
+			{ 'EXPR' "HasOrderTable" }
+		}
+
+		{ 'E32'
+			{ 'NAME' "Order Table Depth Value" }
+			{ 'DSNM' "Depth Value" }
+			{ 'RANG' 0L 2L }
+			{ 'DFLT' 2L }
+			{ 'ENVL' "Min|Average|Max" }
+			{ 'DISP' SHOW_AS_RADIOBUTTONS }
+			{ 'HELP' "What depth value is assigned to the order table?" }
+			{ 'EXPR' "HasOrderTable" }
+		}
+	}				// GROUP STOP
+
+	{ 'I32'
+		{ 'NAME' "Animation Mailbox" }
+		{ 'RANG' 0L 3999L }
+		{ 'DFLT' 1l }
+		{ 'DISP' SHOW_AS_NUMBER }
+	}
+	{ 'I32'
+		{ 'NAME' "Visibility Mailbox" }
+		{ 'RANG' 0L  3999L }
+		{ 'DFLT' DEFAULT_VISIBILITY }
+		{ 'DISP' SHOW_AS_NUMBER }
+
+//==========================================================================
+// flagbloc.inc
+
+#ifndef DEFAULT_TEMPLATE
+@define DEFAULT_TEMPLATE 0
+#endif
+
+	{ 'STRU'			// property sheet
+		{ 'NAME' "Flags" }
+		{ 'BOOL'
+			{ 'NAME' "Template Object" }
+			{ 'DFLT' DEFAULT_TEMPLATE }
+		}
+	}
+
+//==========================================================================
+// shadow.inc
+
+	{ 'STRU' 			// property sheet
+		{ 'NAME' "Shadow" }
+		{ 'PROP' 0 }			// or could just leave it out
+
+		{ '????'			// object reference
+			{ 'NAME' "Shadow Object Template" }
+			{ 'DSNM' "Object" }
+		}
+
+		{ 'BOOL'
+			{ 'NAME' "Check Below Only Once" }
+			{ 'DFLT' 1y }
+			{ 'EXPR' "ShadowObjectTemplate" }
+		}
+	}
+
+//==========================================================================
+// actor.inc
+
+
+	#include movbloc.inc
+	#include toolset.inc
+	#include common.inc
+
+#ifndef DEFAULT_MESH_PROPSHEET
+@define DEFAULT_MESH_PROPSHEET      0
+#endif
+
+	{ 'STRU'			// property sheet
+		{ 'NAME' "Mesh" }
+		{ 'PROP' DEFAULT_MESH_PROPSHEET	}
+// kts must always have the meshname field so we can tell if the object has a mesh or not
+		{ 'STR'				// filename/asset
+			{ 'NAME' "Mesh Name" }
+			{ 'ASST' "World Foundry IFF (*.iff)\0*.iff\0" BITMAP_FILESPEC }
+			{ 'HELP' ".iff mesh; 8/16/24-bit TGA; 4/8/24-bit BMP; 24-bit SGI" }
+			{ 'EXPR' "ModelType==1 || ModelType==2" }
+		}
+		#include mesh.inc
+	}
+	#include shadow.inc
+    #include flagbloc.inc
+
+//==========================================================================
+// player.iff
+
+@define DEFAULT_MASS 50.0
+@define DEFAULT_MOBILITY 1
+@define DEFAULT_MOVESBETWEENROOMS 1
+
+@define DEFAULT_HITPOINTS 1
+
+{ 'STRU'
+	{ 'NAME' "Player" }
+	#include actor.inc
+
+	{ 'STRU'			// property sheet start
+		{ 'NAME' "Player" }
+		{ 'PROP' 1 }
+		{ 'STRU' 				// group start
+			{ 'NAME' "Initial Gold' }
+			{ 'I32'
+				{ 'NAME' "Minimum" }
+				{ 'DSNM' "Minimum Initial Gold" }
+				{ 'RANG' 0L LONG_MAX }
+				{ 'DFLT' 0L }
+				{ 'DISP' SHOW_AS_NUMBER }
+			}
+			{ 'I32'
+				{ 'NAME' "Maximum" }
+				{ 'DSNM' "Maximum Initial Gold" }
+				{ 'RANG' 0L LONG_MAX }
+				{ 'DFLT' 32767L }
+				{ 'DISP' SHOW_AS_NUMBER }
+			}
+		}
+	}
+}
+
+//===========================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//==========================================================================
+//==========================================================================
+//==========================================================================
+//==========================================================================
+// a different approach, not done
+//	I32		32 bit int
+	struct
+	{
+		int32 data;
+	}
+//  I16		16 bit int
+	struct
+	{
+		int16 data;
+	}
+//  I8		8 bit int
+	struct
+	{
+		int8 data;
+	}
+//	U32		32 bit unsigned int
+	struct
+	{
+		uint32 data;
+	}
+//  U16		16 bit unsigned int
+	struct
+	{
+		uint16 data;
+	}
+//  U8		8 bit unsigned int
+	struct
+	{
+		uint8 data;
+	}
+//  EN32	32 bit enum
+	struct
+	{
+		int32 minValue;
+		int32 maxValue;
+		int32 data;
+	}
+//  EN16	16 bit enum
+	struct
+	{
+		int16 minValue;
+		int16 maxValue;
+		int16 data;
+	}
+//  EN8		8 bit enum
+	struct
+	{
+		int8 minValue;
+		int8 maxValue;
+		int8 data;
+	}
+
+//  F32		fixed point 1.15.16
+	struct
+	{
+		fixed32 data;
+	}
+//  F16		fixed point 1.7.8
+	struct
+	{
+		fixed16 data;
+	}
+//  F8		fixed point 1.3.4
+	struct
+	{
+		fixed8 data;
+	}
+//  BOOL	boolean (stored a 8 bits)
+	struct
+	{
+		int8 data;
+	}
+
+//	STR		variable length string
+	struct
+	{
+		char data[???];
+	}
+
+//  STR#	fixed length string
+	struct
+	{
+		int32 length;
+		char data[length];
+	}
+
+
+//	STRU	// struct, nested, contains sub-chunks of data types
+	struct
+	{
+			// just nest one level
+	}
+
+//  UNIO	// union, nested, contains overlapping sub-chunks of data types
+	struct
+	{
+			// just nest one level
+	}
+
+//	ARRY	// array, nested, contains array of single sub-chunk (which can, of course, be a struct)
+	struct
+	{
+		{ 'DIM' 2 3 }
+		{ 'I32' }
+
+		{ 'STRU'
+			{ 'I32' }
+			{ 'I32' }
+			{ 'I32' }
+			{ 'I32' }
+		}
+		sub-type chunk(any of these types)
+	}
+//	ARR#	// fixed size array, nested, contains array of single sub-chunk (which can, of course, be a struct)

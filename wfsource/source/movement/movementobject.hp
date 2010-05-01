@@ -1,0 +1,130 @@
+//==============================================================================
+// MovementObject.hp:
+// Copyright ( c ) 2003 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//=============================================================================
+// Description: The MovementObject is a virtual base class (derived from MovementObject), 
+// a client needs to derive from this and fill out the virutual functions to be able to 
+// use the movement handlers and collision system
+// This is how I am able to decouple the movement system from all of the other pieces it
+// needs to access
+// Original Author: Kevin T. Seghetti 
+//==============================================================================
+
+#ifndef _MovementObject_HP
+#define _MovementObject_HP
+
+//==============================================================================
+
+#include <pigsys/pigsys.hp>
+#include <math/scalar.hp>
+#include <physics/physicalobject.hp>
+#include <input/inputdig.hp>
+#include <timer/clock.hp>
+#include <oas/objectstartupdata.hp>
+#include <anim/path.hp>
+
+class MovementManager;
+
+//==============================================================================
+
+class MovementObject : public PhysicalObject
+{
+public:
+	// C++ functions (constructors, assignment, etc.)
+   MovementObject(const SObjectStartupData* startupData, const void* oadData,  const CommonBlock& commonBlock, const Clock& currentTime);
+	virtual ~MovementObject();
+
+	enum EMovementState
+	{
+#		include "oas/movstate.e"
+		MAX_MOVEMENT_STATES
+	};
+
+   const MovementManager& GetMovementManager() const;          // this just calls the non-const version below
+
+   // functions which need to be defined by client
+	virtual const QInputDigital* GetInputDevice() const = 0;                               // input 
+   virtual MovementManager& GetMovementManager() = 0;
+	virtual Memory& GetMemory() const = 0;                // Memory to allocate from
+
+	virtual void predictPosition(const Clock& currentTime);		// Predict "desired" new position for this frame
+	virtual void update();
+	void DoneWithPhysics();
+
+   Path* GetPath();
+   // functions which may be overriden by client
+	virtual void MovementStateChanged( const MovementObject::EMovementState newState );    // notify other systems of movement state change, override if you want to know when the movement state changes
+
+	// validation functions
+   void Validate() const;
+
+#if SW_DBSTREAM >= 1
+	friend std::ostream& operator << ( std::ostream& s, const MovementObject& pa );
+#endif
+
+protected:
+   Path*					_path;
+#if SW_DBSTREAM >= 1
+	virtual std::ostream& Print( std::ostream& ) const = 0;
+#endif
+private:
+};
+
+//==============================================================================
+
+inline MovementObject&
+UpcastToMovementObject(BaseObject* base);
+
+// kts figure out/learn how to do this in a template (make new functions where the function name contains the template type)
+// template<class T> T&
+// UpcastTo<T>(BaseObject* base)
+// {
+//    assert(ValidPtr(base));
+//    T* result = dynamic_cast<T*>(base);
+//    assert(ValidPtr(result));
+//    return *result;
+// }
+
+//==============================================================================
+
+class MovementObjectIterator 
+{
+public:
+    virtual MovementObject& operator*() = 0;
+    virtual void operator++() = 0;
+    virtual bool Empty() const = 0;
+    //virtual bool operator==(const MovementObjectIterator&) = 0;
+    //bool operator!=(const MovementObjectIterator& other) { return !(*this == other); }
+private:
+};
+
+
+//==============================================================================
+
+// looping calls
+void PredictPosition(BaseObjectIteratorWrapper iter, const Clock& currentTime);
+
+void UpdatePhysics(BaseObjectIteratorWrapper iter, const Clock& currentTime);
+
+//==============================================================================
+#include "movementobject.hpi"	// include all inline definitions as appropriate
+//==============================================================================
+#endif
+//==============================================================================

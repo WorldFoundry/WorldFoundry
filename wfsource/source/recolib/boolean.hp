@@ -1,0 +1,99 @@
+//=============================================================================
+// boolean.h: a concrete class representing TRUE or FALSE
+//=============================================================================
+
+//Documentation:
+
+//	Abstract:
+//		this class implements a complete set of boolean operations on the
+//		class type boolean.
+
+//	History:
+//			Created	? Kevin T. Seghetti
+//			First Documented: 10-19-92 02:06pm
+
+//			20 Oct 92  WBNIV	Added output capability
+
+//	Class Hierarchy:
+//			none
+
+
+//	Dependancies:
+//			none
+
+//	Restrictions:
+
+
+//	Example:
+//		boolean foo = boolean::BOOLTRUE;
+//		boolean bar = boolean::BOOLFALSE;
+
+
+//		if(foo & bar)
+//			won't happen;
+
+//		if(foo | bar)
+//			will happen;
+
+//		if(foo * bar)
+//			won't happen;
+
+//==============================================================================
+// use only once insurance
+
+#ifndef PCLIB_BOOLEAN_H
+#define PCLIB_BOOLEAN_H
+
+//==============================================================================
+// dependencies
+#if defined( IOSTREAM )
+//#       include <iostream.h>
+#endif
+#include <pclib/general.hp>				// shouldn't this be libtypes.h ?
+
+//==============================================================================
+// class declaration
+
+class boolean
+{
+	unsigned char fl:1;
+	void set(int i) { fl = !!(i); }
+	boolean& operator-=(const boolean& i);		// make these invalid operations
+	boolean& operator/=(const boolean& i);
+	boolean& operator-(const boolean& i);
+	boolean& operator/(const boolean& i);
+public:
+	enum {BOOLFALSE, BOOLTRUE};
+
+	boolean(int i = 0) { fl = !!(i); }
+
+	boolean& operator= (const boolean& i) { fl = i.fl; return *this; }
+	boolean& operator= (int i) { set(i); return *this; }
+
+	boolean& operator|=(const boolean& i) { fl |= i.fl; return *this; }
+	boolean& operator+=(const boolean& i) { fl |= i.fl; return *this; }
+	boolean& operator&=(const boolean& i) { fl &= i.fl; return *this; }
+	boolean& operator*=(const boolean& i) { fl &= i.fl; return *this; }
+	boolean& operator^=(const boolean& i) { fl ^= i.fl; return *this; }
+
+	boolean operator+(const boolean& a) { boolean res = a; res += *this; return res; }
+	boolean operator|(const boolean& a) { boolean res = a; res |= *this; return res; }
+	boolean operator*(const boolean& a) { boolean res = a; res *= *this; return res; }
+	boolean operator&(const boolean& a) { boolean res = a; res &= *this; return res; }
+	boolean operator^(const boolean& a) { boolean res = a; res ^= *this; return res; }
+
+	operator int(void) const { return( fl ? 1 : 0 ); }
+
+#if defined( IOSTREAM )
+        // Printing
+	friend ostream& operator<<(ostream& s, boolean &b)	{ return s << (b.fl ? "TRUE" : "FALSE"); }
+#endif
+};
+
+//=============================================================================
+// inline functions
+
+#endif
+
+//=============================================================================
+

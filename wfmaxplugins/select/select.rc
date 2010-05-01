@@ -1,0 +1,302 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include "windows.h"
+#undef APSTUDIO_HIDDEN_SYMBOLS
+
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""windows.h""\r\n"
+    "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+#if defined(APSTUDIO_INVOKED) || defined(_DEBUG)
+#if defined(APSTUDIO_INVOKED)
+IDD_HDUMP$(_DEBUG) DIALOG DISCARDABLE  0, 0, 439, 323
+#else
+IDD_HDUMP DIALOG DISCARDABLE  0, 0, 439, 323
+#endif
+STYLE DS_MODALFRAME | DS_CENTER | WS_CAPTION | WS_SYSMENU
+CAPTION "hdump"
+FONT 8, "Courier New"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,382,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,382,24,50,14
+    LISTBOX         IDC_LIST1,7,7,368,309,LBS_USETABSTOPS | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+END
+#endif
+
+IDD_SELECT DIALOG DISCARDABLE  0, 0, 386, 452
+STYLE DS_CENTER | WS_MAXIMIZEBOX | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Select by World Foundry Attributes"
+MENU IDR_MENU
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,329,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,329,26,50,14
+    LTEXT           "",IDC_NUMSELECTED,332,46,47,8,NOT WS_GROUP
+    LTEXT           "",IDC_TOTALITEMS,332,55,47,8,NOT WS_GROUP
+END
+
+IDD_ABOUT DIALOG DISCARDABLE  0, 0, 248, 62
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About World Foundry Select"
+FONT 8, "MS Sans Serif"
+BEGIN
+    ICON            IDI_WF,IDC_STATIC,7,7,21,20,SS_SUNKEN
+    LTEXT           "World Foundry Select\nBy William B. Norris IV\n\nCopyright 1997, 1998 Recombinant Limited. All Rights Reserved.\n\nVersion 1.0.0",
+                    IDC_STATIC,34,7,207,48
+    DEFPUSHBUTTON   "OK",IDOK,191,7,50,14
+END
+
+IDD_INSERTCOLUMN DIALOG DISCARDABLE  0, 0, 408, 255
+STYLE DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Insert Column"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,351,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,351,24,50,14
+    CONTROL         "List1",IDC_COLUMN_LIST,"SysListView32",LVS_REPORT | 
+                    LVS_SORTASCENDING | LVS_NOSORTHEADER | WS_BORDER | 
+                    WS_TABSTOP,7,7,335,241
+END
+
+IDD_EXPRESSION DIALOG DISCARDABLE  0, 0, 275, 159
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Expression"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,218,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,218,25,50,14
+    COMBOBOX        IDC_EXPRESSION,7,7,203,145,CBS_SIMPLE | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    "IDD_HDUMP$(_DEBUG)", DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 432
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 316
+    END
+
+    IDD_SELECT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 379
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 445
+    END
+
+    IDD_ABOUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 241
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 55
+    END
+
+    IDD_INSERTCOLUMN, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 401
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 248
+    END
+
+    IDD_EXPRESSION, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 268
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 152
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,2
+ PRODUCTVERSION 1,0,0,2
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "Recombinant Limited\0"
+            VALUE "FileDescription", "select\0"
+            VALUE "FileVersion", "1, 0, 0, 2\0"
+            VALUE "InternalName", "select\0"
+            VALUE "LegalCopyright", "Copyright © 1997 Recombinant Limited.  All Rights Reserved.\0"
+            VALUE "LegalTrademarks", "World Foundry is a trademark of Recombinant Limited.\0"
+            VALUE "OriginalFilename", "select.dlu\0"
+            VALUE "ProductName", "Recombinant Limited Object Selector\0"
+            VALUE "ProductVersion", "1, 0, 0, 2\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+#endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENU MENU DISCARDABLE 
+BEGIN
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "Select &None\tCtrl+N",        ID_EDIT_SELECTNONE
+        MENUITEM "Select &All\tCtrl+A",         ID_EDIT_SELECTALL
+        MENUITEM "&Invert Selection",           ID_EDIT_INVERTSELECTION
+        MENUITEM "Select by &Expression...",    ID_EDIT_SELECTBYREGULAREXPRESSION
+        , GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "Insert Column...",            ID_INSERTCOLUMN
+        MENUITEM "Delete Column",               ID_DELETECOLUMN
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "Lar&ge Icons",                ID_VIEW_LARGEICONS
+        MENUITEM "S&mall Icons",                ID_VIEW_SMALLICONS
+        MENUITEM "&List",                       ID_VIEW_LIST
+        MENUITEM "&Details",                    ID_VIEW_DETAILS
+        MENUITEM SEPARATOR
+        POPUP "&Arrange Columns"
+        BEGIN
+            MENUITEM SEPARATOR
+        END
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About World Foundry Select", ID_HELP_ABOUT
+    END
+END
+
+IDR_HEADER_RMENU MENU DISCARDABLE 
+BEGIN
+    POPUP ""
+    BEGIN
+        MENUITEM "&Ascending",                  ID_ASCENDING
+        MENUITEM "&Descending",                 ID_DESCENDING
+        MENUITEM SEPARATOR
+        MENUITEM "Insert Column(s)...",         ID_INSERTCOLUMN
+        MENUITEM "Delete Column",               ID_DELETECOLUMN
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_ACCELERATOR ACCELERATORS DISCARDABLE 
+BEGIN
+    "A",            ID_EDIT_SELECTALL,      VIRTKEY, CONTROL, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_WF                  ICON    DISCARDABLE     "Factory.ico"
+IDI_SPHERE              ICON    DISCARDABLE     "icon1.ico"
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

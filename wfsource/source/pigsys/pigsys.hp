@@ -1,0 +1,548 @@
+//===========================================================================*/
+// pigsys.hp:
+// Copyright ( c ) 1994,1995,1996,1997,1998,1999,2000,2001,2002,2003 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//=============================================================================
+// Description: The base header for the system dependant interface.
+// Original Author: Andre Burgoyne
+// KTS started major cleanup 11-10-97 10:00am
+//===========================================================================
+// things including this file does for you:
+//  defines intrinsics with known sizes (int32 uint32 int16 etc)
+//	gives you iostreams (if enabled)
+//		including: iostream.h iomanip.h fstream.h strstream.h
+//  adds redirectable streams if not provided
+//  adds the nullstream
+//	gives you improved assert macros
+//	gives you all of the available standard C library calls
+//  gives you all of the available standard C++ library calls
+//	simple endian conversion
+//  defines MAX_PATH if not provided
+//===========================================================================
+
+#ifndef	_PIGSYS_H
+#define	_PIGSYS_H
+
+#if defined( __cplusplus )
+extern "C"
+{
+#endif
+extern int __argc;
+extern char* * __argv;
+#if defined( __cplusplus )
+}
+#endif
+
+#if defined( __WIN__ )
+#	if !defined( STRICT )
+#		define STRICT
+#	endif
+#	if !defined( WIN32_LEAN_AND_MEAN )
+#		define WIN32_LEAN_AND_MEAN
+#	endif
+//#	if !defined( _MSC_VER )
+//#		define _WIN32
+//#	endif
+#	if !defined( NOMINMAX )
+#		define NOMINMAX
+#	endif
+#endif
+
+
+//=============================================================================
+
+#if defined( __cplusplus )
+
+typedef enum _MachineType
+{
+	WIN,
+	PSX,
+	LINUX
+} MachineType;
+
+#endif // defined( __cplusplus )
+
+//=============================================================================
+
+#if defined( __cplusplus )
+#define	C_LINKAGE			"C"
+#define	START_EXTERN_C		extern C_LINKAGE {
+#define	END_EXTERN_C		}
+#else	// !__cplusplus
+#define	C_LINKAGE			// nothing
+#define	START_EXTERN_C		// nothing
+#define	END_EXTERN_C		// nothing
+#endif	// !__cplusplus
+
+// include directives from the makefile
+#ifndef _MKINC
+#if defined( __WIN__ )
+#define _MKINC "cf_win.h"
+#elif defined( __PSX__ )
+#define _MKINC "cf_psx.h"
+#elif defined( __LINUX__ )
+#define _MKINC "cf_linux.h"
+#else
+#error "Undefined platform: please define __WIN__, __PSX__ o  __LINUX__"
+#endif
+#endif
+
+#include _MKINC
+
+
+// List of externally specifiable options:
+// DEBUG (default 1)
+// DO_ASSERTIONS (default is 1)
+// NO_ASSERT_EXPR (default is 0)
+// USE_INLINE_DEFS (default 1)
+
+//SYS_TOOL
+// This specifies that we are building a tool, not a game.  SYS_TOOL=1 makes
+// more ANSI functionality available.
+#ifndef	SYS_TOOL
+#define	SYS_TOOL			0
+#endif	// !defined(SYS_TOOL)
+
+// DEBUG (default is 1)
+// Master switch for turning on/off debug options (except for assert's).
+//#ifndef	DEBUG
+//#define	DEBUG				(1-FINAL_RELEASE)
+//#endif	// !defined(DEBUG)
+
+// DO_ASSERTIONS (default is 1)
+// Master switch for turning on/off assert's.
+//#ifndef	DO_ASSERTIONS
+//#define	DO_ASSERTIONS			(1-FINAL_RELEASE)
+//#endif	//!defined(DO_ASSERTIONS)
+
+// NO_ASSERT_EXPR (default is 0)
+// Enables expression strings in asserts to be compiled away for smaller code.
+#ifndef	NO_ASSERT_EXPR
+#define	NO_ASSERT_EXPR		0
+#endif	// !defined(NO_ASSERT_EXPR)
+
+#define	USE_INLINE_DEFS		1
+
+//ASSETS_USE_STREAM (default is FINAL_RELEASE)
+// Declares whether we are reading assets from a stream or not.
+//#ifndef	ASSETS_USE_STREAM
+//#define	ASSETS_USE_STREAM	FINAL_RELEASE
+//#endif	// !defined(ASSETS_USE_STREAM)
+
+// Host/compiler specific stuff.
+#ifndef	__GNUC__
+#undef	__attribute__
+#define	__attribute__(x)	// nothing
+#endif	//!defined(__GNUC__)
+
+//#ifndef	_SYS_NOINLINE_FOR_AGG
+//#if		defined(__ATT3_0) || defined(__ATT2_1)
+//#define	_SYS_NOINLINE_FOR_AGG	1
+//#endif	// defined(__ATT3_0) || defined(__ATT2_1)
+//#endif	// !defined(_SYS_NOINLINE_FOR_AGG)
+
+// This is for turning off the automatic C++ new handling stuff completely.
+// For example MetroWorks C++ compiler does not support overriding, and
+// THINK_C seems to have several bugs with overriding new.
+#ifndef	_SYS_VANILLA_NEW
+#define	_SYS_VANILLA_NEW		1
+#endif	// !defined(_SYS_VANILLA_NEW)
+
+//	 This is for C++ compilers which can not handle the operator new[] syntax
+//	 for array initialization.
+#ifndef	_SYS_NONEW_AGGREGATE
+#define	_SYS_NONEW_AGGREGATE	1
+#endif	// !defined(_SYS_NONEW_AGGREGATE)
+
+// Mostly for internal use, very unsafe.  Prevents sys_exit from
+// exiting (i.e. assert also does NOT exit).  Allows assertions to trigger
+// without actually exiting to check for error conditions.
+//#ifndef	_SYS_SUPPRESS_EXIT
+//#define	_SYS_SUPPRESS_EXIT	0
+//#endif	// !defined(_SYS_SUPPRESS_EXIT)
+
+// Include target specific configuration.
+//    moved to before the convenience macros are defined to let them
+//		supercede Saturn versions of these specific macros.
+//
+// Configuration is controlled by a collection of macros.  Not defining
+// any gives a standard ANSI configuration.  Each base typedef has its
+// own macro, e.g. SYS_INT, which gets typedef'ed approriately.  The
+// macro SYS_SUPPRESS_BASE_TYPEDEFS allows the configuration itself to do
+// the approriate typedef's, e.g. for the 3DO where system files already
+// define same named types.  SYS_SUPPRESS_BSD_TYPEDEFS just suppresses
+// uchar, ushort, and ulong (which are defined on BSD systems in <sys/types.h>).
+// For the interfaces which are supported, defining the appropriate header
+// symbol, e.g. _LIMITS_H for limits.h, will suppress inclusion of
+// <limits.h>.  For each function or group of functions there are two
+// possible implementations of each, one with asserts, one without.
+// These can be controlled by two macros, e.g. SYS_FOPEN and SYS_FOPEN_ASS
+// for sys_fopen without asserts and with asserts respectively.
+// For brevity, only functions which have different configuration somewhere
+// are checked explicitely, otherwise they are grouped together using
+// the default.
+
+// Convenience macros.
+// these should only be used for numeric types
+#if !defined(__PSX__)			// already defined in psx libraries
+#define	ABS(_1)					((_1)<0?-(_1):(_1))
+#endif
+
+#define	until( _condition_ )	while ( !(_condition_) )
+
+
+// By default we assume a big-endian architecture.
+#ifndef	WF_BIG_ENDIAN
+#define	WF_BIG_ENDIAN		1
+#endif	// !defined(WF_BIG_ENDIAN)
+
+#ifndef	SYS_SUPPRESS_BASE_TYPEDEFS
+#define	SYS_SUPPRESS_BASE_TYPEDEFS	0
+#endif	// !defined(SYS_SUPPRESS_BASE_TYPEDEFS)
+
+#ifndef	SYS_SUPPRESS_BSD_TYPEDEFS
+#define	SYS_SUPPRESS_BSD_TYPEDEFS	0
+#endif	// !defined(SYS_SUPPRESS_BSD_TYPEDEFS)
+
+#include <pigsys/pigtypes.h>
+
+#define	INLINE				inline
+
+typedef void (*voidFunctionPtr)(void);
+
+
+// limits.h, ANSI
+#ifndef	_LIMITS_H
+#include <climits>
+#undef	_LIMITS_H
+#define	_LIMITS_H
+#endif	// defined(_LIMITS_H)
+
+
+#define INT8_MIN		(-128)
+#define INT8_MAX		127
+#define UINT8_MAX		255U
+
+#define INT16_MIN		(-32768)
+#define INT16_MAX		32767
+#define UINT16_MAX		65535U
+
+#define INT32_MIN		(-2147483647-1)
+#define INT32_MAX		2147483647
+#define UINT32_MAX		4294967295U
+
+// assert.h, NDEBUG -> DO_ASSERT, added NO_ASSERT_EXPR
+
+
+#include <pigsys/assert.hp>
+
+// stdarg.h, ANSI
+#ifndef	_STDARG_H
+#include <cstdarg>
+#undef	_STDARG_H
+#define	_STDARG_H
+#endif	// !defined(_STDARG_H)
+
+//stdio.h, 'sys_' prepended, do NOT define: freopen, remove, rename,
+//	tmpfile, tmpnam, setvbuf, setbuf, fputs, getchar, gets,
+//	putc, putchar, puts, fgetpos, fsetpos, clearerr,
+//	perror (as of now, may be added later)
+#ifndef	_STDIO_H
+#include <cstdio>
+#undef	_STDIO_H
+#define	_STDIO_H
+#endif	//!defined(_STDIO_H)
+
+#ifndef	sys_FILE
+#define	sys_FILE			FILE
+#endif	// !defined(sys_FILE)
+
+
+//=============================================================================
+
+#include <pigsys/memory.hp>
+
+//=============================================================================
+
+#if defined( __cplusplus )
+#if defined( __PSX__ )
+#	include <pigsys/psx/new.h>
+#	if DO_IOSTREAMS
+// these come from pigsys/psx
+#		include <iostream>
+#		include <fstream.h>
+#		define NULL_STREAM cnull
+#	endif
+#else          // defined(__PSX__)
+#include <new>
+#  if DO_DEBUG_FILE_SYSTEM
+#		if defined(OLD_IOSTREAMS)
+#			include <fstream.h>
+#     else
+#			include <fstream>
+#     endif
+#  endif 
+#	if DO_IOSTREAMS
+#		if defined(OLD_IOSTREAMS)
+//#error trying new stuff
+#			include <iostream.h>
+#			include <iomanip.h>
+#			include <fstream.h>
+#define strstream stringstream
+#			include <string.h>
+#           if defined(__LINUX__)
+#			    include <strstream.h>
+            #else       // windows
+#			    include <strstrea.h>
+#			    include <ios.h>
+#           endif
+#		else        //defined(OLD_IOSTREAMS)
+// Hum, this did not seem to work before? but it does now... who knows...
+#			include <istream>
+#			include <ostream>
+#			include <iostream>
+#			include <iomanip>
+#			include <fstream>
+#			include <sstream>
+//#			include <strstream>
+#			include <cstdlib>
+//#		include <strstrea>
+//#		include <ios>
+
+// kts added stl 3/25/2001 14:02:28
+
+#       include <vector>
+#       include <map>
+#       include <iterator>
+#       include <string>
+#       include <algorithm>
+#		endif       // defined(OLD_IOSTREAMS)
+
+#		if SW_DBSTREAM
+//#	   		define NULL_STREAM cnull
+#		else
+#			define NULL_STREAM #error
+#		endif
+#	endif
+#endif
+#endif
+
+
+
+//=============================================================================
+//	Since variable args are somewhat painful to deal with gracefully,
+//	we have only one implementation for printf/scanf's.  However,
+//	the only checking which we could really do sensibly is that
+//	the format string is not NULL and that sys_FILE* is valid for
+//	fprintf and fscanf.  These were deemed not important enough
+//	to mess with wrappered implementations.
+
+// kts added 10-17-97 02:49pm
+#if defined(__PSX__)
+#ifndef _MAX_FNAME
+#define _MAX_FNAME 260
+#endif
+
+#ifndef _MAX_EXT
+#define _MAX_EXT _MAX_FNAME
+#endif
+
+#ifndef _MAX_PATH
+#define _MAX_PATH _MAX_FNAME
+#endif
+#endif
+// end kts
+
+
+//#ifndef	SYS_PATHSEP
+//#define	SYS_PATHSEP		'/'
+//#endif	//!defined(SYS_PATHSEP)
+
+#ifndef	SYS_FILENAME_MAX
+#ifdef	FILENAME_MAX
+#define	SYS_FILENAME_MAX		FILENAME_MAX
+#else	//!defined(FILENAME_MAX)
+ERROR: neither SYS_FILENAME_MAX nor FILENAME_MAX was defined;
+#endif	//!defined(FILENAME_MAX)
+#endif	//!defined(SYS_FILENAME_MAX)
+
+#ifndef	SYS_FOPEN_MAX
+#ifdef	FOPEN_MAX
+#define	SYS_FOPEN_MAX			FOPEN_MAX
+#else	// !defined(FOPEN_MAX)
+ERROR: neither SYS_FOPEN_MAX nor FOPEN_MAX was defined;
+#endif	// !defined(FOPEN_MAX)
+#endif	// !defined(SYS_FOPEN_MAX)
+
+
+// ctype.h, 'sys_' prepended
+#ifndef	_CTYPE_H
+#include <cctype>
+#undef	_CTYPE_H
+#define	_CTYPE_H
+#endif	//!defined(_CTYPE_H)
+
+#ifndef	NULL
+#error Why has NULL not been defined?!
+#endif	//!defined(NULL)
+
+// string.h, 'sys_' prepended, does NOT define: strspn, strcspn, strpbrk,
+//	strstr, strerror, strtok.
+#ifndef	_STRING_H
+// kts added so that string does not define index
+#ifdef __PSX__
+#define index stupidfuckingpsxfunction
+#endif
+#include <cstring>
+#ifdef __PSX__
+#undef index
+#endif
+#undef	_STRING_H
+#define	_STRING_H
+
+#ifdef __PSX__
+#undef strdup
+#endif
+#endif	// !defined(_STRING_H)
+
+
+#ifdef __WIN__
+#define strcasecmp stricmp
+#endif
+
+#if		DO_ASSERTIONS
+
+START_EXTERN_C
+
+extern char*		sys_strdup(const char*);
+extern int			sys_strcmp(const char*, const char*);
+extern int			sys_strncmp(const char*, const char*, size_t);
+extern char*		sys_strchr(const char*, int);
+extern char*		sys_strrchr(const char*, int);
+extern size_t		sys_strlen(const char*);
+
+END_EXTERN_C
+
+
+
+#define	strcmp      sys_strcmp
+#undef	strncmp
+#define	strncmp     sys_strncmp
+#undef	strchr
+#define	strchr      sys_strchr
+#undef	strrchr
+#define	strrchr     sys_strrchr
+#undef	strlen
+#define	strlen      sys_strlen
+
+#else	// !DO_ASSERTIONS
+#endif	// !DO_ASSERTIONS
+
+// stdlib.h, 'sys_' prepended, does NOT define: atof, strtod,
+//	calloc, malloc, free (defined otherwise in psysmem.h),
+//	realloc, abort, system, getenv, bsearch, abs, labs, div, ldiv.
+//(kts removed 04-02-98 12:22pm (qsort)
+//	Additionally defines sys_init (required call).
+#ifndef	_STDLIB_H
+#include <cstdlib>
+#undef	_STDLIB_H
+#define	_STDLIB_H
+#endif	// !defined(_STDLIB_H)
+
+START_EXTERN_C
+#if		defined(DESIGNER_CHEATS)
+extern void				_sys_printenv(void);
+#endif	// defined(DESIGNER_CHEATS)
+extern void				sys_init(int* argc, char*** argv);
+extern void				sys_exit(int)
+//#if		!_SYS_SUPPRESS_EXIT
+		__attribute__ ((noreturn))
+//#endif	// !_SYS_SUPPRESS_EXIT
+		;
+END_EXTERN_C
+
+// We write our own version of this, it also passes the exit code
+// or signal to the functions.
+typedef void (*sys_atexitFunctionPtr)(int);
+extern C_LINKAGE int	sys_atexit(sys_atexitFunctionPtr);
+
+#if		DO_ASSERTIONS
+START_EXTERN_C
+extern int				sys_atoi(const char*);
+extern long				sys_atol(const char*);
+extern long				sys_strtol(const char *s, char **endp, int base);
+extern unsigned long	sys_strtoul(const char *s, char **endp, int base);
+END_EXTERN_C
+#else	// !DO_ASSERTIONS
+#endif	// !DO_ASSERTIONS
+
+// sys_qsortPtr
+//#ifndef	_QSORT_H
+//#include <pigsys/qsort.h>
+//#endif	// !defined(_QSORT_H)
+
+#if 0
+// setjmp.h, 'sys_' prepended
+#ifndef	_SETJMP_H
+#include <csetjmp>
+#undef	_SETJMP_H
+#define	_SETJMP_H
+#endif	// !defined(_SETJMP_H)
+
+#ifndef	sys_jmp_buf
+#define	sys_jmp_buf			jmp_buf
+#endif	// !defined(sys_jmp_buf)
+#endif
+
+//#include <pigsys/psyserr.h>
+#include <pigsys/clib.h>
+
+//==============================================================================
+// kts misc crap
+
+typedef int32 fixed32;			// kts for now
+
+// this can be used to pass a comma into a macro
+#define COMMA ,
+
+
+#if DO_IOSTREAMS
+#	define IOSTREAMS(data) data
+#else
+#	define IOSTREAMS(ignore) 				// wrap around code you want only if IOSTREAMS are enabled
+#endif
+
+
+#if defined( __cplusplus )
+#if DO_ASSERTIONS
+// version of standard placement new which takes file & line
+inline void *
+operator new(size_t size, void* memory, char* /*file*/, int /*line*/)
+{
+	assert(size > 0);
+	ValidatePtr(memory);
+	return memory;
+}
+#endif
+#endif
+//=============================================================================
+#endif	// !defined(_PIGSYS_H)
+//=============================================================================
+
+

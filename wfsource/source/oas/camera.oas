@@ -1,0 +1,27 @@
+@*============================================================================
+@* camera.oas
+@*============================================================================
+
+@*============================================================================
+@* Camera definition
+
+TYPEHEADER(Camera)
+@define DEFAULT_MOBILITY 3
+    @include actor.inc
+	PROPERTY_SHEET_HEADER(Camera,1)
+	GROUP_START(Stereogram,)
+	TYPEENTRYFIXED32(EyeDistance,,FIXED32(0),FIXED32(10),FIXED32(0.025))
+	TYPEENTRYFIXED32(EyeAngle,,FIXED32(0),FIXED32(360),FIXED32(2.5))
+	GROUP_STOP()
+	PROPERTY_SHEET_FOOTER
+@*	------------------------
+	PROPERTY_SHEET_HEADER(Fogging,0)
+@*	--------------------------------
+	TYPEENTRYCOLOR(FoggingColor,Color,0)
+	TYPEENTRYFIXED32(FoggingStartDistance,Start Distance,FIXED32(0),FIXED32(1000),FIXED32(10))
+	TYPEENTRYFIXED32(FoggingCompleteDistance,Complete Distance,FIXED32(0),FIXED32(1000),FIXED32(20))
+	PROPERTY_SHEET_FOOTER
+
+TYPEFOOTER
+
+@*============================================================================

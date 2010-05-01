@@ -1,0 +1,72 @@
+//=============================================================================
+// RenderObject2D.hp: 2D renderable object
+// Copyright ( c ) 1997,1998,1999,2000,2001 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description:
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+#ifndef _RenderObject2D_H
+#define _RenderObject2D_H
+
+//============================================================================
+// Includes
+//============================================================================
+
+#include <pigsys/pigsys.hp>
+#include <math/vector2.hp>
+class Memory;
+#include <gfx/face.hp>
+#include <gfx/display.hp>
+#include <gfx/viewport.hp>
+#include <gfx/vertex.hp>
+
+#include <gfx/renderer.hp>
+
+//============================================================================
+// Class and Structure Prototypes
+//============================================================================
+// deal only in tri's
+
+class Material;
+
+class RenderObject2D
+{
+public:
+	RenderObject2D(Memory& memory, int vertexCount, Vertex2D* vertexList, int faceCount, TriFace* faceList, const Material* materialList);
+	~RenderObject2D();
+	void ApplyMaterial(const Material* materialList);
+	void Render(ViewPort& vp,const Vector2& position,int depth);
+private:
+	int			_vertexCount;
+	Vertex2D*	_vertexList;
+	int			_faceCount;
+	TriFace*	_faceList;
+
+#if defined(USE_ORDER_TABLES)
+	Primitive*	_primList[ORDER_TABLES];	// array of primitives, same # as face list
+#endif
+};
+
+//============================================================================
+#include <gfx/rendobj2.hpi>		// include all inline definitions as appropriate
+//=============================================================================
+#endif
+//=============================================================================

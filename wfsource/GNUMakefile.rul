@@ -1,0 +1,120 @@
+# wfsrc/GNUMakefile.rul
+                      
+ifeq ($(SOFTWARE_RENDERER),true)                                      
+.PATH.cc = .;./$(RENDERER_PIPELINE_DIR);$(RENDERER_DIR);./$(WF_TARGET)
+#.PATH.cc = .;./software;./$(WF_TARGET)
+else
+.PATH.cc    = .;./$(WF_TARGET)
+endif
+.PATH.c = .;./$(WF_TARGET)
+.PATH.asm = .;$(WF_TARGET)
+   
+ifdef LIB_NAME
+TOP-ALL : $(LOCAL-PRECONDITIONS) $(OBJ_DIR) PIGS_LIB
+endif
+
+# The below 2 targets were moved here from the bottom of GNUMakefile.env.
+$(OBJ_DIR) :
+	$(MKDIR) -p $(OBJ_DIR)
+	
+$(OAD_DIR) :
+	$(MKDIR) -p $(OAD_DIR)
+
+#===============================================================================
+## C
+
+
+$(OBJ_DIR)%$(OBJ) : %.c
+	echo ----------------------------------------------------------------------
+	echo $^ =\> $@
+ifeq ($(WF_TARGET),psx)
+	setenv LIBRARY_PATH=$(PSX_DIR)/lib
+	setenv PATH $(PSX_DIR)/bin;$(PATH)
+endif
+	$(CC) -c $(CCCARGS) $(INCLUDE) $(CCC_OUT)$@ $<
+
+## C++
+$(OBJ_DIR)%$(OBJ) : %.cc
+	@echo ----------------------------------------------------------------------
+	@echo $^ =\> $@
+ifeq ($(WF_TARGET),psx)
+	setenv LIBRARY_PATH=$(PSX_DIR)/lib
+	setenv PATH $(PSX_DIR)/bin;$(PATH)
+endif
+	$(CCC) -c $(CCCARGS) $(INCLUDE) $(CCC_OUT)$@ $<
+ifeq ($(DMPSX),yes)
+	copy $@ temp$(OBJ)
+	$(PSX_DIR)/bin/dmpsx -b temp$(OBJ)
+	copy temp$(OBJ) $@
+endif
+
+
+
+## Assembly Language rules [hehe]
+#TODO this isn't done, but it was better than before
+$(OBJ_DIR)%$(OBJ) : %.asm
+	$(AS) $(AFLAGS) $<, $@
+
+# Move ALL of the following here from GNUMakefile.lib, some have which as noted
+# had been moved from GNUMakefile.env.
+# My thinking is to put all rules/targets in .rul which already has most of
+# them, and then get rid of GNUMakefile.lib.
+
+# Moved this target here from the env file.
+# Ah... this needs to be at the top???
+#ifdef LIB_NAME
+#TOP-ALL : LIBRARY_NAMES_DEFINES $(OBJ_DIR) PIGS_LIB
+#endif
+
+#I don't see the point in this, but moved it here from the env file.
+.PHONY : LIBRARY_NAMES_DEFINES
+LIBRARY_NAMES_DEFINES :
+	@echo 
+#  %foreach Dir pigsys cpplib iff math streams anim attrib audio audiofmt gfxfmt console gfx hal input savegame toolstub version ini fuzzy physical movement loadfile audiofmt gfxfmt attrib particle timer menu
+#    %set $(Dir,uc) $(PIGS_OBJ_DIR)/lib$(Dir).a
+#    %echo $($(Dir,UC))
+#  %end
+
+################################################################################
+## The library
+
+#.RESPONSE.PSYQ : pre=@ suf=.rsp in=128 psylib
+
+# I need this as a forward reference for $(PIGS_LIB)
+PIGS_LIB : $(PIGS_LIB)
+
+$(PIGS_LIB) : $(LIB_OBJS)
+	@echo pigslib is $(PIGS_LIB)
+	@echo libobjs are $(LIB_OBJS)
+	$(AR) $(LIBOUT)$@ $^ 
+
+# Changed "../" to "$(WF_DIR)/source/" in the following 2 includes so that 
+# the tools can build. (include "../GNUMakefile.test" from prep does not work.)
+################################################################################
+## Test program
+include $(WF_DIR)/source/GNUMakefile.test
+
+################################################################################
+# print: print all switch settings
+include $(WF_DIR)/source/GNUMakefile.print
+
+################################################################################
+## Clean
+
+clean :
+	-rm -r -f $(LIB_OBJ_DIR) 
+	-$(DEL) -f $(PIGS_LIB) 
+
+clean-lib :
+	-$(DEL) /y $(PIGS_LIB) 
+
+install :
+	mkdir -p $(INSTALL_DIR)/lib/WorldFoundry
+	-cp  $(PIGS_LIB) $(INSTALL_DIR)/lib/WorldFoundry
+	mkdir -p $(INSTALL_DIR)/include/WorldFoundry/$(LIB_NAME)
+	-cp --recursive *.h*  $(INSTALL_DIR)/include/WorldFoundry/$(LIB_NAME)
+
+genflags :
+	@echo $(CCCARGS) >$(INSTALL_DIR)/include/WorldFoundry/makefile.inc
+
+

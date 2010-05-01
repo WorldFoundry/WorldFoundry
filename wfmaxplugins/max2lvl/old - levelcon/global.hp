@@ -1,0 +1,42 @@
+//============================================================================
+// global.hp: for levelcon, all levelcon files include this
+//============================================================================
+
+// Copyright(c) 1995 Cave Logic Studios / PF.Magic
+// By Kevin T. Seghetti
+//============================================================================
+
+// use only once insurance
+#ifndef _GLOBAL_HP
+#define _GLOBAL_HP
+
+#if DEBUG > 0
+#define SW_DBSTREAM 3
+#else
+#define SW_DBSTREAM 0
+//#define NDEBUG
+#endif
+
+#include "dbstrm.hp"
+#include <stl\bool.h>
+#include <stl/bstring.h>
+
+//============================================================================
+
+//#include <brender.h>
+#include "pigtool.h"
+#include <iostream.h>
+#include <assert.h>
+
+#define AssertMsg(__expr__,__str__) \
+	do{\
+		if(!(__expr__))\
+		 {\
+			cerr << "AssertMsg:" << __str__ << endl;\
+			assert(__expr__);\
+		 }\
+	}while(0)
+
+//============================================================================
+#endif
+//============================================================================

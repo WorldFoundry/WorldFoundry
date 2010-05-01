@@ -1,0 +1,148 @@
+#ifndef GFXFMT_BITMAP_HP
+#define GFXFMT_BITMAP_HP
+
+#include <windows.h>
+
+#include <istream>
+#include <iostream>
+#include <fstream>
+//using namespace std;
+#include <gfxfmt/types.h>
+
+#include <string>
+
+class AllocationMap;
+
+inline void
+SWAP( RGBQUAD& n1, RGBQUAD& n2 )
+{
+	RGBQUAD _ = n1;
+	n1 = n2;
+	n2 = _;
+}
+
+class ColourCycle
+{
+public:
+	ColourCycle();
+	ColourCycle( int start, int end, float speed );
+	~ColourCycle();
+	bool operator==( const ColourCycle& cc ) const;
+	bool operator!=( const ColourCycle& cc ) const;
+
+//protected:
+	int _start;
+	int _end;
+	float _speed;
+};
+
+
+class Bitmap
+{
+public:
+	Bitmap();
+	Bitmap( const int width, const int height, const uint16 bgColor=0 );
+	Bitmap( const Bitmap& );			// create bitmap from another bitmap [e.g., a palette]
+	virtual ~Bitmap();
+
+	// standard bitmap accessor functions
+	inline int width() const;
+	inline int height() const;
+	inline int bitdepth() const;
+	int coloursUsed() const;
+
+	// render into bitmap
+	void hline( int x, int y, int width );
+	void vline( int x, int y, int height );
+	void box( int x, int y, int width, int height );
+	void frame( int x, int y, int width, int height );
+	void copy( const Bitmap* src, const int xDest, const int yDest );
+
+	// save
+	void save( const char* filename ) const;
+	virtual void save( std::ostream& s ) const = 0;
+
+	bool operator>( const Bitmap& ) const;	// for sorting (based on w x h x b)
+
+	// colour reduction
+	void reduceTo16();
+	void reduceTo8( uint16* palette, int nColours );
+	void reduceTo4( uint16* palette, int nColours );
+protected:
+	bool addToPalette( uint16* palette, int& idxColour, uint16 colour );
+	int findPaletteEntry( uint16* palette, int nEntries, uint16 colour );
+public:
+
+#if 0
+	bool texture_fit( Bitmap* add, AllocationMap& am, const char* szRoomName, const char* szTextureType, int i=0 );
+	bool find( const Bitmap* bmAdd, AllocationMap& allocated, int& x, int& y ) const;
+	bool sameBitmap( int x, int y, const Bitmap* bmCheck ) const;
+	void crop( const int width, const int height );
+#endif
+
+	void forceTranslucent();
+	bool hasTransparentColour() const;
+
+#pragma message( __FILE__ ": this should probably just be an iterator" )
+	typedef void (*fnPixel)( uint16& );
+	void foreach_pixel( fnPixel );
+
+	static void Pixel_NOP( uint16& );
+	static void Pixel_RGB_BRG( uint16& pixel );
+	static void Pixel_Print( uint16& );
+	static void Pixel_TransparentRemap( uint16& );
+	static void Pixel_ForceTranslucent( uint16& );
+#if !defined( NDEBUG )
+	static void Pixel_VerifyTranslucent( uint16& );
+#endif
+
+protected:
+	char* name;
+
+	int xPal, yPal;
+	int _subx, _suby;
+	int _idxPal;
+	int _startColour, _endColour;
+
+	// colour cycling -- needs work
+	void loadColourCycles();
+	void removeColourCycles();
+	// TODO: turn into list (not every bitmap needs all these entries!)
+	enum { _MAX_COLOUR_CYCLES = 128 };
+	ColourCycle _colourCycle[ _MAX_COLOUR_CYCLES ];
+	int _nColourCycles;
+
+	void* pixels;
+
+	enum { TRANSLUCENT = 1U<<15 };
+
+	bool checkAcceptablePowerof2();
+	void _calculatePaletteInfo( RGBQUAD*, int );
+
+	int _width;
+	int _height;
+	int _bitdepth;
+
+	int _cbRow;
+	int _bufWidth;
+
+	void _calculateArea();
+	int _area;
+
+	int _bufHeight;
+
+	int _CMapStart;
+	int _CMapLength;
+	uint16* _convertedPalette;
+
+	bool checkForTransparentColour() const;
+	bool _bHasTransparentColour;
+
+public:	// new (soon to be) .dll interface
+	virtual bool Validate( void* header, size_t, std::string msg );
+	virtual void ReadBitmap( std::istream& input );
+};
+
+#include "bitmap.hpi"
+
+#endif	// GFXFMT_BITMAP_HP

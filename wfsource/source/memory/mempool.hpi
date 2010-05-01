@@ -1,0 +1,53 @@
+//==============================================================================
+// mempool.hpi:
+// Copyright ( c ) 1998,99 World Foundry Group.  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//============================================================================
+
+inline void
+MemPool::Clear()						// warning: all previous allocations are now invalid
+{
+	ASSERTIONS( _currentEntries = 0; )
+	MemPoolFreeEntry* freeEntry = &_firstFree;
+	char* nextFree = _buffer;
+	for(int entry=0;entry<_maxEntries;entry++)
+	 {
+		freeEntry->_next = (MemPoolFreeEntry*)nextFree;
+		freeEntry = freeEntry->_next;
+		nextFree += _size;
+	 }
+	freeEntry->_next = NULL;
+}
+
+inline bool
+MemPool::ValidAllocation(void* memory)  // returns true if memory came from this mempool
+{
+	if(memory >= _buffer && memory < (_buffer+(_size*_maxEntries)))
+		return true;
+	return false;
+}
+
+
+inline bool
+MemPool::Empty() const
+{
+	return _currentEntries == _maxEntries;
+}
+
+//==============================================================================

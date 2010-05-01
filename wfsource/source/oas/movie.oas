@@ -1,0 +1,39 @@
+@*============================================================================
+@* movie.oas
+@*============================================================================
+
+@*============================================================================
+@* Movie definition
+
+TYPEHEADER(Movie)
+	@include actor.inc
+
+	PROPERTY_SHEET_HEADER(Movie,1)
+@*	-----------------------
+@*	TYPEENTRYXDATA_CONTEXTUALANIMS
+@*	TYPEENTRYFILENAME(AVI File,,"Only 8-bit uncompressed VFW files are supported",,)
+	TYPEENTRYFILENAME(Frame 0,,BITMAP_FILESPEC)
+        TYPEENTRYFIXED32(Frame 0 Delay,,FIXED32(0),FIXED32(100),FIXED32(1.0/60),,,"Frame0")
+	TYPEENTRYFILENAME(Frame 1,,BITMAP_FILESPEC,,"Frame0")
+        TYPEENTRYFIXED32(Frame 1 Delay,,FIXED32(0),FIXED32(100),FIXED32(1.0/60),,,"Frame1")
+	TYPEENTRYFILENAME(Frame 2,,BITMAP_FILESPEC,,"Frame1")
+        TYPEENTRYFIXED32(Frame 2 Delay,,FIXED32(0),FIXED32(100),FIXED32(1.0/60),,,"Frame2")
+	TYPEENTRYFILENAME(Frame 3,,BITMAP_FILESPEC,,"Frame2")
+        TYPEENTRYFIXED32(Frame 3 Delay,,FIXED32(0),FIXED32(100),FIXED32(1.0/60),,,"Frame3")
+	TYPEENTRYFILENAME(Frame 4,,BITMAP_FILESPEC,,"Frame3")
+        TYPEENTRYFIXED32(Frame 4 Delay,,FIXED32(0),FIXED32(100),FIXED32(1.0/60),,,"Frame4")
+	TYPEENTRYFILENAME(Frame 5,,BITMAP_FILESPEC,,"Frame4")
+        TYPEENTRYFIXED32(Frame 5 Delay,,FIXED32(0),FIXED32(100),FIXED32(1.0/60),,,"Frame5")
+	TYPEENTRYFILENAME(Frame 6,,BITMAP_FILESPEC,,"Frame5")
+        TYPEENTRYFIXED32(Frame 6 Delay,,FIXED32(0),FIXED32(100),FIXED32(1.0/60),,,"Frame6")
+	TYPEENTRYFILENAME(Frame 7,,BITMAP_FILESPEC,,"Frame6")
+        TYPEENTRYFIXED32(Frame 7 Delay,,FIXED32(0),FIXED32(100),FIXED32(1.0/60),,,"Frame7")
+	TYPEENTRYBOOLEAN(Loop Movie,,1)
+	TYPEENTRYFILENAME(Play On Texture)
+	TYPEENTRYINT32(Initial Frame,,0,7)
+@*	TYPEENTRYINT32(Source,,0,1,0,"Memory|CD-ROM",SHOW_AS_RADIOBUTTONS)
+	PROPERTY_SHEET_FOOTER
+
+TYPEFOOTER
+
+@*============================================================================

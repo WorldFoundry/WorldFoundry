@@ -1,0 +1,173 @@
+Microsoft Developer Studio Workspace File, Format Version 5.00
+# WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
+
+###############################################################################
+
+Project: "Attrib"=".\ATTRIB\attrib.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+    begin source code control
+    "$/World Foundry Plugins/Attrib", SBCAAAAA
+    .\attrib
+    end source code control
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "colour"=".\COLOUR\colour.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+    begin source code control
+    "$/World Foundry Plugins/Colour", SBCAAAAA
+    .\colour
+    end source code control
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "handle"=".\Handle\handle.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "max2iff"=".\MAX2IFF\max2iff.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+    begin source code control
+    "$/world foundry plugins/max2iff", RGFAAAAA
+    .\max2iff
+    end source code control
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "max2ifflvl"=".\max2ifflvl\max2ifflvl.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "max2lvl"=".\max2lvl\max2lvl.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+    begin source code control
+    "$/World Foundry Plugins/max2lvl", EHFAAAAA
+    .\max2lvl
+    end source code control
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "oad2txt"=".\oad2txt\oad2txt.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "select"=".\SELECT\select.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+    begin source code control
+    "$/World Foundry Plugins/Select", SEFAAAAA
+    .\select
+    end source code control
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "slope"=".\SLOPE\slope.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "toolbar"=".\TOOLBAR\toolbar.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+    begin source code control
+    "$/World Foundry Plugins/Toolbar", ABFAAAAA
+    .\toolbar
+    end source code control
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "txt2oad"=".\txt2oad\txt2oad.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Global:
+
+Package=<5>
+{{{
+}}}
+
+Package=<3>
+{{{
+}}}
+
+###############################################################################
+

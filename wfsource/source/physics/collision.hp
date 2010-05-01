@@ -1,0 +1,50 @@
+//==============================================================================
+//	collision.hp:	New, improved collision system (contains new stuff and stuff
+//					pulled out of Room and movement).
+//
+//	Created 8/5/97 13:36 by Phil Torre
+//
+//	Copyright 1997, 2002 World Foundry Group.  
+//==============================================================================
+
+#ifndef _COLLISIO_HP
+#define _COLLISIO_HP
+
+#include <baseobject/msgport.hp>
+#include <physics/physicalobject.hp>
+#include <math/vector3.hp>
+#include <timer/clock.hp>
+
+#define CI_NOTHING 0
+#define CI_PHYSICS MsgPort::COLLISION
+#define CI_SPECIAL MsgPort::SPECIAL_COLLISION
+
+#define MAX_COLLISION_EVENTS 100
+
+
+//==============================================================================
+
+struct collisionEvent
+{
+	PhysicalObject* object1;
+	PhysicalObject* object2;
+	Scalar eventTime;
+	Vector3 normal;
+	bool valid;			// if false, one of these actors needs to be recollided
+};
+
+void SortCollisionEventList(const Clock& clock);
+void ComputeCollisionEventTime( collisionEvent& thisEvent, const Clock& clock );
+void DispatchCollisionMessages( PhysicalObject& object1, PhysicalObject& object2,
+	 							const MsgPort::MSG_TYPE msg1, const MsgPort::MSG_TYPE msg2 );
+void ObjectMustReCollide( PhysicalObject* thisObject );
+Vector3 ReflectVector( const Vector3& incident, const Vector3& normal );
+void ResolveCollisionEvent( collisionEvent& thisEvent, const Clock& clock );
+
+void
+CollideObjectWithList(PhysicalObject& checkObject, BaseObjectIteratorWrapper poIter, const Clock& clock);
+
+//==============================================================================
+#endif	// _COLLISIO_HP
+//==============================================================================
+

@@ -1,0 +1,37 @@
+@*============================================================================
+@* test.oas
+@*============================================================================
+
+@*============================================================================
+@* Test type definition
+
+TYPEHEADER(Test)
+    @include actor.inc
+	PROPERTY_SHEET_HEADER(Test,1)
+	TYPEENTRYWAVEFORM(Waveform)
+@*	TYPEENTRYCAMERA(Camera Button)
+	TYPEENTRYINT32(Powerups Menu,,0, 3, 2, "1 UP|Invulnerability|Flying|Speed", SHOW_AS_DROPMENU,"Choose one from menu")
+	TYPEENTRYINT32(Powerups Slider,,0, 3, 2, "1 UP|Invulnerability|Flying|Speed", SHOW_AS_SLIDER,"")
+	TYPEENTRYINT32(Powerups #,,0, 3, 2, "1 UP|Invulnerability|Flying|Speed", SHOW_AS_NUMBER, "Enter powerups number")
+	PROPERTY_SHEET_FOOTER
+
+	PROPERTY_SHEET_HEADER(Test,1)
+	TYPEENTRYBOOLEAN(Field 1,,1)
+@*	TYPEENTRYBOOLEANTOGGLE(Field 2,,1, "State #1|State #2" )
+	TYPEENTRYOBJREFERENCE(LookAt)
+	TYPEENTRYSTRING(String,,25)
+	TYPEENTRYSTRING(String, ,25,"help string" , , , ,"False|True",SHOW_AS_DROPMENU)
+	TYPEENTRYINT32(Number of powerups,, 1, 100, 42, "", SHOW_AS_NUMBER)
+	TYPEENTRYINT32(Number of powerups slider,, 1, 100, 1, "", SHOW_AS_SLIDER)
+	TYPEENTRYINT32(Number of powerups menu,, 0, 4, 1, "Hand|Staff|Crossbow|Plasma|Stun Hands", SHOW_AS_DROPMENU )
+	TYPEENTRYINT32(Number of powerups toggle,, 0, 4, 1, "Hand|Staff|Crossbow|Plasma|Stun Hands", SHOW_AS_TOGGLE )
+	TYPEENTRYINT32(Damage,,10,100,65,"",SHOW_AS_NUMBER,,-1,-1)
+	TYPEENTRYINT32(Damage slider,,10,100,15,"",SHOW_AS_SLIDER,,-1,-1)
+@*	TYPEENTRYFILENAME(Filename,,"",0,280)
+	TYPEENTRYFIXED32(Aperture,, FIXED32(20),FIXED32(500),FIXED32(55))	/* in millimeters */
+	TYPEENTRYFIXED32(Speed,,FIXED32(0.1),FIXED32(100.0),FIXED32(5.0))
+	PROPERTY_SHEET_FOOTER
+
+TYPEFOOTER
+
+@*============================================================================

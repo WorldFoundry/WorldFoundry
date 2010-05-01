@@ -1,0 +1,59 @@
+//==============================================================================
+// libtypes.h
+//==============================================================================
+/*
+
+Documentation:
+
+	Abstract:
+		defines machine & compiler independent data sizes
+
+	History:
+			Created	? Kevin T. Seghetti
+			First docmuented 10-19-92 02:10pm
+
+	Class Hierarchy:
+		none
+	Dependancies:
+		none
+	Restrictions:
+		none
+	Example:
+
+*/
+//==============================================================================
+// use only once insurance
+
+#if !defined(PCLIB_types_H)
+#define PCLIB_types_H
+
+//==============================================================================
+
+typedef unsigned char uchar;
+typedef unsigned int uint;
+
+typedef unsigned long ulong;
+typedef unsigned int uword;
+typedef unsigned char ubyte;
+
+typedef int word;
+typedef char byte;
+
+/*
+class ubyte
+{
+	unsigned char val;
+public:
+	ubyte() { }
+	ubyte(unsigned int newVal) { val = newVal; }
+	operator unsigned int() { return(val); }
+	ubyte& operator=(const ubyte &rhs)
+	{ if(this == &rhs) return(*this); val = rhs.val; return(*this); }
+};
+ */
+
+//==============================================================================
+
+#endif
+
+//==============================================================================

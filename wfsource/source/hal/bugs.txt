@@ -1,0 +1,9 @@
+bugs.txt:
+
+Known bugs/problems/restrictions in the hal
+
+
+
+
+psx version:
+	must delete cc.occ from each library before building the next one

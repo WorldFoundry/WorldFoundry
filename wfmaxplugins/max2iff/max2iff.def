@@ -1,0 +1,9 @@
+EXPORTS
+	LibDescription		@1
+	LibNumberClasses	@2
+	LibClassDesc		@3
+	LibVersion			@4
+	max2iff
+	max2iff_Query
+SECTIONS
+	.data READ WRITE

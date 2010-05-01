@@ -1,0 +1,101 @@
+//==============================================================================
+// mempool.hp
+// Copyright ( c ) 1994,95,96,97,99,2000,2003 World Foundry Group.  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+//==============================================================================
+// Description:
+// C++ version of static memory array allocator
+// The memory pool code implements an array of fixed size entries which may be
+// allocated and freed.  The implementation maintains a forward linked list of
+// free nodes in the free nodes themselves, thus wasting no space.  Both allocation
+// and freeing a node is constant time, and fast.
+// If only single allocation is used, it is guaranteed to only fail when it
+// is completely out of entries.
+// If you use AllocateArray, it will fail if the pool is sufficiently fragmented
+// it is reccomended AllocateArray only be used in curcumstances where the
+// entire pool is emptied often (for example, using Clear)
+//============================================================================
+// use only once insurance
+
+#ifndef _mEMpOOL_HP
+#define _mEMpOOL_HP
+
+//==============================================================================
+
+//#include <cstdio>
+#include <pigsys/pigsys.hp>
+#include <memory/memory.hp>
+
+//==============================================================================
+
+struct MemPoolFreeEntry
+{
+	MemPoolFreeEntry* _next;
+};
+
+//==============================================================================
+
+class MemPool : public Memory
+{
+public:
+	MemPool(size_t size,int entries, Memory& memory MEMORY_NAMED( COMMA const char* name ));
+	~MemPool();
+
+	void* Allocate(size_t size ASSERTIONS( COMMA const char* file COMMA int line) ); 	// get a single object from the pool
+	void Free(const void* mem);				// return a single object to the pool
+	inline void Clear();						// warning: all previous allocations are now invalid
+
+	inline bool ValidAllocation(void* memory);  // returns true if memory came from this
+	inline bool Empty() const;
+
+#if DO_ASSERTIONS
+	int Entries();
+#endif
+protected:
+#if DO_ASSERTIONS
+	void _Validate() const;					// check integrity of class
+#endif
+	IOSTREAMS( virtual std::ostream& _Print(std::ostream& out) const; )
+
+private:
+	char* _buffer;					// actual pool
+	MemPoolFreeEntry _firstFree;		    // contains pointer to first free node
+	Memory* _memory;
+#if DO_ASSERTIONS
+#endif
+	// this is only needed for empty
+	int _currentEntries;			// current # of allocated entries in pool
+	// these are only needed for clear
+	size_t _size;					// size of each entry in pool
+	int _maxEntries;				// maximum # of entries in pool
+};
+
+
+//==============================================================================
+
+#if TEST_MEMPOOL
+void
+MemPoolTest(void);
+#endif
+
+//==============================================================================
+#include <memory/mempool.hpi>
+//==============================================================================
+#endif
+//==============================================================================

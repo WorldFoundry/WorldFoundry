@@ -1,0 +1,156 @@
+//=============================================================================
+// display.hpi: display hardware abstraction class
+// Copyright ( c ) 1997,1998,1999,2000,2001,2002 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Description: The Display class encapsulates data and behavior for a single
+//	 hardware screen
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+INLINE void
+Display::Validate() const
+{
+	RangeCheckExclusive(0,_xSize,1024+1);
+	RangeCheckExclusive(0,_ySize,768+1);
+#if defined( __PSX__ )
+	RangeCheckInclusive(0,_xSize,640);
+	RangeCheckInclusive(0,_ySize,240);
+#endif
+	RangeCheck(0,_drawPage,DISPLAY_PAGES);
+#if defined(USE_ORDER_TABLES)
+	RangeCheck(0,_constructionOrderTableIndex,ORDER_TABLES);
+	RangeCheck(0,_renderOrderTableIndex,ORDER_TABLES);
+	for(int index = 0; index < ORDER_TABLES;index++)
+	{
+		assert(ValidPtr(_orderTable[index]));
+		_orderTable[index]->Validate();
+	}
+#endif
+}
+
+//============================================================================
+
+INLINE void
+Display::SetBackgroundColor(const Color& color)
+{
+	Validate();
+	_backgroundColor = color;
+	_backgroundColorRed = color.Red() / 256.0;
+	_backgroundColorGreen = color.Green() / 255.0;
+	_backgroundColorBlue = color.Blue() / 255.0;
+	Validate();
+}
+
+//============================================================================
+
+#if defined(DO_SLOW_STEREOGRAM)
+INLINE int
+Display::GetDrawPageIndex() const
+{
+	Validate();
+	return(_drawPage);
+}
+#endif
+
+//============================================================================
+
+#if defined(USE_ORDER_TABLES)
+
+INLINE int
+Display::GetConstructionOrderTableIndex() const
+{
+	Validate();
+	return(_constructionOrderTableIndex);
+}
+
+//==============================================================================
+
+inline int
+Display::GetRenderOrderTableIndex() const					// returns whch order table is available for rendering
+{
+	Validate();
+	return(_renderOrderTableIndex);
+}
+
+//============================================================================
+
+inline void
+Display::SetConstructionOrderTableIndex(int index)
+{
+	Validate();
+	RangeCheck(0,index,ORDER_TABLES);
+	_constructionOrderTableIndex = index;
+	Validate();
+}
+
+//==============================================================================
+
+inline void
+Display::SetRenderOrderTableIndex(int index)
+{
+	Validate();
+	RangeCheck(0,index,ORDER_TABLES);
+	_renderOrderTableIndex = index;
+	Validate();
+}
+
+//==============================================================================
+
+INLINE void
+Display::AddConstructionOrderTable(OrderTable& orderTable, int depth)
+{
+	Validate();
+	_orderTable[GetConstructionOrderTableIndex()]->AddOrderTable(orderTable,depth);
+	Validate();
+}
+
+//============================================================================
+#endif			                        // USE_ORDER_TABLES
+//============================================================================
+
+INLINE int
+Display::XSize() const
+{
+	Validate();
+	return(_xSize);
+}
+
+//============================================================================
+
+INLINE int
+Display::YSize() const
+{
+	Validate();
+	return(_ySize);
+}
+
+//============================================================================
+
+#if defined(VIDEO_MEMORY_IN_ONE_PIXELMAP)
+inline PixelMap&
+Display::GetVideoMemoryPixelMap()
+{
+    Validate();
+    return *_videoMemory;
+}
+#endif
+
+//==============================================================================
+

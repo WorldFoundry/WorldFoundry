@@ -1,0 +1,137 @@
+//=============================================================================
+// Room.hp:
+// Copyright ( c ) 1996,1997,1999,2000,2002,2003 World Foundry Group  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+//
+//
+//	Abstract: Room class header file, rooms are contained in world, and contain lists of objects
+//
+//	Class Hierarchy:
+//			none
+//
+//	Dependancies:
+//
+//	Restrictions:
+//
+//	Example:
+//
+//============================================================================
+
+#ifndef _Room_HP
+#define _Room_HP
+
+//============================================================================
+
+#include <pigsys/pigsys.hp>
+#include <physics/physical.hp>
+#include <physics/physicalobject.hp>
+#include <cpplib/int16li.hp>
+#include <cpplib/array.hp>
+#include <timer/clock.hp>
+#include <asset/assets.hp>
+
+//==============================================================================
+
+class LevelRooms;
+
+typedef bool (BaseObject::* PRoomObjectListCheckFunc)() const;
+
+//==============================================================================
+
+class RoomCallbacks
+{
+public:
+   virtual ~RoomCallbacks();
+
+   virtual void SetPendingRemove( const BaseObject* object ) = 0;
+
+   void  Validate() const;
+protected:
+   virtual void _Validate() const = 0;
+};
+
+//============================================================================
+// objects organized into rooms
+
+class Room
+{
+public:
+	Room();
+	~Room();
+	void Construct(_RoomOnDisk* roomData, int maxObjects, Room* levelRooms, 
+      int levelNumRooms,int index,Memory& memory, int numberOfTemporaryObjects,
+      PRoomObjectListCheckFunc* listCheckFuncList, int checkListEntries,
+      Array<BaseObject*>& masterObjectList, 
+      RoomCallbacks* roomCallbacks
+   );
+	void BindAssets();
+	void UnBindAssets();
+
+	// functions which operate on objects in the room
+	void UpdateRoomContents(int updateIndex, LevelRooms& levelRooms);
+
+	// functions which operate on a single object
+	void AddObject(int32 objectIndex);
+	void RemoveObject(int32 objectIndex);
+	bool CheckCollision(const PhysicalObject& object) const;	// determine if an object is in this room
+	bool CheckCollision(const ColSpace& object, const Vector3& objpos) const;	// determine if an colspace is in this room
+   void CheckCollisionWithObjects(PhysicalObject& checkObject, const Clock& clock, int listIndex, int startingObject=0) const;				// 	sends messages to all colliding objects
+
+	// functions which return state
+	Room* GetAdjacentRoom(int index) const;
+//	ColBox* GetColBox() const;
+	int GetRoomIndex() const;
+
+   BaseObjectIteratorWrapper ListIter(int index) const;
+
+	enum { INVALID_ROOM = -1 };
+
+	void Validate() const;
+protected:
+private:
+
+	int _roomIndex;									// this room's levelcon room index
+	PhysicalAttributes _physicalAttributes;			// Collision space for this room
+
+	Room* adjacentRooms[MAX_ACTIVE_ROOMS];		// pointers to rooms adjacent to this one
+   Int16List* _objectLists;               // array of lists of objects
+
+   int _checkListEntries;
+   PRoomObjectListCheckFunc* _listCheckFuncList;
+
+   RoomCallbacks* _roomCallbacks;
+   Array<BaseObject*>* _masterObjectList;
+
+	DBSTREAM1( friend std::ostream& operator << ( std::ostream& s, const Room& r ); )
+};
+
+//============================================================================
+
+void
+CheckSameRoom( BaseObjectIteratorWrapper poIter, const Room& room, const Clock& clock, int listIndex );
+
+void
+CheckOverlappedRoom( BaseObjectIteratorWrapper poIter, const Room& room, const Clock& clock, int listIndex );
+
+//==============================================================================
+#include "room.hpi"	// include all inline definitions as appropriate
+//============================================================================
+#endif // !_Room_HP
+//============================================================================

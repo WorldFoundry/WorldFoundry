@@ -1,0 +1,165 @@
+//============================================================================
+// actrooms.hpi:
+// Copyright ( c ) 1997,1998,1999,2000,2003 World Foundry Group.  
+// Part of the World Foundry 3D video game engine/production environment
+// for more information about World Foundry, see www.worldfoundry.org
+//==============================================================================
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// Version 2 as published by the Free Software Foundation
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+// or see www.fsf.org
+
+// ===========================================================================
+// Original Author: Kevin T. Seghetti
+//============================================================================
+
+#ifndef _ACTIVEROOMS_HPI
+#define _ACTIVEROOMS_HPI
+
+//============================================================================
+
+#include <cpplib/libstrm.hp>
+#include "room.hp"
+
+//============================================================================
+
+inline void
+ActiveRooms::Validate() const
+{
+#if DO_VALIDATION
+	RangeCheckExclusive(0,_numRooms, 500);  // kts arbitrary
+
+	ValidatePtr(_tblFromRooms);
+	ValidatePtr(_tblToRooms);
+	ValidatePtr(_fromActiveRooms);
+#if DO_VALIDATION > 1
+	for(int index=0;index<MAX_ACTIVE_ROOMS;index++)
+	{
+		if(_activeRooms[index])
+		{
+			ValidatePtr(_activeRooms[index]);
+			_activeRooms[index]->Validate();
+		}
+	}
+#endif
+#endif
+}
+
+//============================================================================
+
+inline
+ActiveRooms::ActiveRooms(Memory& memory, AssetManager& assetManager, const LevelRooms& levelRooms) :
+	_tblFromRooms(NULL),
+	_tblToRooms(NULL),
+	_numRooms(0),
+	_memory(memory),
+   _assetManager(assetManager),
+   _levelRooms(levelRooms)
+
+{
+	_memory.Validate();
+   _assetManager.Validate();
+   _levelRooms.Validate();
+}
+
+//=============================================================================
+
+inline
+ActiveRooms::~ActiveRooms()
+{
+	_memory.Free(_tblToRooms, sizeof(int)*_numRooms);
+	_memory.Free(_tblFromRooms, sizeof(int)*_numRooms);
+}
+
+//============================================================================
+
+inline const Room*
+ActiveRooms::GetActiveRoom(int activeRoomIndex) const
+{
+	Validate();
+	RangeCheck(0,activeRoomIndex,MAX_ACTIVE_ROOMS);
+#if DO_ASSERTIONS
+	if(_activeRooms[activeRoomIndex])
+		ValidatePtr(_activeRooms[activeRoomIndex]);
+#endif
+	return _activeRooms[activeRoomIndex];
+}
+
+//=============================================================================
+
+inline bool
+ActiveRooms::IsActiveRoom( int idxRoom ) const
+{
+	Validate();
+	for( int idxActiveSlot = 0; idxActiveSlot < MAX_ACTIVE_ROOMS; ++idxActiveSlot )
+	{
+		if( _activeRooms[idxActiveSlot] )
+		{
+			int idxActiveRoom = _activeRooms[idxActiveSlot]->GetRoomIndex();
+			if( idxActiveRoom == idxRoom )
+				return true;
+		}
+	}
+	return false;
+}
+
+//=============================================================================
+
+inline int
+ActiveRooms::GetActiveRoomIndex( int idxRoom ) const
+{
+	Validate();
+	for( int idxActiveRoom = 0; idxActiveRoom < MAX_ACTIVE_ROOMS; ++idxActiveRoom )
+	{
+		if( _activeRooms[idxActiveRoom] )
+		{
+			if( _activeRooms[idxActiveRoom]->GetRoomIndex() == idxRoom )
+				return idxRoom;
+		}
+	}
+	assert(0);
+	return -1;
+}
+
+//==============================================================================
+
+#include "actroit.hp"
+
+inline ActiveRoomsIter
+ActiveRooms::GetMutableIter() const
+{
+	Validate();
+	return ActiveRoomsIter(*this);
+}
+
+//============================================================================
+
+inline ActiveRoomsIterConst
+ActiveRooms::GetIter() const
+{
+	Validate();
+	return ActiveRoomsIterConst(*this);
+}
+
+//============================================================================
+
+inline BaseObjectIteratorWrapper
+ActiveRooms::GetObjectIter(int listIndex) const
+{
+	Validate();
+   ActiveRoomsBaseObjectIter temp(*this,listIndex);
+   return BaseObjectIteratorWrapper(temp);
+}
+
+//=============================================================================
+#endif
+//=============================================================================

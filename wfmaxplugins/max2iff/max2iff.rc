@@ -1,0 +1,231 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "max2iff.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "World Foundry Group.\0"
+            VALUE "FileDescription", "MAX to IFF Exporter\0"
+            VALUE "FileVersion", "1, 0, 0, 2\0"
+            VALUE "InternalName", "max2iff\0"
+            VALUE "LegalCopyright", "Copyright © 1997-99 World Foundry Group.  All Rights Reserved.\0"
+            VALUE "OriginalFilename", "max2iff.dle\0"
+            VALUE "ProductName", "max2iff\0"
+            VALUE "ProductVersion", "1, 0, 0, 2\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+#endif    // !_MAC
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "max2iff.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_OUTPUT_OPTIONS DIALOG DISCARDABLE  50, 45, 183, 219
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "max2iff Output Options"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,126,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,126,24,50,14
+    LTEXT           "Object",IDC_STATIC,7,7,22,8
+    LTEXT           "",IDC_OBJECT_NAME,33,7,87,10,SS_SUNKEN
+    GROUPBOX        "File Format",IDC_STATIC,7,20,113,24,WS_GROUP
+    CONTROL         "ASC&II",IDC_ASCII,"Button",BS_AUTORADIOBUTTON,15,31,34,
+                    10
+    CONTROL         "Binary",IDC_BINARY,"Button",BS_AUTORADIOBUTTON,60,30,35,
+                    10
+    GROUPBOX        "Output Data",IDC_STATIC,7,48,169,68
+    CONTROL         "&Geometry",IDC_GEOMETRY,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,15,58,46,10
+    LTEXT           "&Scale Factor",IDC_SCALE_TEXT,77,58,41,8
+    EDITTEXT        IDC_SCALE,120,55,40,12,ES_AUTOHSCROLL
+    CONTROL         "&Animation",IDC_ANIMATION,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,15,69,47,10
+    CONTROL         "&Materials",IDC_MATERIALS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,15,80,44,10
+    CONTROL         "&Handles",IDC_HANDLES,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,15,91,42,10
+    CONTROL         "E&vents",IDC_EVENTS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,15,102,38,10
+    LTEXT           "Output &Filename",IDC_STATIC,7,175,52,8
+    EDITTEXT        IDC_OUTPUT_FILENAME,7,185,170,12,ES_AUTOHSCROLL
+    CONTROL         "Skip this dialog",IDC_DONT_PROMPT,"Button",
+                    BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,7,
+                    207,63,10
+    CONTROL         "Respect Global Rotation",IDC_GROTATION,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,69,91,93,10
+    CONTROL         "Respect Global Scale",IDC_GSCALE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,69,102,85,10
+    CONTROL         "Respect Global Position",IDC_GPOSITION,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,69,80,91,10
+    PUSHBUTTON      "&Browse...",IDC_BROWSE,142,170,35,15
+    GROUPBOX        "Fixed Point Representation",IDC_STATIC,7,121,125,45
+    LTEXT           "&Real",IDC_STATIC,32,137,16,8
+    EDITTEXT        IDC_REAL_SIGN,52,132,15,15,ES_AUTOHSCROLL
+    CONTROL         "Spin1",IDC_SPIN1,"msctls_updown32",UDS_ARROWKEYS | 
+                    WS_DISABLED,67,132,9,14
+    EDITTEXT        IDC_REAL_WHOLE,77,132,15,15,ES_AUTOHSCROLL
+    CONTROL         "Spin1",IDC_SPIN2,"msctls_updown32",UDS_ARROWKEYS | 
+                    WS_DISABLED,91,132,9,14
+    EDITTEXT        IDC_REAL_FRACTION,102,132,15,15,ES_AUTOHSCROLL
+    CONTROL         "Spin1",IDC_SPIN3,"msctls_updown32",UDS_ARROWKEYS | 
+                    WS_DISABLED,117,132,9,14
+    LTEXT           "&Quaternion",IDC_STATIC,12,151,36,8
+    EDITTEXT        IDC_QUAT_SIGN,52,146,15,15,ES_AUTOHSCROLL
+    CONTROL         "Spin1",IDC_SPIN4,"msctls_updown32",UDS_ARROWKEYS | 
+                    WS_DISABLED,67,146,9,14
+    EDITTEXT        IDC_QUAT_WHOLE,77,146,15,15,ES_AUTOHSCROLL
+    CONTROL         "Spin1",IDC_SPIN5,"msctls_updown32",UDS_ARROWKEYS | 
+                    WS_DISABLED,91,146,9,14
+    EDITTEXT        IDC_QUAT_FRACTION,102,146,15,15,ES_AUTOHSCROLL
+    CONTROL         "Spin1",IDC_SPIN6,"msctls_updown32",UDS_ARROWKEYS | 
+                    WS_DISABLED,117,146,9,14
+END
+
+IDD_ABOUT DIALOG DISCARDABLE  0, 0, 186, 90
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About World Foundry Export (max2iff)"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,129,7,50,14
+    LTEXT           "World Foundry Export\nmax2iff\n\nCopyright 1997-99 World Foundry Group.\nAll Rights Reserved.\n\nBy William B. Norris IV\n\nVersion 1.0.0",
+                    IDC_STATIC,7,7,117,76
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_OUTPUT_OPTIONS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 176
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 217
+    END
+
+    IDD_ABOUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 83
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_WF                  ICON    DISCARDABLE     "Factory.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_WRLEXP              "This is the IDS_WRLEXP string resource"
+    IDS_WRLEXP_NODATATOEXPORT "No valid data to export!"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
