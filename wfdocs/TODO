@@ -1,0 +1,13 @@
+TODO list (wfdoc project)
+=========================
+
+
+('x' in box indicates complete, refer ChangeLog for more info)
+
+[ ] convert main World Foundry document template to DocBook
+[ ] migrate existing World Foundry documentation (Word format) to DocBook
+[ ] assimilate other documentation from World Foundry website into CVS
+[ ] publish documentation in HTML format for online viewing
+[ ] publish documentation in printable PDF format for people to print out
+[ ] declare wfdoc project to be at version 1.0 and start accepting changes
+
