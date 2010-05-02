@@ -7,9 +7,6 @@ CCCARGS += -DYY_NEVER_INTERACTIVE
 #TEST_PROG = eval
 TEST_LIBS += $(MATH) $(STREAMS) $(CPPLIB) $(MEMORY) $(HAL)
 
-#INCLUDE += -I c:/tools/shared
-INCLUDE += -I .                 # for missing unistd.h
-
 ################################################################################
 
 LIB_OBJS += \
@@ -43,7 +40,6 @@ expr_tab.h : expr.y
 
 
 lexyy.cc : expr.l
-	flex -8 -Caf -p -t expr.l >lexyy.cc
-#         -8 -Caf -p -t expr.l >lexyy.cc
+	flex -B -8 -Caf -p -t expr.l >lexyy.cc
 	@perl -i~ -p -n fixlex.pl lexyy.cc
 	@-rm lexyy.c~ >/dev/null
