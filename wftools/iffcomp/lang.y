@@ -32,8 +32,7 @@ using namespace std;
 
 extern int yylex();
 
-
-strFlexLexer* theLexer;
+extern strFlexLexer* theLexer;
 extern bool bVerbose;
 unsigned long startPosOverride;
 unsigned long lengthOverride;

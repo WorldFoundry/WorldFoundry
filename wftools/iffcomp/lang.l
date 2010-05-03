@@ -31,6 +31,7 @@ using namespace std;
 #include "grammar.hpp"
 #include "lang_tab.h"
 #include "langlex.hpp"
+extern strFlexLexer* theLexer;
 
 typedef struct
 {
@@ -244,13 +245,6 @@ include[ \t]+<				{ BEGIN INCLUDE; }
 .							{ return *YYText(); }
 
 %%
-
-int
-yywrap( void )
-{
-	return 1;
-}
-
 
 void
 yyerror( char* message )

@@ -31,6 +31,8 @@ using namespace std;
 #include "fileline.hpp"
 
 Grammar* theGrammar;
+strFlexLexer* theLexer;
+
 //extern bool bVerbose;
 extern bool bBinary;
 

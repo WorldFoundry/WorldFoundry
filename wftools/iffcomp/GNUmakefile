@@ -53,10 +53,9 @@ lang.l : lang_tab.h
 lang_tab.cc lang_tab.h : lang.y 
 	bison --defines --verbose --output=lang_tab.c lang.y
 	mv lang_tab.c lang_tab.cc
-#        ..\bin\bison --defines --verbose lang.y
 
 lexyy.cc : lang.l
-	flex -8 -Caf -p -t -+ lang.l >lexyy.cc
+	flex -B -8 -Caf -p -t -+ lang.l >lexyy.cc
 	perl -i~ -p -n ../GNUfixlex.pl lexyy.cc
 
 ################################################################################
@@ -78,7 +77,7 @@ test-bin  : iffcomp$(EXE)
 .PHONY: clean
 clean : tool-clean
 	rm -f lang_tab.cc lang_tab.cc.h lang_tab.cc.output lexyy.cc* lang.output
-	rm -f testtxt.iff testbin.iff
+	rm -f testtxt.iff testbin.iff test.wf
 	rm -f $(PROGRAM)$(EXE)
 
 .PHONY: realclean

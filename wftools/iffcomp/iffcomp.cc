@@ -21,6 +21,9 @@
 
 #include <pigsys/assert.hp>
 #include "grammar.hpp"
+extern Grammar* theGrammar;
+#include "langlex.hpp"
+extern strFlexLexer* theLexer;
 
 int
 iffcomp( const char* _szInputFile, const char* _szOutputFile )

@@ -8,7 +8,7 @@
 #include <vector>
 int yyparse();
 #include <iffwrite/fixed.hp>
-#include "langlex.hpp"
+
 class Backpatch
 {
 public:
@@ -82,8 +82,5 @@ private:
 	Grammar();
 };
 extern Grammar* theGrammar;
-
-extern strFlexLexer* theLexer;
-
 
 #endif	// GRAMMAR_HP
