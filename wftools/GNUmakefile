@@ -49,7 +49,7 @@ make_lib = echo ================================================================
 # what the ...? this make_lib MUST be a mistake?
 
 .PHONY : ALL
-ALL :
+ALL : $(WF_DIR)/bin
 	cd eval		&& ${MAKE} ${MFLAGS}
 	cd iffdump	&& ${MAKE} ${MFLAGS}
 	cd oaddump	&& ${MAKE} ${MFLAGS}
@@ -74,7 +74,10 @@ clean :
 print: 
 	echo $(DIR_LIST)
 
-copybinaries: ALL
+$(WF_DIR)/bin :
+	mkdir $(WF_DIR)/bin
+
+copybinaries: $(WF_DIR)/bin ALL
 	cp iffcomp/iffcomp $(WF_DIR)/bin
 	cp iff2lvl/iff2lvl $(WF_DIR)/bin
 	cp prep/prep $(WF_DIR)/bin
