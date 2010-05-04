@@ -80,17 +80,10 @@ ifeq ($(WF_TARGET),linux)
 	$(PIGS_LIBS) \
 	-Xlinker --end-group \
 	$(LNARGS) \
-	-lm -lX11 -lXext -lXmu -lXt -lXi -lSM -lICE -lpthread -lc -lstdc++ 	
-
-# kts removed 4/13/2001 19:15:20 was causing link errors in prep under gcc version egcs-2.91.66 19990314/Linux (egcs-1.1.2 release)
-#	-L/lib -L/usr/lib \
-
+	-lm -lX11 -lXext -lXmu -lXt -lXi -lSM -lICE -lpthread -lc -lstdc++
 #	$(SYS_LIBS)
 
 ifeq ($(PROGRAM),prep)
 	cp -f prep $(WF_DIR)/bin
 endif
-#	The line below doesn't work -- why?
-#	link /nologo /out:$(.TARGET) -libpath:"$(MSVCDIR)/lib" /subsystem:$(SUBSYSTEM) /debug /stack:1050624 $^
 endif
-
