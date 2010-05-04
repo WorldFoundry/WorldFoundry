@@ -42,7 +42,6 @@ DIR_LIST = \
         iffcomp \
         iff2lvl \
         textile \
-	attribedit
 
 #=============================================================================
 
@@ -59,7 +58,6 @@ ALL :
 	cd iffcomp	&& ${MAKE} ${MFLAGS}
 	cd textile	&& ${MAKE} ${MFLAGS}
 	cd iff2lvl	&& ${MAKE} ${MFLAGS}
-	cd attribedit	&& ${MAKE} ${MFLAGS}
 
 
 .PHONY : clean
@@ -71,12 +69,10 @@ clean :
 	cd lvldump	&& ${MAKE} ${MFLAGS} $@
 	cd iffcomp	&& ${MAKE} ${MFLAGS} $@
 	cd textile	&& ${MAKE} ${MFLAGS} $@
-	cd attribedit	&& ${MAKE} ${MFLAGS} $@
 
 .PHONY :  print
 print: 
 	echo $(DIR_LIST)
-	
 
 copybinaries: ALL
 	cp iffcomp/iffcomp $(WF_DIR)/bin
@@ -85,8 +81,7 @@ copybinaries: ALL
 	cp iffdump/iffdump $(WF_DIR)/bin
 	cp lvldump/lvldump $(WF_DIR)/bin
 	cp textile/textile $(WF_DIR)/bin
-	cp attribedit/attribedit $(WF_DIR)/bin
-	
+
 #=============================================================================
 
 # not really usefull under linux
