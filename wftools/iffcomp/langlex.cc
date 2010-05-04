@@ -78,8 +78,8 @@ strFlexLexer::include()
 		FileLineInfo* fli = new FileLineInfo(
 			1,
 			"",
-			theGrammar->filename(),
-			yy_current_buffer );
+			theGrammar->filename()
+						     );
 		assert( fli );
 		_fileLineInfo.push_back( fli );
 	}
@@ -105,27 +105,16 @@ strFlexLexer::push_include( const char* szIncludeFile )
 {
 //	printf( "Opening file [%s]\n", szIncludeFile );
 
-    // kts added 2/24/2001 21:10:46 so that top level yy_current_buffer gets saved
-  assert(yy_current_buffer);
-  include()->yy_current_buffer = yy_current_buffer;          // save the current buffer
-
 	ifstream* newyyin = new ifstream( szIncludeFile );
 	assert( newyyin );
 	if ( !newyyin->good() ) {
 		theGrammar->Error( "Unable to open include file \"%s\"\n", szIncludeFile );
 	}
 
-	yy_switch_to_buffer( yy_create_buffer( newyyin, YY_BUF_SIZE ) );
-	assert( yy_current_buffer );
-	FileLineInfo* fli = new FileLineInfo(
-		1,
-		currentLine(),
-		szIncludeFile,
-		yy_current_buffer );
+	yypush_buffer_state( yy_create_buffer( newyyin, YY_BUF_SIZE ) );
+	FileLineInfo* fli = new FileLineInfo( 1, currentLine(), szIncludeFile );
 	assert( fli );
 	_fileLineInfo.push_back( fli );
-	assert(fli->yy_current_buffer);
-	assert(include()->yy_current_buffer );
 }
 
 
@@ -136,11 +125,8 @@ strFlexLexer::pop_include()
 	if ( _fileLineInfo.size() == 1 )
 		return false;
 
-	assert(include()->yy_current_buffer );
-	yy_delete_buffer( include()->yy_current_buffer );
 	_fileLineInfo.pop_back();
-	assert(include()->yy_current_buffer );
-	yy_switch_to_buffer( include()->yy_current_buffer );
+	yypop_buffer_state();
 
 	return true;
 }

@@ -20,24 +20,21 @@
 
 #include "fileline.hpp"
 #include <cstring>
-struct yy_buffer_state;
 
 FileLineInfo::FileLineInfo(
 	int newnLine,
 	const char* newszLine,
-	const char* newszFilename,
-	struct yy_buffer_state* newyy_current_buffer )
+	const char* newszFilename
+			   )
 {
 	nLine = newnLine;
 	szLine = strdup( newszLine );
 	assert(szLine);
 	strncpy( szFilename, newszFilename, PATH_MAX );
-	yy_current_buffer = newyy_current_buffer;
 }
 
 FileLineInfo::~FileLineInfo()
 {
 	free(szLine);
 }
-
 

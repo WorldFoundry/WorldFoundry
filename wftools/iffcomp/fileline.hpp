@@ -14,17 +14,13 @@ public:
 	FileLineInfo(
 		int nLine,
 		const char* szLine,
-		const char* szFilename,
-		struct yy_buffer_state*
+		const char* szFilename
 		);
 	~FileLineInfo();
 
 	char szFilename[ PATH_MAX ];
-//	char szLine[ 512 ];
 	char* szLine;
 	int nLine;
-	struct yy_buffer_state* yy_current_buffer;
-//	char _szCurrentLine[ 512 ];
 	char* _szCurrentLine;
 
 private:
