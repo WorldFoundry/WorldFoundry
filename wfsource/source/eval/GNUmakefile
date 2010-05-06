@@ -43,3 +43,9 @@ lexyy.cc : expr.l
 	flex -B -8 -Caf -p -t expr.l >lexyy.cc
 	@perl -i~ -p -n fixlex.pl lexyy.cc
 	@-rm lexyy.c~ >/dev/null
+
+# SMELL: how do i call/augment the "standard" clean?
+#localclean : clean
+clean :
+	-rm expr.output expr_tab.cc expr_tab.h lexyy.cc
+	-rm *~
