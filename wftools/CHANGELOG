@@ -3,7 +3,10 @@ CHANGELOG
 06 May 10
 ================================================================================
 * remove disr3000, psxdisc, psxprof as they had already been moved to http://psxdevtools.cvs.sourceforge.net/viewvc/psxdevtools/psxdevtools/tools/
-* removed windows tools reg, wfbind, xcd
+* removed windows tools reg, wfbind, xcd (can be retrieved if windows development is needed again)
+   * reg - registery reader/writer - i assume there are now "standard" tools for doing this sort of thing
+   * wfbind - cool idea of appending the game cd.iff data to the end of the executable, but never worked in NT+ because of "security"
+   * xcd - shrug, still want something with the ability to assign a name for a location and to be able to give "shortest matching" name for location desired
 
 ================================================================================
 
