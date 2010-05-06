@@ -2,7 +2,8 @@ CHANGELOG
 
 06 May 10
 ================================================================================
-
+* remove disr3000, psxdisc, psxprof as they had already been moved to http://psxdevtools.cvs.sourceforge.net/viewvc/psxdevtools/psxdevtools/tools/
+* removed windows tools reg, wfbind, xcd
 
 ================================================================================
 
