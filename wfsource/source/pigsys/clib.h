@@ -1,6 +1,6 @@
 //===========================================================================*/
 // clib.h: included by pigsys.h. provide wrappers/declarations of standard c library
-// Copyright ( c ) 1998,99 World Foundry Group  
+// Copyright ( c ) 1998,99,2026 World Foundry Group
 // Part of the World Foundry 3D video game engine/production environment
 // for more information about World Foundry, see www.worldfoundry.org
 //==============================================================================

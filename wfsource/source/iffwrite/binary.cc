@@ -1,6 +1,6 @@
 //=============================================================================
 // binary.cc
-// Copyright 1997,99 World Foundry Group. 
+// Copyright 1997,99,2026 World Foundry Group.
 // Part of the World Foundry 3D video game engine/production environment
 // for more information about World Foundry, see www.worldfoundry.org
 //==============================================================================
