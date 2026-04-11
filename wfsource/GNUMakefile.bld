@@ -137,7 +137,7 @@ BUILD_DO_TEST_CODE = 1
 # allow direct access to the host file system ,  currently doesn't work on psx
 BUILD_DO_DEBUG_FILE_SYSTEM=1
 BUILD_DO_IOSTREAMS=1
-BUILD_DBSTREAM=3
+BUILD_DBSTREAM?=3
 
 CCCARGS += -DDESIGNER_CHEATS=1
 # these line add profiling

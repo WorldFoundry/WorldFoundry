@@ -27,6 +27,7 @@
 
 #include <pigsys/pigsys.hp>
 #include <streams/binstrm.hp>
+#include <math.h>   // 2026: scalar.hpi uses unqualified sqrt/fabs/floor/ceil/trunc/round/isnan
 
 #define MATH_DEBUG(d)
 //#define MATH_DEBUG(d) d 

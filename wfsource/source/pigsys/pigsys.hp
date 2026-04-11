@@ -440,7 +440,8 @@ extern size_t		sys_strlen(const char*);
 END_EXTERN_C
 
 
-
+// Disabled on __LINUX__ (2026): same std:: collision as clib.h.
+#if !defined(__LINUX__)
 #define	strcmp      sys_strcmp
 #undef	strncmp
 #define	strncmp     sys_strncmp
@@ -450,6 +451,7 @@ END_EXTERN_C
 #define	strrchr     sys_strrchr
 #undef	strlen
 #define	strlen      sys_strlen
+#endif	// !defined(__LINUX__)
 
 #else	// !DO_ASSERTIONS
 #endif	// !DO_ASSERTIONS

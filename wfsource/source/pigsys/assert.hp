@@ -108,11 +108,11 @@
 
 #	if NO_ASSERT_EXPR		// reduce size of app, but leave in assertions
 #		define assert(__expr__) \
-			( (__expr__) ? (void)0 : (_sys_assert((int)(__expr__), #__expr__, __FILE__, __LINE__ ) ) )
+			( (__expr__) ? (void)0 : (_sys_assert((int)(long)(__expr__), #__expr__, __FILE__, __LINE__ ) ) )
 #else	//!NO_ASSERT_EXPR	// full debug case
 
 #	define assert(__expr__) \
-		( (__expr__) ? (void)0 : (_sys_assert((int)(__expr__), #__expr__, __FILE__, __LINE__ ) ) )
+		( (__expr__) ? (void)0 : (_sys_assert((int)(long)(__expr__), #__expr__, __FILE__, __LINE__ ) ) )
 
 #	ifdef __cplusplus
 #	if defined(NO_CONSOLE)
