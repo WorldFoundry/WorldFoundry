@@ -3,6 +3,7 @@ CHANGELOG
 ================================================================================
 
 11 April 2026
+* dropped aicomp, disr3000, imagedir, link, perl.r, psxdisc, psxprof, reg, stripper, wfbind, xcd
 * iffcomp compiles again!
 * go version of iffcomp
 * rust version of iffcomp
