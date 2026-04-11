@@ -66,6 +66,16 @@ endif
 #include $(PIGS_DIR)/GNUMakefile.test
 
 # kts temporary rule for link, since I can't get the included makefiles to do it for me
+# 2026: WF_TOOL_NEEDS_X11 ?= yes, defaulted yes to preserve behavior for tools
+# that actually link against X. CLI-only tools can set it to `no` before the
+# include to drop the X11 / SM / ICE / Xt / Xi / Xmu / Xext libs from the link.
+WF_TOOL_NEEDS_X11 ?= yes
+ifeq ($(WF_TOOL_NEEDS_X11),yes)
+WF_TOOL_X_LIBS := -lX11 -lXext -lXmu -lXt -lXi -lSM -lICE
+else
+WF_TOOL_X_LIBS :=
+endif
+
 $(PROGRAM) : $(OBJS) $(PIGS_LIBS)
 #	echo ------------------------------------------------------------------------------
 #	echo OBJS is $(OBJS)
@@ -83,7 +93,7 @@ ifeq ($(WF_TARGET),linux)
 	$(PIGS_LIBS) \
 	-Xlinker --end-group \
 	$(LNARGS) \
-	-lm -lX11 -lXext -lXmu -lXt -lXi -lSM -lICE -lpthread -lc -lstdc++
+	-lm $(WF_TOOL_X_LIBS) -lpthread -lc -lstdc++
 #	$(SYS_LIBS)
 
 ifeq ($(PROGRAM),prep)

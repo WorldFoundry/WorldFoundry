@@ -1,5 +1,5 @@
 //==============================================================================
-// main.cc: Copyright (c) 1996-3003, World Foundry Group  
+// main.cc: Copyright (c) 1996-3003, 2026, World Foundry Group
 // Part of the World Foundry 3D video game engine/production environment
 // for more information about World Foundry, see www.worldfoundry.org
 //==============================================================================
@@ -32,7 +32,6 @@ int iffcomp( const char* _szInputFile, const char* _szOutputFile );
 bool bVerbose = false;
 bool bQuiet;
 bool bBinary = true;
-extern int yydebug;			/*  nonzero means print parse trace	*/
 
 char szSwitchOuputFile[] = "-o=";
 const char* _szInputFile = NULL;
@@ -63,8 +62,9 @@ ParseCommandLine(const CommandLine& cl)
 				break;
 #endif
 			case 'v':
-				bVerbose = true; 
-            	yydebug = 1;			/*  nonzero means print parse trace	*/
+				bVerbose = true;
+				// (bison 3.8 C++ parser tracks debug via a parser member; enable
+				// via Grammar::yyparse() if ever needed)
 				break;
 			case 'q' :
 				bQuiet = true;
@@ -87,7 +87,11 @@ ParseCommandLine(const CommandLine& cl)
 				break;
 			case 'o' :
 				if ( strncmp( command.c_str(), szSwitchOuputFile, strlen( szSwitchOuputFile ) ) == 0 )
-					_szOutputFile = strdup(command.c_str() + strlen( szSwitchOuputFile ));
+				{
+					static std::string s_outFile;
+					s_outFile = command.substr( strlen( szSwitchOuputFile ) );
+					_szOutputFile = s_outFile.c_str();
+				}
 				else
 					cerror << "iffcomp Error: Unrecognized command line switch \"" <<
 						command << "\"" << std::endl;

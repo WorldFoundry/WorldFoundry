@@ -1,5 +1,5 @@
 //==============================================================================
-// grammar.cc: Copyright (c) 1996-2002, World Foundry Group  
+// grammar.cc: Copyright (c) 1996-2002, 2026, World Foundry Group
 // Part of the World Foundry 3D video game engine/production environment
 // for more information about World Foundry, see www.worldfoundry.org
 //==============================================================================
@@ -20,241 +20,226 @@
 
 
 #include "grammar.hpp"
-#include <pigsys/assert.hp>
-#include <stdarg.h>
-#include <time.h>
-#include <string>
-#include <cstdio>
-#include <fstream>
-using namespace std;
 #include "langlex.hpp"
 #include "fileline.hpp"
+#include "lang.tab.hh"
 
-Grammar* theGrammar;
-strFlexLexer* theLexer;
+#include <pigsys/assert.hp>
 
-//extern bool bVerbose;
+#include <cstdarg>
+#include <cstdint>
+#include <cstdio>
+#include <cstring>
+#include <ctime>
+#include <fstream>
+#include <iostream>
+#include <string>
+
+
 extern bool bBinary;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 Backpatch::Backpatch( BackpatchType type, int offset )
+    : _type( type ), pos( 0 ), _offset( offset )
 {
-	_type = type;
-	_offset = offset;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static void
-grammarErrorCleanup()
-{
-	if ( theGrammar && theGrammar->_nErrors )
-	{
-		delete theGrammar->binout;
-		assert( *theGrammar->szOutputFile );
-		remove( theGrammar->szOutputFile );
-	}
-}
-
-
 void
 Grammar::construct( const char* _szInputFile, const char* _szOutputFile )
 {
-	theGrammar = this;
+    binout  = nullptr;
+    _lex    = nullptr;
+    _nErrors = 0;
 
-	binout = NULL;
-	strcpy( szOutputFile, _szOutputFile );
-	_nErrors = 0;
+    std::strncpy( szOutputFile, _szOutputFile, PATH_MAX - 1 );
+    szOutputFile[ PATH_MAX - 1 ] = '\0';
 
-	atexit( grammarErrorCleanup );
+    assert( _szInputFile );
+    std::strncpy( _filename, _szInputFile, PATH_MAX - 1 );
+    _filename[ PATH_MAX - 1 ] = '\0';
 
-	assert( _szInputFile );
-	strcpy( _filename, _szInputFile );
-	if ( FILE* fp = fopen( _filename, "rt" ) )
-		fclose( fp );
-	else
-	{
-		cerr << "Unable to open input file \"" << _filename << "\"" << endl;
-		_nErrors = 1;
-		exit( 10 );
-	}
-#if defined(__WIN__)
-	char szDrive[ _MAX_DRIVE ], szPath[ _MAX_PATH ], szFile[ _MAX_FNAME ];
-	_splitpath( _szInputFile, szDrive, szPath, szFile, NULL );
+    if ( std::FILE* fp = std::fopen( _filename, "r" ) )
+        std::fclose( fp );
+    else
+    {
+        std::cerr << "Unable to open input file \"" << _filename << "\"" << std::endl;
+        _nErrors = 1;
+        std::exit( 10 );
+    }
 
-	_makepath( szErrorFile, szDrive, szPath, szFile, ".err" );
-#else
-    strcpy(szErrorFile,_szInputFile);
-    strcat(szErrorFile,".err");
-#endif
-	error = new ofstream( szErrorFile );
-	assert( error );
+    std::strncpy( szErrorFile, _szInputFile, PATH_MAX - 1 );
+    szErrorFile[ PATH_MAX - 1 ] = '\0';
+    std::strncat( szErrorFile, ".err", PATH_MAX - std::strlen( szErrorFile ) - 1 );
 
-   if(bBinary)
-	   binout = new ofstream( _szOutputFile, std::ios::out | std::ios::binary );
-   else
-	   binout = new ofstream( _szOutputFile, std::ios::out );
-	assert( binout );
-	if ( !binout->good() )
-	{
-		cerr << "Unable to open output file \"" << _szOutputFile << "\" for writing" << endl;
-		_nErrors = 1;
-		exit( 10 );
-	}
+    error = new std::ofstream( szErrorFile );
+    assert( error );
 
-	if ( bBinary )
-		_iff = new IffWriterBinary( *binout );
-	else
-		_iff = new IffWriterText( *binout );
-	assert( _iff );
+    if ( bBinary )
+        binout = new std::ofstream( _szOutputFile, std::ios::out | std::ios::binary );
+    else
+        binout = new std::ofstream( _szOutputFile, std::ios::out );
+    assert( binout );
+    if ( !binout->good() )
+    {
+        std::cerr << "Unable to open output file \"" << _szOutputFile
+                  << "\" for writing" << std::endl;
+        _nErrors = 1;
+        std::exit( 10 );
+    }
 
-	_level = 0;
+    if ( bBinary )
+        _iff = new IffWriterBinary( *binout );
+    else
+        _iff = new IffWriterText( *binout );
+    assert( _iff );
 
-	//if ( bVerbose )
-	//	_iff->log( cout );
+    _level = 0;
 
-	State defaultState;
-	defaultState.sizeOverride( 1 );
-	size_specifier default_fp = { 1, 15, 16 };
-	defaultState.precision( default_fp );
-	vecState.push_back( defaultState );
+    State defaultState;
+    defaultState.sizeOverride( 1 );
+    size_specifier default_fp = { 1, 15, 16 };
+    defaultState.precision( default_fp );
+    vecState.push_back( defaultState );
 }
 
 
 Grammar::Grammar( const char* _szInputFile, const char* _szOutputFile )
 {
-	construct( _szInputFile, _szOutputFile );
-
-	_inp = new ifstream( _szInputFile );
-	assert( _inp );
-
-	theLexer = new strFlexLexer( _inp );
-	assert( theLexer );
+    construct( _szInputFile, _szOutputFile );
 }
 
 
 Grammar::~Grammar()
 {
-	vector< Backpatch* >::const_iterator iChunk;
-	for ( iChunk = _backpatchSizeOffset.begin(); iChunk != _backpatchSizeOffset.end(); ++iChunk )
-	{
-//         cout << "Grammar::~Grammar" << endl;
-//         cout << (*iChunk)->szChunkIdentifier << endl;
-//         cout << (*iChunk)->pos << endl;
-//         cout << (*iChunk)->_type << endl;
+    // Resolve any outstanding sizeof/offsetof backpatches.
+    for ( Backpatch* bp : _backpatchSizeOffset )
+    {
+        const ChunkSizeBackpatch* cs = _iff->findSymbol( bp->szChunkIdentifier.c_str() );
+        if ( cs )
+        {
+            binout->seekp( bp->pos );
+            int32_t val = static_cast< int32_t >(
+                ( bp->_type == Backpatch::TYPE_OFFSETOF )
+                    ? cs->GetPos() - 4
+                    : cs->GetSize() );
+            val += bp->_offset;
+            binout->write( reinterpret_cast< const char* >( &val ), 4 );
+        }
+        else
+        {
+            Error( "Unable to find chunk ID \"%s\"", bp->szChunkIdentifier.c_str() );
+        }
+        delete bp;
+    }
+    _backpatchSizeOffset.clear();
 
-        // print all available symbols
-//        cout << "iffwriter = " << *_iff << endl;
+    assert( _level == 0 );
 
-		const ChunkSizeBackpatch* cs = _iff->findSymbol( (*iChunk)->szChunkIdentifier );
-		if ( cs )
-		{
-			binout->seekp( (*iChunk)->pos );
-//          if ( (*iChunk)->_offset )
-//             cout << "_offset = " << (*iChunk)->_offset << endl;
-			long val = (*iChunk)->_type == Backpatch::TYPE_OFFSETOF ? cs->GetPos()-4 : cs->GetSize();
-//			cout << "val = " << val;
-			val += (*iChunk)->_offset;
+    assert( vecState.size() == 1 );
+    vecState.pop_back();
 
-         //assert(val >= 0);
+    delete _iff;
+    _iff = nullptr;
 
-//			cout << "\t_offset = " << (*iChunk)->_offset << "\tval + _offset = " << val << endl;
-			binout->write( (char*)&val, 4 );
-		}
-		else
-		{
-			Error( "Unable to find chunk ID \"%s\"", (*iChunk)->szChunkIdentifier );
-		}
-	}
+    int nBytesInErrorFile = error ? static_cast< int >( error->tellp() ) : 0;
+    delete error;
+    error = nullptr;
+    if ( nBytesInErrorFile == 0 )
+        std::remove( szErrorFile );
 
-	assert( _level == 0 );
-
-	assert( vecState.size() == 1 );
-	vecState.pop_back();
-
-	assert( _iff );
-	delete _iff;
-
-	assert( _inp );
-	delete _inp;
-
-	int nBytesInErrorFile = error->tellp();
-	delete error;
-	if ( nBytesInErrorFile == 0 )
-		remove( szErrorFile );
-
-	delete theLexer;
-
-	delete binout;
-	grammarErrorCleanup();		// includes delete binout;
+    // If parsing recorded errors, scrap the (now-garbage) output file.
+    const bool parseFailed = ( _nErrors != 0 );
+    delete binout;
+    binout = nullptr;
+    if ( parseFailed && *szOutputFile )
+        std::remove( szOutputFile );
 }
 
 
 void
 Grammar::printIncludeList() const
 {
-	//FileLineInfo* * ifli;
-	std::vector< FileLineInfo* >::const_iterator ifli;
+    if ( !_lex )
+        return;
 
-	for ( ifli=theLexer->_fileLineInfo.end()-2; ifli != theLexer->_fileLineInfo.begin()-1; --ifli )
-	{
-		FileLineInfo* fli = *ifli;
-		cerr << "\tIncluded from " << fli->szFilename << ":" << fli->nLine << ": " << fli->_szCurrentLine << endl;
-	}
+    const auto& info = _lex->_fileLineInfo;
+    if ( info.size() < 2 )
+        return;
+
+    for ( auto ifli = info.end() - 2; ifli != info.begin() - 1; --ifli )
+    {
+        FileLineInfo* fli = *ifli;
+        std::cerr << "\tIncluded from " << fli->szFilename
+                  << ":" << fli->nLine
+                  << ": " << fli->_szCurrentLine << std::endl;
+    }
 }
 
 
 void
 Grammar::Error( const char* fmt, ... )
 {
-	va_list pArg;
-	char buffer[ 256 ];
+    va_list pArg;
+    char buffer[ 256 ];
 
-	va_start( pArg, fmt );
-	vsprintf( buffer, fmt, pArg );
-	va_end( pArg );
+    va_start( pArg, fmt );
+    std::vsnprintf( buffer, sizeof buffer, fmt, pArg );
+    va_end( pArg );
 
-	++_nErrors;
+    ++_nErrors;
 
-	assert( theGrammar->error );
-	// the error message itself
-	cerr << "Error: " << buffer << endl;
-	*theGrammar->error << "Error: " << buffer << endl;
+    assert( error );
+    std::cerr << "Error: " << buffer << std::endl;
+    *error    << "Error: " << buffer << std::endl;
 
-	// the offending line from the input file
-	cerr << "[" << theLexer->filename() << ":" << theLexer->line() << "]: " << theLexer->currentLine() << endl;
-	*theGrammar->error << "[" << theLexer->filename() << ":" << theLexer->line() << "]: " << theLexer->currentLine() << endl;
-	printIncludeList();
+    if ( _lex )
+    {
+        std::cerr << "[" << _lex->filename() << ":" << _lex->line() << "]: "
+                  << ( _lex->currentLine() ? _lex->currentLine() : "" ) << std::endl;
+        *error << "[" << _lex->filename() << ":" << _lex->line() << "]: "
+               << ( _lex->currentLine() ? _lex->currentLine() : "" ) << std::endl;
+        printIncludeList();
+    }
 }
 
 
 void
 Grammar::Warning( const char* fmt, ... )
 {
-	va_list pArg;
-	char buffer[ 256 ];
+    va_list pArg;
+    char buffer[ 256 ];
 
-	va_start( pArg, fmt );
-	vsprintf( buffer, fmt, pArg );
-	va_end( pArg );
+    va_start( pArg, fmt );
+    std::vsnprintf( buffer, sizeof buffer, fmt, pArg );
+    va_end( pArg );
 
-	assert( theGrammar->error );
+    assert( error );
+    std::cerr << "Warning: " << buffer << std::endl;
+    *error    << "Warning: " << buffer << std::endl;
 
-	// the warning message itself
-	cerr << "Warning: " << buffer << endl;
-	*theGrammar->error << "Warning: " << buffer << endl;
-
-	// the offending line from the input file
-	cerr << "[" << theLexer->filename() << ":" << theLexer->line() << "]: " << theLexer->currentLine() << endl;
-	*theGrammar->error << "[" << theLexer->filename() << ":" << theLexer->line() << "]: " << theLexer->currentLine() << endl;
-	printIncludeList();
+    if ( _lex )
+    {
+        std::cerr << "[" << _lex->filename() << ":" << _lex->line() << "]: "
+                  << ( _lex->currentLine() ? _lex->currentLine() : "" ) << std::endl;
+        *error << "[" << _lex->filename() << ":" << _lex->line() << "]: "
+               << ( _lex->currentLine() ? _lex->currentLine() : "" ) << std::endl;
+        printIncludeList();
+    }
 }
 
 
 int
 Grammar::yyparse()
 {
-	::yyparse();
-	return _nErrors ? 10 : 0;
+    LangLexer lex( *this, _filename );
+    _lex = &lex;
+
+    yy::LangParser parser( *this, lex );
+    parser.parse();
+
+    _lex = nullptr;
+    return _nErrors ? 10 : 0;
 }

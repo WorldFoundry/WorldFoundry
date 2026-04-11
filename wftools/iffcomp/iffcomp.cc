@@ -1,5 +1,5 @@
 //==============================================================================
-// iffcomp.cc: Copyright (c) 1996-1999, World Foundry Group  
+// iffcomp.cc: Copyright (c) 1996-1999, 2026, World Foundry Group
 // Part of the World Foundry 3D video game engine/production environment
 // for more information about World Foundry, see www.worldfoundry.org
 //==============================================================================
@@ -20,23 +20,16 @@
 
 
 #include <pigsys/assert.hp>
+#include <cstring>
 #include "grammar.hpp"
-extern Grammar* theGrammar;
-#include "langlex.hpp"
-extern strFlexLexer* theLexer;
+
 
 int
 iffcomp( const char* _szInputFile, const char* _szOutputFile )
 {
-	assert( _szInputFile );
-	assert(strlen(_szInputFile));
+    assert( _szInputFile );
+    assert( std::strlen( _szInputFile ) );
 
-	theGrammar = new Grammar( _szInputFile, _szOutputFile );
-	assert( theGrammar );
-
-	int ret = theGrammar->yyparse();
-
-	delete theGrammar, theGrammar = NULL;
-
-	return ret;
+    Grammar g( _szInputFile, _szOutputFile );
+    return g.yyparse();
 }
