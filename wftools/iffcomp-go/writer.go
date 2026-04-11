@@ -207,7 +207,11 @@ func (w *writer) alignFunction(n int) {
 func (w *writer) setFillChar(b byte) { w.fillChar = b }
 
 // outID writes a FOURCC with 4-byte alignment in front. The value is packed
-// MSB-first in the uint32, so writing it big-endian matches source-order bytes.
+// MSB-first in the uint32, so writing it big-endian matches source-order
+// bytes. Mirrors IffWriterBinary::out_id including the interior align(4),
+// which is a footgun on the C++ side (its size counter doesn't track the
+// padding bytes and the exitChunk assertion fires) but not in Go — we
+// compute size from pos directly at exit time.
 func (w *writer) outID(id uint32) {
 	if w.text {
 		w.textEmit("'" + idName(id) + "' ")
@@ -319,8 +323,19 @@ func (w *writer) emitSizeof(path string) {
 	w.outInt32(0)
 }
 
-// emitOffsetof either resolves immediately or queues a backpatch. `addend` is
-// the constant second argument of `.offsetof(path, N)`.
+// emitOffsetof either resolves immediately or queues a backpatch. `addend`
+// is the constant second argument of `.offsetof(path, N)`.
+//
+// The C++ grammar uses DIFFERENT formulas for immediate vs deferred
+// resolution of .offsetof, differing by 4 bytes:
+//
+//   immediate: cs->GetPos()     = size_field_pos = ID_pos + 4
+//   deferred : cs->GetPos() - 4 = ID_pos
+//
+// Our `sym.pos` is payload_start = ID_pos + 8, so the immediate formula
+// is `sym.pos - 4` (below) and the deferred formula is `sym.pos - 8`
+// (in resolveBackpatches). Matching the C++ oracle requires reproducing
+// this asymmetry.
 func (w *writer) emitOffsetof(path string, addend int) {
 	if sym, ok := w.findSymbol(path); ok {
 		w.outInt32(uint32(sym.pos - 4 + addend))
@@ -359,7 +374,10 @@ func (w *writer) ResolveBackpatches() error {
 		case bpSizeof:
 			val = int32(sym.size)
 		case bpOffsetof:
-			val = int32(sym.pos - 4 + bp.addend)
+			// Deferred formula: sym.pos - 8 (= ID_pos). See the comment
+			// on emitOffsetof for why this differs from the immediate
+			// path's sym.pos - 4.
+			val = int32(sym.pos - 8 + bp.addend)
 		}
 		var b [4]byte
 		binary.LittleEndian.PutUint32(b[:], uint32(val))

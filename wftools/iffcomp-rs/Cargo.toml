@@ -1,0 +1,18 @@
+[package]
+name = "iffcomp"
+version = "0.1.0"
+edition = "2021"
+description = "World Foundry IFF text DSL compiler (Rust port)"
+
+[[bin]]
+name = "iffcomp"
+path = "src/main.rs"
+
+[lib]
+name = "iffcomp"
+path = "src/lib.rs"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+strip = true

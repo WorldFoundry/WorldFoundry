@@ -130,6 +130,93 @@ func TestTextOutputAgainstCpp(t *testing.T) {
 		diffAt, len(got), len(want), hexDiffContext(got, want, diffAt, 24))
 }
 
+// TestAllFeaturesAgainstCpp is the comprehensive torture test. It exercises
+// every production in lang.y: nested chunks, sizeof/offsetof forward and
+// backward references, hex literals, state-push blocks, string escapes,
+// padded strings, precision overrides, .align/.fillchar, file inclusion,
+// and .timestamp. The fixture is shared with the Rust port.
+//
+// .timestamp is time-varying, so the 4 payload bytes of the `TIME` chunk
+// are masked in both buffers before comparison. See maskTimestamp.
+func TestAllFeaturesAgainstCpp(t *testing.T) {
+	tmpDir := t.TempDir()
+	outFile := filepath.Join(tmpDir, "all_features.iff")
+
+	origWd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("getwd: %v", err)
+	}
+	if err := os.Chdir("testdata"); err != nil {
+		t.Fatalf("chdir testdata: %v", err)
+	}
+	t.Cleanup(func() { _ = os.Chdir(origWd) })
+
+	if _, err := Compile("all_features.iff.txt", outFile, Options{Mode: ModeBinary}); err != nil {
+		t.Fatalf("Compile (all_features): %v", err)
+	}
+
+	got, err := os.ReadFile(outFile)
+	if err != nil {
+		t.Fatalf("read Go output: %v", err)
+	}
+	want, err := os.ReadFile("all_features.iff")
+	if err != nil {
+		t.Fatalf("read reference: %v", err)
+	}
+
+	maskTimestamp(got)
+	maskTimestamp(want)
+
+	diffAt := -1
+	n := len(got)
+	if len(want) < n {
+		n = len(want)
+	}
+	for i := 0; i < n; i++ {
+		if got[i] != want[i] {
+			diffAt = i
+			break
+		}
+	}
+	if diffAt == -1 && len(got) != len(want) {
+		diffAt = n
+	}
+	if diffAt == -1 {
+		t.Logf("all_features byte-exact match: %d bytes", len(got))
+		return
+	}
+	t.Fatalf("all_features mismatch at offset 0x%x (%d): got.len=%d want.len=%d\n%s",
+		diffAt, diffAt, len(got), len(want), hexDiffContext(got, want, diffAt, 16))
+}
+
+// maskTimestamp finds the `TIME\x04\x00\x00\x00` chunk header at a 4-byte
+// boundary and zeros the next 4 bytes (the time_t payload). Only the first
+// occurrence is masked; the scan is aligned to 4-byte boundaries to reduce
+// the chance of coincidental matches elsewhere in the output.
+func maskTimestamp(data []byte) {
+	pattern := []byte{'T', 'I', 'M', 'E', 0x04, 0x00, 0x00, 0x00}
+	for i := 0; i+len(pattern) <= len(data); i += 4 {
+		match := true
+		for j := 0; j < len(pattern); j++ {
+			if data[i+j] != pattern[j] {
+				match = false
+				break
+			}
+		}
+		if match {
+			tsStart := i + len(pattern)
+			tsEnd := tsStart + 4
+			if tsEnd > len(data) {
+				tsEnd = len(data)
+			}
+			for j := tsStart; j < tsEnd; j++ {
+				data[j] = 0
+			}
+			return
+		}
+	}
+}
+
 // hexDiffContext formats a side-by-side hex snippet of both buffers around
 // the first mismatching offset, for readable test failures.
 func hexDiffContext(got, want []byte, center, radius int) string {

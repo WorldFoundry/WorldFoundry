@@ -1,0 +1,138 @@
+// all_features.iff.txt — comprehensive iffcomp torture test.
+//
+// Exercises every production in lang.y that doesn't require environment
+// setup. Specifically excluded:
+//   - include <...>      — requires $WF_DIR to be set
+//   - include "..."      — tested separately by include_basic.iff.txt
+//   - negative literals  — the grammar accepts `-42` but the writer's
+//                          range check rejects them on 64-bit (%ld → u64
+//                          produces huge values that exceed every width
+//                          bound). Use hex literals for "negative-looking"
+//                          bytes. Same limitation in C++, Go, and Rust.
+//
+// Alignment invariant: **nested chunks must start at 4-aligned positions**.
+// The C++ library computes `cs.pos = tellp() + 4` at enterChunk time (before
+// out_id's align(4) runs), so if the parent's current position isn't
+// already 4-aligned, the child's cs.pos is stale and the exit_chunk
+// assertion `pos == cs.pos + cs.size + 4` fires. The fix is authorial:
+// put all nested chunks at the top of their parent's payload, before any
+// variable-length items (strings, file-includes) that could leave a
+// non-aligned position. Variable-length items come after nested chunks.
+//
+// The .timestamp section inside 'TIME' is masked by the test harness
+// because the value is time-varying.
+
+{ 'ROOT'
+
+  // ==================================================================
+  // Part 1: Everything that must be written at 4-aligned positions.
+  //         All nested chunks go here, before any variable-length data.
+  // ==================================================================
+
+  // ------------------------------------------------------------------
+  // 1. Nested chunks at depth > 1, with FOURCC-as-item at aligned
+  //    positions (right after int32 writes).
+  // ------------------------------------------------------------------
+  { 'NEST'
+    { 'DEEP'
+      42l
+      'INNR'                                // aligned: follows 4-byte int32
+    }
+    66l
+  }
+
+  // ------------------------------------------------------------------
+  // 2. Backward references: NEST is closed, so the writer resolves
+  //    these immediately. Each emits 4 bytes, position stays aligned.
+  // ------------------------------------------------------------------
+  .sizeof(::'ROOT'::'NEST')                  // 4 bytes
+  .offsetof(::'ROOT'::'NEST')                // 4 bytes
+  .offsetof(::'ROOT'::'NEST', 8)             // 4 bytes, with integer addend
+
+  // ------------------------------------------------------------------
+  // 3. Forward references: LATE isn't closed yet, so the writer queues
+  //    back-patches and fills them in at end-of-parse.
+  // ------------------------------------------------------------------
+  .sizeof(::'ROOT'::'LATE')                  // 4 bytes
+  .offsetof(::'ROOT'::'LATE')                // 4 bytes
+
+  // ------------------------------------------------------------------
+  // 4. LATE — target of the forward references above. Contents: a
+  //    FOURCC-as-item at chunk start (aligned) plus a hex int32.
+  // ------------------------------------------------------------------
+  { 'LATE'
+    'ENDD'                                   // aligned: start of payload
+    $12345678l
+  }
+
+  // ------------------------------------------------------------------
+  // 5. .timestamp — non-deterministic, masked by the test harness.
+  //    Isolated in its own chunk so the masker can find it by FOURCC.
+  // ------------------------------------------------------------------
+  { 'TIME' .timestamp }
+
+  // ==================================================================
+  // Part 2: Everything that leaves the position non-aligned. No nested
+  //         chunks allowed below this line.
+  // ==================================================================
+
+  // ------------------------------------------------------------------
+  // 6. Integer widths: default (1 byte), explicit [ywl] suffix, and
+  //    { Y | W | L } state-push blocks (which change the default only;
+  //    they do not emit chunk headers, so alignment is irrelevant).
+  // ------------------------------------------------------------------
+  0 1 2 255                                  // default 1-byte width
+  0y 1w 2l                                   // explicit suffix
+  { Y 10 20 30 }                             // push default = 1
+  { W 1000 2000 3000 }                       // push default = 2
+  { L 100000 200000 }                        // push default = 4
+
+  // ------------------------------------------------------------------
+  // 7. Hex integer literals with width suffix
+  // ------------------------------------------------------------------
+  $DEy $BEEFw $7ACEBABEl
+
+  // ------------------------------------------------------------------
+  // 8. Numeric expressions. `+` and `-` evaluate their operands and
+  //    discard the result (the grammar's chunk_statement → expr action
+  //    is empty). The items on each side still emit their bytes in
+  //    order: `5l + 3l - 2l` writes 5, 3, 2 as LE int32.
+  // ------------------------------------------------------------------
+  5l + 3l - 2l
+
+  // ------------------------------------------------------------------
+  // 9. Reals: default precision, explicit override, integer-as-real
+  // ------------------------------------------------------------------
+  3.14(1.15.16)                              // explicit (S.W.F) override
+  .5(1.15.16)                                // leading-dot form
+  42(1.15.16)                                // integer mantissa → real
+
+  // ------------------------------------------------------------------
+  // 10. Precision state push
+  // ------------------------------------------------------------------
+  { .precision(1.7.8)
+    1.5 0.25
+  }
+
+  // ------------------------------------------------------------------
+  // 11. Strings: plain, padded, concatenated, escaped
+  // ------------------------------------------------------------------
+  "plain string"
+  "padded"(16)                               // NUL-term + zero-pad to 16
+  "con" "cat" "enation"                      // string_list concatenation
+  "esc\n\t\\\"\065\066"                      // \n \t \\ \" \DDD escapes
+
+  // ------------------------------------------------------------------
+  // 12. Alignment with custom fill character. The 5y above leaves us
+  //     non-aligned on purpose so the align has something to pad.
+  // ------------------------------------------------------------------
+  5y
+  .fillchar(170)                             // 0xAA
+  .align(16)
+
+  // ------------------------------------------------------------------
+  // 13. File inclusion: full file and sliced range
+  // ------------------------------------------------------------------
+  [ "TODO" ]
+  [ "TODO" .start(10) .length(20) ]
+}
