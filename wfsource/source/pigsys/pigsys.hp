@@ -1,6 +1,6 @@
 //===========================================================================*/
 // pigsys.hp:
-// Copyright ( c ) 1994,1995,1996,1997,1998,1999,2000,2001,2002,2003 World Foundry Group  
+// Copyright ( c ) 1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2026 World Foundry Group
 // Part of the World Foundry 3D video game engine/production environment
 // for more information about World Foundry, see www.worldfoundry.org
 //==============================================================================
@@ -440,7 +440,8 @@ extern size_t		sys_strlen(const char*);
 END_EXTERN_C
 
 
-
+// Disabled on __LINUX__ (2026): same std:: collision as clib.h.
+#if !defined(__LINUX__)
 #define	strcmp      sys_strcmp
 #undef	strncmp
 #define	strncmp     sys_strncmp
@@ -450,6 +451,7 @@ END_EXTERN_C
 #define	strrchr     sys_strrchr
 #undef	strlen
 #define	strlen      sys_strlen
+#endif	// !defined(__LINUX__)
 
 #else	// !DO_ASSERTIONS
 #endif	// !DO_ASSERTIONS

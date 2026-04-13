@@ -26,11 +26,20 @@
 #endif	//!defined(SYS_UINT16)
 
 #ifndef	SYS_INT32
+#if defined(__LINUX__)
+// LP64: `long` is 8 bytes on x86-64 Linux, so use `int` to keep int32 at 32 bits.
+#define	SYS_INT32		signed int
+#else
 #define	SYS_INT32		signed long
+#endif
 #endif	//!defined(SYS_INT32)
 
 #ifndef	SYS_UINT32
+#if defined(__LINUX__)
+#define	SYS_UINT32		unsigned int
+#else
 #define	SYS_UINT32		unsigned long
+#endif
 #endif	//!defined(SYS_UINT32)
 
 #ifndef	SYS_UCHAR

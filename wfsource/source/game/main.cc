@@ -288,7 +288,7 @@ ParseCommandLine(int argc, char** argv)
 			RedirectLibraryStream(argv[index]+2);
 #endif
 
-#pragma message ("kts: printframerate should be removed from release")
+// kts: printframerate should be removed from release
 #if defined(DESIGNER_CHEATS)
 		else if ( tolower( *( argv[index]+1 ) ) == 'f' )
 		{

@@ -1,6 +1,6 @@
 //=============================================================================
 // _iffwr.cc
-// Copyright 1997,1999,2000,2001,2003 World Foundry Group. 
+// Copyright 1997,1999,2000,2001,2003,2026 World Foundry Group. 
 // Part of the World Foundry 3D video game engine/production environment
 // for more information about World Foundry, see www.worldfoundry.org
 //==============================================================================
@@ -210,9 +210,9 @@ IffWriterText::out_file( const File& file )
 
 	int32 startPos = max( int32(0), int32(file.startPos()) );
 	startPos = min( startPos, cbFile );
-	unsigned long len = min( cbFile - startPos, file.length() );
+	unsigned long len = min( (unsigned long)(cbFile - startPos), (unsigned long)file.length() );
 
-    AssertMsg(len > 0,"length of file [" << file.filename() << "] is 0"); 
+    AssertMsg(len > 0,"length of file [" << file.filename() << "] is 0");
 
 	out_mem( (char*)ptr + startPos, len );
 	free( ptr );
@@ -243,7 +243,7 @@ IffWriterBinary::out_file( const File& file )
 	startPos = min( startPos, cbFile );
 	int32 len =   cbFile - startPos;
 	if(file.length() >= 0)
-		len = min(len, file.length() );
+		len = min(len, (int32)file.length() );
 
     AssertMsg(len > 0,"length of file [" << file.filename() << "] is 0"); 
 	out_mem( (char*)ptr + startPos, len );

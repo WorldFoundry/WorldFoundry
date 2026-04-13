@@ -1,6 +1,6 @@
 //===========================================================================*/
 // clib.h: included by pigsys.h. provide wrappers/declarations of standard c library
-// Copyright ( c ) 1998,99 World Foundry Group  
+// Copyright ( c ) 1998,99,2026 World Foundry Group
 // Part of the World Foundry 3D video game engine/production environment
 // for more information about World Foundry, see www.worldfoundry.org
 //==============================================================================
@@ -23,7 +23,11 @@
 // This section comments out direct use of std functions (running asserts).
 // Unfortunately only the wrapped functions can be so detected, but that
 // includes most of them.
-#if		DO_ASSERTIONS && !defined(_SYS_NOCHECK_DIRECT_STD)
+//
+// Disabled on __LINUX__ (2026): modern libc++ qualifies std::atoi / std::exit
+// etc., so textual #define atoi sys_atoi turns `std::atoi` into `std::sys_atoi`
+// which doesn't exist in the std namespace.
+#if		DO_ASSERTIONS && !defined(_SYS_NOCHECK_DIRECT_STD) && !defined(__LINUX__)
 
 // stdlib.h
 #undef  atoi
@@ -38,15 +42,15 @@
 //#undef	atexit
 //#define	atexit		sys_atexit
 
-#endif	// DO_ASSERTIONS && !defined(_SYS_NOCHECK_DIRECT_STD)
+#endif	// DO_ASSERTIONS && !defined(_SYS_NOCHECK_DIRECT_STD) && !defined(__LINUX__)
 
 // This section is for functions which are always implemented as our own
 // function, thus we can always check them
-#ifndef	_PIGSYS_C
+#if !defined(_PIGSYS_C) && !defined(__LINUX__)
 
 // stdlib.h
 #undef	exit
 #define exit            sys_exit
 
-#endif	// !defined(_PIGSYS_C)
+#endif	// !defined(_PIGSYS_C) && !defined(__LINUX__)
 

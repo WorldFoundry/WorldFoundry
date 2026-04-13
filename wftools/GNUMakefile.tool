@@ -1,6 +1,6 @@
 # wftools/GNUMakefile.tool
 
-#ALL : $(WF_DIR)\bin\$(PROGRAM)
+#ALL : $(WF_BIN_DIR)/$(PROGRAM)
 #
 #$(WF_DIR)\bin\$(PROGRAM) : $(PROGRAM)
 #        copy $(.SOURCE) $(.TARGET)
@@ -20,6 +20,8 @@ ifndef PIGS_DIR
 	PIGS_DIR=$(WF_DIR)/source
 	export PIGS_DIR
 endif
+
+WF_BIN_DIR = $(WF_DIR)/bin
 
 BUILDMODE=tool
 LIB_NAME = $(PROGRAM)
@@ -50,20 +52,21 @@ PIGS_LIBS += $(PIGS_LIB_DIR)libini.a
 
 
 tool-clean :
-	rm -f $(OBJ_DIR)*$(OBJ) $(PROGRAM)
+	-rm -f $(OBJ_DIR)*$(OBJ) $(PROGRAM)
 ifneq ($(OBJ_DIR),)
-	rm -r -f $(OBJ_DIR)
+	-rm -r -f $(OBJ_DIR)
 endif
-	rm -f *.err err
-	rm -f vc50.* *.pdb *.ilk *.pch
-	rm -f *.res resource.h
+	-rm -f *.err err
+	-rm -f vc50.* *.pdb *.ilk *.pch
+	-rm -f *.res resource.h
+	-rmdir $(WF_BIN_DIR)
 
 # These are included in GNUMakefile.rul included above.
 #include $(PIGS_DIR)/GNUMakefile.print
 #include $(PIGS_DIR)/GNUMakefile.test
 
 # kts temporary rule for link, since I can't get the included makefiles to do it for me
-$(PROGRAM): $(OBJS) $(PIGS_LIBS)
+$(PROGRAM) : $(OBJS) $(PIGS_LIBS)
 #	echo ------------------------------------------------------------------------------
 #	echo OBJS is $(OBJS)
 #	echo ------------------------------------------------------------------------------
@@ -84,6 +87,6 @@ ifeq ($(WF_TARGET),linux)
 #	$(SYS_LIBS)
 
 ifeq ($(PROGRAM),prep)
-	cp -f prep $(WF_DIR)/bin
+	cp -f prep $(WF_BIN_DIR)/
 endif
 endif

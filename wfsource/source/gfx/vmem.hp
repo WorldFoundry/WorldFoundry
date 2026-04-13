@@ -85,7 +85,7 @@ private:
 		VRAMTransientWidth			= 256,
 		VRAMTransientHeight			= 256	
 #endif
-#pragma message ("KTS: write our own font system to get around this")
+// KTS: write our own font system to get around this
 //		VRAMTransientHeight			= Display::VRAMHeight
 	};
 

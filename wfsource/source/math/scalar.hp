@@ -1,6 +1,6 @@
 // ------------------------------------------------------------------------
 // scalar.hp
-// Copyright (c) 1996,1997,1998,1999,2000,2001,2002 World Foundry Group  
+// Copyright (c) 1996,1997,1998,1999,2000,2001,2002,2026 World Foundry Group
 // Part of the World Foundry 3D video game engine/production environment
 // for more information about World Foundry, see www.worldfoundry.org
 //==============================================================================
@@ -27,6 +27,7 @@
 
 #include <pigsys/pigsys.hp>
 #include <streams/binstrm.hp>
+#include <math.h>   // 2026: scalar.hpi uses unqualified sqrt/fabs/floor/ceil/trunc/round/isnan
 
 #define MATH_DEBUG(d)
 //#define MATH_DEBUG(d) d 

@@ -92,9 +92,9 @@ strFlexLexer::push_system_include( const char* szIncludeFile )
 {
 	char szSystemIncludeFile[ PATH_MAX ];
 
-	char* szVelocityDir = getenv( "WF_DIR" );
-	assert( szVelocityDir );
-	sprintf( szSystemIncludeFile, "%s\\%s", szVelocityDir, szIncludeFile );
+	char* szWorldFoundryDir = getenv( "WF_DIR" );
+	assert( szWorldFoundryDir );
+	sprintf( szSystemIncludeFile, "%s/%s", szWorldFoundryDir, szIncludeFile );
 
 	push_include( szSystemIncludeFile );
 }

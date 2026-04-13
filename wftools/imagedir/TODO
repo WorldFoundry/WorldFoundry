@@ -1,3 +1,0 @@
-15 Mar 99
-* Need to fix problem of assigning BUILDMODE=tool in Makefile doesn't affect anything
-

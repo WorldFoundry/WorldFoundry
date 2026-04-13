@@ -124,8 +124,7 @@ template <class T> void destroy(Memory& memory, T* item)
 //==============================================================================
 
 #if DO_ASSERTIONS
-#pragma message ("KTS " __FILE__ ": this causes problems under vc98, fix it")
-#define MEMORY_TRACK_FILE_LINE 0
+#define MEMORY_TRACK_FILE_LINE 1
 #else
 #define MEMORY_TRACK_FILE_LINE 0
 #endif

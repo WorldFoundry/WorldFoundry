@@ -46,8 +46,8 @@ OBJS = \
 #GTKMM_DIR = /usr/lib/gtkmm/include
 
 #this set is for Red Hat and others
-SIGCPP_BASE = /usr/local/
-GTKMM_DIR = /usr/local/lib/gtkmm/include
+SIGCPP_BASE = /usr/
+GTKMM_DIR = /usr/lib/gtkmm/include/
 
 # don't remember which OS this is for
 #GTKMM_DIR = /usr/include/gtk

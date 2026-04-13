@@ -20,9 +20,8 @@
 
 PROGRAM = iffcomp
 
-
 .PHONY : ALL
-ALL: REALALL
+ALL : REALALL
 
 OBJS = \
         $(OBJ_DIR)$(PROGRAM)$(OBJ) \
@@ -55,32 +54,32 @@ lang_tab.cc lang_tab.h : lang.y
 	mv lang_tab.c lang_tab.cc
 
 lexyy.cc : lang.l
-	flex -B -8 -Caf -p -t -+ lang.l >lexyy.cc
+	flex -B -8 -Caf -p -t --c++ lang.l >lexyy.cc
 	perl -i~ -p -n ../GNUfixlex.pl lexyy.cc
 
 ################################################################################
 
-.PHONY: test-txt
+.PHONY : test-txt
 test-txt : iffcomp$(EXE)
 	./$(PROGRAM)$(EXE) -ascii -o=testout.iff.txt test.iff.txt
 	cat testout.iff.txt
 
 .PHONY : test-bin
-test-bin  : iffcomp$(EXE)
+test-bin : iffcomp$(EXE)
 	./$(PROGRAM)$(EXE) -binary -o=testout.iff test.iff.txt
-#	less --force testout.iff
+	hexdump -C testout.iff
 
 #test .PHONY : test-txt test-bin
 
 ##############################################################################
 
-.PHONY: clean
+.PHONY : clean
 clean : tool-clean
 	rm -f lang_tab.cc lang_tab.cc.h lang_tab.cc.output lexyy.cc* lang.output
 	rm -f testtxt.iff testbin.iff test.wf
 	rm -f $(PROGRAM)$(EXE)
 
-.PHONY: realclean
+.PHONY : realclean
 realclean : clean
 	rm -f *~
 
