@@ -173,8 +173,42 @@ Automated: `cargo test` runs the round-trip in `tests/round_trip.rs`.
 
 ---
 
-## Port 2: `oaddump-rs` (after iffdump-rs is done)
+## Port 2: `oaddump-rs` ✓ shipped
 
-OAD (Object Attribute Data) files describe game object properties. ~546 LOC in C++.
-Depends on understanding the OAD binary format, which is independent of IFF.
-Plan to be written after iffdump-rs ships and the OAD format is fully documented.
+OAD (Object Attribute Data) files describe game object properties.
+Ported as two crates: `wf_oad` (library) + `oaddump-rs` (CLI).
+
+### `.oad` file generation pathway
+
+`.oad` files are **not** stored in the repo — they are build artifacts.
+The original Windows pipeline (`wfsource/source/oas/objects.mak`):
+
+```
+prep -DTYPEFILE_OAS=<name> types3ds.s <name>.pp   # generates C source
+wpp  <name>.pp                                      # Watcom C++ → <name>.obj
+wlink system dos file <name>.obj                    # Watcom linker → DOS .exe
+exe2bin <name>.exe <name>.tmp                       # strip MZ header → raw binary
+copy <name>.tmp $(OAD_DIR)/<name>.oad
+```
+
+The `.oad` binary is literally the initialized-data section of a tiny Watcom
+DOS program, stripped of its MZ executable header. The layout is exactly the
+packed C structs from `wfsource/source/oas/oad.h` with `#pragma pack(1)`:
+
+| Section | Size | Description |
+|---------|------|-------------|
+| `_oadHeader` | 80 bytes | magic `OAD ` (LE u32), chunkSize, name[68], version |
+| `_typeDescriptor` × N | 1491 bytes each | one entry per OAD field |
+
+**No Linux pathway exists** to produce `.oad` files today — the Watcom
+toolchain (`wpp`, `wlink`, `exe2bin`) is Windows-only. Test fixtures in
+`wf_oad` are synthesized directly from the known binary layout.
+
+### Reference files
+
+| File | Purpose |
+|------|---------|
+| `wfsource/source/oas/oad.h` | Binary format: `_oadHeader`, `_typeDescriptor`, button type constants |
+| `wfsource/source/oas/types3ds.s` | `prep` template that generates the C source compiled into `.oad` |
+| `wfsource/source/oas/objects.mas` | Master Makefile template showing the full `prep`→`wpp`→`exe2bin` pipeline |
+| `wftools/oaddump/oad.{cc,hp}` | Original C++ parser and display logic |
