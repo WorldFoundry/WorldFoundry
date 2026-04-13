@@ -31,8 +31,13 @@ pub enum FieldKind {
     /// Integer field with a discrete set of named choices.
     /// Items are pipe-separated from the OAD `string` field.
     Enum { items: Vec<String> },
-    /// Section/group header — no stored value, used for UI grouping.
+    /// Collapsible section header (`PropertySheet`).
+    /// `default_raw` is 1 if the section starts open, 0 if closed.
+    Section,
+    /// Non-collapsible sub-group header (`GroupStart`).
     Group,
+    /// Marks the end of the nearest enclosing `Group` box (`GroupStop`).
+    GroupEnd,
     /// Free-text string field (String / Filename).
     Str,
     /// Not shown in the editor UI for milestone 1.
@@ -43,12 +48,14 @@ impl FieldKind {
     /// Short tag string used in the Python API.
     pub fn tag(&self) -> &'static str {
         match self {
-            FieldKind::Int    => "Int",
-            FieldKind::Float  => "Float",
+            FieldKind::Int      => "Int",
+            FieldKind::Float    => "Float",
             FieldKind::Enum { .. } => "Enum",
-            FieldKind::Group  => "Group",
-            FieldKind::Str    => "Str",
-            FieldKind::Skip   => "Skip",
+            FieldKind::Section  => "Section",
+            FieldKind::Group    => "Group",
+            FieldKind::GroupEnd => "GroupEnd",
+            FieldKind::Str      => "Str",
+            FieldKind::Skip     => "Skip",
         }
     }
 }
@@ -102,10 +109,12 @@ pub struct FieldDescriptor {
 impl FieldDescriptor {
     /// Returns `true` if this field should be shown in the editor UI.
     ///
-    /// Excludes [`FieldKind::Skip`], [`FieldKind::Group`], and fields with
-    /// `show_as == 6` (hidden/internal in the original `attribedit`).
+    /// Excludes [`FieldKind::Skip`] and fields with `show_as == 6`
+    /// (hidden/internal in the original `attribedit`).
+    /// [`FieldKind::Section`], [`FieldKind::Group`], and [`FieldKind::GroupEnd`]
+    /// are structural and are included so the panel can render them.
     pub fn is_visible(&self) -> bool {
-        if matches!(self.kind, FieldKind::Skip | FieldKind::Group) {
+        if matches!(self.kind, FieldKind::Skip) {
             return false;
         }
         if self.show_as == 6 {
@@ -158,11 +167,15 @@ pub fn from_oad(oad: &OadFile) -> Schema {
 
         // Track the current group from PropertySheet / GroupStart names.
         match entry.button_type {
-            ButtonType::PropertySheet | ButtonType::GroupStart => {
+            ButtonType::PropertySheet => {
                 current_group = label.clone();
             }
+            ButtonType::GroupStart => {
+                // sub-group: keep the parent section name as group
+            }
             ButtonType::GroupStop | ButtonType::EndCommon => {
-                current_group.clear();
+                // GroupStop closes a GroupStart; EndCommon closes a CommonBlock.
+                // We don't clear current_group here — the parent section is still active.
             }
             _ => {}
         }
@@ -222,8 +235,14 @@ fn classify(bt: ButtonType, string_field: &str) -> FieldKind {
         // Free-text string fields.
         ButtonType::String | ButtonType::Filename => FieldKind::Str,
 
-        // Section / group headers.
-        ButtonType::PropertySheet | ButtonType::GroupStart => FieldKind::Group,
+        // Collapsible section header (rollup in attribedit).
+        ButtonType::PropertySheet => FieldKind::Section,
+
+        // Non-collapsible sub-group header.
+        ButtonType::GroupStart => FieldKind::Group,
+
+        // End of a GroupStart box.
+        ButtonType::GroupStop => FieldKind::GroupEnd,
 
         // Everything else is skipped in milestone 1.
         _ => FieldKind::Skip,
@@ -310,13 +329,14 @@ mod tests {
     }
 
     #[test]
-    fn player_schema_has_group_field() {
+    fn player_schema_has_section_field() {
         let oad = load_fixture("player.oad");
         let schema = from_oad(&oad);
-        let group = schema.fields.iter()
-            .find(|f| matches!(f.kind, FieldKind::Group) && f.label == "Movement")
-            .expect("Movement group");
-        assert!(matches!(group.kind, FieldKind::Group));
+        // PropertySheet → Section
+        let section = schema.fields.iter()
+            .find(|f| matches!(f.kind, FieldKind::Section) && f.label == "Movement")
+            .expect("Movement section");
+        assert!(matches!(section.kind, FieldKind::Section));
     }
 
     #[test]
@@ -331,12 +351,12 @@ mod tests {
     }
 
     #[test]
-    fn visible_fields_excludes_skip_group_and_hidden() {
+    fn visible_fields_excludes_skip_and_hidden() {
         let oad = load_fixture("player.oad");
         let schema = from_oad(&oad);
         for f in schema.visible_fields() {
-            assert!(!matches!(f.kind, FieldKind::Skip | FieldKind::Group),
-                "visible_fields should not include {}: {:?}", f.key, f.kind);
+            assert!(!matches!(f.kind, FieldKind::Skip),
+                "visible_fields should not include Skip field: {}", f.key);
             assert_ne!(f.show_as, 6,
                 "visible_fields should not include show_as=6 field: {}", f.key);
         }

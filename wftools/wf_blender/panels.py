@@ -1,10 +1,22 @@
 """
 World Foundry property panel — dynamic, driven by Rust schema descriptors.
+
+Section rendering
+-----------------
+PropertySheet → collapsible section (TRIA_DOWN / TRIA_RIGHT toggle).
+               Fields up to the next PropertySheet are shown/hidden together.
+GroupStart    → non-collapsible box within the current section.
+GroupStop     → closes the GroupStart box.
 """
 
+import os
 import bpy
 import wf_core
-from .operators import SCHEMA_PATH_KEY, _prop_key, _get_schema, _seed_defaults
+from .operators import (
+    SCHEMA_PATH_KEY, SECTION_OPEN_PREFIX,
+    _prop_key, _section_key, _get_schema, _seed_defaults,
+    _resolve_schema_path,
+)
 
 
 class WF_PT_attributes(bpy.types.Panel):
@@ -16,17 +28,18 @@ class WF_PT_attributes(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        obj = context.active_object
+        obj    = context.active_object
         if obj is None:
             return
 
         schema_path = obj.get(SCHEMA_PATH_KEY)
 
-        # ── header ────────────────────────────────────────────
+        # ── header row ────────────────────────────────────────
         row = layout.row(align=True)
         if schema_path:
+            resolved = _resolve_schema_path(schema_path)
             try:
-                schema = wf_core.load_schema(schema_path)
+                schema = wf_core.load_schema(resolved)
             except Exception as e:
                 row.label(text=f"Schema error: {e}", icon='ERROR')
                 row.operator("wf.attach_schema", text="", icon='FILE_FOLDER')
@@ -41,31 +54,78 @@ class WF_PT_attributes(bpy.types.Panel):
         if not schema_path:
             return
 
-        # Ensure any fields added since last attach have defaults
+        # Show the stored path so the user can verify it persisted correctly.
+        path_row = layout.row()
+        path_row.label(text=resolved, icon='FILE')
+
+        # Seed any fields added since last attach (e.g. schema reloaded)
         _seed_defaults(obj, schema)
 
-        # ── field rows ────────────────────────────────────────
-        current_box = None
-        current_group_name = None
+        # ── field loop ────────────────────────────────────────
+        # State:
+        #   section_open  — whether the current PropertySheet is expanded
+        #   section_layout — the column inside the section box (or None = top-level)
+        #   group_box      — inner box for a GroupStart (None when not inside one)
+
+        section_open   = True   # fields before any PropertySheet are always shown
+        section_layout = layout
+        group_box      = None
 
         for field in schema.fields():
-            if field.kind == "Skip":
+            kind = field.kind
+
+            # ── Section (PropertySheet) — collapsible rollup ──
+            if kind == "Section":
+                sk      = _section_key(field.key)
+                is_open = bool(obj.get(sk, True))
+
+                # Always draw at the root layout, not inside any group box
+                group_box = None
+
+                box = layout.box()
+                row = box.row(align=True)
+                icon = 'TRIA_DOWN' if is_open else 'TRIA_RIGHT'
+                op = row.operator(
+                    "wf.toggle_section",
+                    text=field.label,
+                    icon=icon,
+                    emboss=False,
+                )
+                op.section_key = sk
+
+                section_open   = is_open
+                section_layout = box.column() if is_open else None
                 continue
 
-            if field.kind == "Group":
-                current_box = layout.box()
-                current_box.label(text=field.label, icon='DOWNARROW_HLT')
-                current_group_name = field.label
+            # ── GroupStart — non-collapsible sub-box ──────────
+            if kind == "Group":
+                if section_open and section_layout is not None:
+                    group_box = section_layout.box()
+                    group_box.label(text=field.label, icon='DOWNARROW_HLT')
                 continue
 
-            container = current_box if current_box is not None else layout
+            # ── GroupEnd — close sub-box ──────────────────────
+            if kind == "GroupEnd":
+                group_box = None
+                continue
+
+            # ── Skip / hidden fields ──────────────────────────
+            if kind == "Skip" or field.show_as == 6:
+                continue
+
+            # If section is collapsed, don't draw any fields
+            if not section_open or section_layout is None:
+                continue
+
+            # Choose target: inside group box or direct in section
+            target    = group_box if group_box is not None else section_layout
             prop_key  = _prop_key(field.key)
 
             if prop_key not in obj:
-                container.label(text=f"{field.label}: (not set)", icon='ERROR')
+                target.label(text=f"{field.label}: (not set)", icon='ERROR')
                 continue
 
-            self._draw_field(container, obj, field, prop_key)
+            self._draw_field(target, obj, field, prop_key)
 
         # ── footer ────────────────────────────────────────────
         layout.separator()
@@ -86,13 +146,13 @@ class WF_PT_attributes(bpy.types.Panel):
             current = obj.get(prop_key, "")
 
             if show_as == 8 and len(items) == 2:
-                # ShowAs=8 → checkbox toggle: label on left, icon button on right
+                # Checkbox-style toggle: label left, icon button right
                 is_true = (current == items[1])
                 row = layout.row()
                 row.label(text=field.label + ":")
                 op = row.operator(
                     "wf.set_enum",
-                    text="",           # icon only — avoids redundant True/False text
+                    text="",
                     icon='CHECKBOX_HLT' if is_true else 'CHECKBOX_DEHLT',
                     depress=is_true,
                 )
@@ -100,7 +160,7 @@ class WF_PT_attributes(bpy.types.Panel):
                 op.item_label = items[0] if is_true else items[1]
 
             else:
-                # ShowAs=4/5 → row of labelled buttons (highlight selected)
+                # Button row: one button per choice, highlight current
                 row = layout.row(align=True)
                 row.label(text=field.label + ":")
                 sub = row.row(align=True)

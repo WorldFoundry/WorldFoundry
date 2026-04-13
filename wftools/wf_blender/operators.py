@@ -32,13 +32,18 @@ def _prop_key(field_key: str) -> str:
     return f"wf_{field_key}"
 
 
+def _resolve_schema_path(raw: str) -> str:
+    """Resolve a stored schema path (possibly //-relative) to an absolute path."""
+    return bpy.path.abspath(raw)
+
+
 def _get_schema(obj):
     """Return a loaded wf_core.Schema or None."""
     path = obj.get(SCHEMA_PATH_KEY)
     if not path:
         return None
     try:
-        return wf_core.load_schema(path)
+        return wf_core.load_schema(_resolve_schema_path(path))
     except Exception:
         return None
 
@@ -54,9 +59,32 @@ def _collect_values(obj, schema) -> dict:
     return values
 
 
+SECTION_OPEN_PREFIX = "wf__open_"
+
+
+def _section_key(field_key: str) -> str:
+    """Custom property key tracking whether a Section is expanded."""
+    return f"{SECTION_OPEN_PREFIX}{field_key}"
+
+
 def _seed_defaults(obj, schema):
     """Populate default values for all fields not yet set on obj."""
-    for field in schema.visible_fields():
+    for field in schema.fields():
+        # Section open/closed state (default_raw: 1=open, 0=closed)
+        if field.kind == "Section":
+            sk = _section_key(field.key)
+            if sk not in obj:
+                obj[sk] = bool(field.default_raw)
+            continue
+
+        # Structural markers — no value to seed
+        if field.kind in ("Group", "GroupEnd", "Skip"):
+            continue
+
+        # Skip hidden fields
+        if field.show_as == 6:
+            continue
+
         key = _prop_key(field.key)
         if key in obj:
             continue
@@ -118,7 +146,15 @@ class WF_OT_attach_schema(bpy.types.Operator):
             self.report({'ERROR'}, f"Failed to load schema: {e}")
             return {'CANCELLED'}
 
-        obj[SCHEMA_PATH_KEY] = self.filepath
+        # Store a //-relative path when the blend file has been saved so the
+        # association survives the blend file moving to a new location.
+        # Fall back to absolute when the blend file is still unsaved.
+        stored_path = (
+            bpy.path.relpath(self.filepath)
+            if bpy.data.is_saved
+            else self.filepath
+        )
+        obj[SCHEMA_PATH_KEY] = stored_path
         _seed_defaults(obj, schema)
 
         visible = list(schema.visible_fields())
@@ -143,6 +179,28 @@ class WF_OT_detach_schema(bpy.types.Operator):
         for k in keys:
             del obj[k]
         self.report({'INFO'}, f"Removed {len(keys)} World Foundry properties")
+        return {'FINISHED'}
+
+
+# ── WF_OT_toggle_section ─────────────────────────────────────────────────────
+
+class WF_OT_toggle_section(bpy.types.Operator):
+    """Expand or collapse a property-sheet section"""
+    bl_idname  = "wf.toggle_section"
+    bl_label   = "Toggle Section"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    section_key: StringProperty(options={'HIDDEN'})
+
+    def execute(self, context):
+        obj = context.active_object
+        if obj is None:
+            return {'CANCELLED'}
+        current = bool(obj.get(self.section_key, True))
+        obj[self.section_key] = not current
+        for area in context.screen.areas:
+            if area.type == 'PROPERTIES':
+                area.tag_redraw()
         return {'FINISHED'}
 
 
@@ -243,6 +301,7 @@ class WF_OT_export_iff_txt(bpy.types.Operator, ExportHelper):
 _CLASSES = [
     WF_OT_attach_schema,
     WF_OT_detach_schema,
+    WF_OT_toggle_section,
     WF_OT_set_enum,
     WF_OT_validate,
     WF_OT_export_iff_txt,

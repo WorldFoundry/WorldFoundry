@@ -15,7 +15,7 @@
 
 use pyo3::prelude::*;
 use std::io::Cursor;
-use wf_attr_schema::{FieldKind, Schema};
+use wf_attr_schema::{FieldKind, Schema, FieldDescriptor};
 use wf_oad::OadFile;
 
 // ── PyField ───────────────────────────────────────────────────────────────────
@@ -82,7 +82,7 @@ impl PyField {
     }
 }
 
-fn field_from_desc(desc: &wf_attr_schema::FieldDescriptor) -> PyField {
+fn field_from_desc(desc: &FieldDescriptor) -> PyField {
     let (kind_tag, enum_items) = match &desc.kind {
         FieldKind::Enum { items } => ("Enum".to_owned(), items.clone()),
         other => (other.tag().to_owned(), Vec::new()),
@@ -197,6 +197,9 @@ fn validate(
         let scale = if field.fp_scale > 0.0 { field.fp_scale } else { 1.0 };
 
         match &field.kind {
+            wf_attr_schema::FieldKind::Section
+            | wf_attr_schema::FieldKind::Group
+            | wf_attr_schema::FieldKind::GroupEnd => continue,
             wf_attr_schema::FieldKind::Int => {
                 let v: i64 = raw_val.extract().unwrap_or(0);
                 if v < field.min_raw as i64 || v > field.max_raw as i64 {
@@ -287,6 +290,9 @@ fn export_iff_txt(
         let scale = if field.fp_scale > 0.0 { field.fp_scale } else { 1.0 };
 
         match &field.kind {
+            wf_attr_schema::FieldKind::Section
+            | wf_attr_schema::FieldKind::Group
+            | wf_attr_schema::FieldKind::GroupEnd => continue,
             wf_attr_schema::FieldKind::Int | wf_attr_schema::FieldKind::Enum { .. } => {
                 let raw: i32 = if let Some(v) = &raw_val {
                     // Enum: accept string label or int
