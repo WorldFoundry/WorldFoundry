@@ -61,10 +61,10 @@ pub type Result<T> = std::result::Result<T, OadError>;
 // ── constants ─────────────────────────────────────────────────────────────────
 
 /// `'OAD '` stored as little-endian u32 on an x86 machine.
-/// In C: `long chunkId = 'OAD '` (GCC multi-char literal, big-endian value
-/// 0x4F414420), written to disk as LE → bytes `[0x4F, 0x41, 0x44, 0x20]`,
-/// read back as LE u32 = 0x2044414F.
-pub const CHUNK_ID: u32 = u32::from_le_bytes(*b"OAD ");
+/// In C: `long chunkId = 'OAD '` (GCC multi-char literal = 0x4F414420),
+/// written to disk as LE → bytes `[0x20, 0x44, 0x41, 0x4F]`,
+/// read back as LE u32 = 0x4F414420.
+pub const CHUNK_ID: u32 = u32::from_be_bytes(*b"OAD ");
 
 pub const HEADER_SIZE: usize = 80;
 pub const ENTRY_SIZE: usize = 1491;
