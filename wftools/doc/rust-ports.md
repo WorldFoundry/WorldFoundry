@@ -4,7 +4,7 @@
 
 | Tool | C++ LOC | Verdict | Rationale |
 |------|---------|---------|-----------|
-| **oas2oad** | ~400 (wpp+wlink chain) | **Done** | Shells out to fixed `prep`; parses C initializer output; writes binary OAD — 41/41 .oas files pass |
+| **oas2oad** | ~400 (wpp+wlink chain) | **Done** | `prep` → `g++` → `objcopy .data`; same guarantee as original toolchain — 41/41 .oas files pass |
 | **iffdump** | ~372 | **Port next** | Natural companion to iffcomp-rs; IFF binary format already understood; all deps are trivial stubs |
 | **oaddump** | ~546 | Port after iffdump | Self-contained OAD parser; small; no external deps |
 | eval | ~53 (CLI) + ~400 (grammar) | Blender work | Expression evaluator grammar (`wfsource/source/eval/`) needed by `wf_attr_validate`; belongs with Blender integration, not here |
@@ -201,11 +201,7 @@ packed C structs from `wfsource/source/oas/oad.h` with `#pragma pack(1)`:
 | `_oadHeader` | 80 bytes | magic `OAD ` (LE u32), chunkSize, name[68], version |
 | `_typeDescriptor` × N | 1491 bytes each | one entry per OAD field |
 
-**No Linux pathway exists** to produce `.oad` files today — the Watcom
-toolchain (`wpp`, `wlink`, `exe2bin`) is Windows-only. Test fixtures in
-`wf_oad` are synthesized directly from the known binary layout.
-
-The Linux replacement is `oas2oad-rs` (see below).
+`oas2oad-rs` (see below) provides the Linux replacement using `prep` → `g++` → `objcopy`.
 
 ### Reference files
 
@@ -277,15 +273,6 @@ oas2oad-rs/
   src/
     main.rs   — CLI, fixups, orchestrates prep → g++ → objcopy
 ```
-
-Depends on `wf_oad` for `OadHeader`, `OadEntry`, and the binary serializer
-(which needs to be added to `wf_oad` alongside the existing reader).
-
-### Parser edge cases
-
-- `LEVELCONFLAG_COMMONBLOCK` / `LEVELCONFLAG_ENDCOMMON` entries omit the union field entirely (11 fields instead of 12)
-- `GROUP_STOP` union has only 3 fields: `{conv, bRequired, displayName}` — no `szEnableExpression`
-- `szEnableExpression` can be an unquoted integer (`1`) or negative integer (`-1`) instead of a quoted string
 
 ### Prerequisites delivered
 
