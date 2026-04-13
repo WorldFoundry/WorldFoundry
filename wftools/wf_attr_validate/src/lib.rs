@@ -110,6 +110,17 @@ pub fn validate(schema: &Schema, values: &Values) -> Vec<ValidationIssue> {
                 }
             }
 
+            FieldKind::Bool => {
+                let FieldValue::Int(v) = val else { continue };
+                if *v != 0 && *v != 1 {
+                    issues.push(ValidationIssue {
+                        key:      field.key.clone(),
+                        message:  format!("bool value must be 0 or 1, got {v}"),
+                        is_error: true,
+                    });
+                }
+            }
+
             // FileRef: the file's existence cannot be checked in Rust; pass through.
             // Blender-side code may warn about missing files separately.
             FieldKind::FileRef { .. } => {}

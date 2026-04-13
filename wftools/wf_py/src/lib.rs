@@ -36,7 +36,7 @@ struct PyField {
     key: String,
     #[pyo3(get)]
     label: String,
-    /// `"Int"` | `"Float"` | `"Enum"` | `"Section"` | `"Group"` | `"GroupEnd"` | `"Str"` | `"FileRef"` | `"ObjRef"` | `"Skip"`
+    /// `"Int"` | `"Float"` | `"Enum"` | `"Bool"` | `"Section"` | `"Group"` | `"GroupEnd"` | `"Str"` | `"FileRef"` | `"ObjRef"` | `"Skip"`
     #[pyo3(get)]
     kind: String,
     #[pyo3(get)]
@@ -207,6 +207,7 @@ fn dict_to_values(
                 };
                 FieldValue::Enum(label)
             }
+            FieldKind::Bool       => FieldValue::Int(if raw.extract::<i64>().unwrap_or(0) != 0 { 1 } else { 0 }),
             FieldKind::Str        => FieldValue::Str(raw.extract().unwrap_or_default()),
             // FileRef stores a file path (string).
             FieldKind::FileRef { .. } => FieldValue::Str(raw.extract().unwrap_or_default()),

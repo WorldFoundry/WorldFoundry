@@ -153,6 +153,18 @@ class WF_PT_attributes(bpy.types.Panel):
             if name and name not in bpy.data.objects:
                 row.label(text="", icon='ERROR')
 
+        elif kind == "Bool":
+            is_on = bool(obj.get(prop_key, 0))
+            row = layout.row()
+            row.label(text=field.label + ":")
+            op = row.operator(
+                "wf.toggle_bool",
+                text="",
+                icon='CHECKBOX_HLT' if is_on else 'CHECKBOX_DEHLT',
+                depress=is_on,
+            )
+            op.field_key = field.key
+
         elif kind == "FileRef":
             # Text field + file-browser button.
             row = layout.row(align=True)

@@ -94,6 +94,14 @@ pub fn to_iff_txt(schema: &Schema, values: &Values) -> String {
                 );
             }
 
+            FieldKind::Bool => {
+                let raw: i32 = match val {
+                    Some(FieldValue::Int(i)) => if *i != 0 { 1 } else { 0 },
+                    _                        => if field.default_raw != 0 { 1 } else { 0 },
+                };
+                append_fixed_width(&mut payload, &mut lines, raw, 4, &field.key, None);
+            }
+
             FieldKind::Str | FieldKind::FileRef { .. } => {
                 let s: &str = match val {
                     Some(FieldValue::Str(s)) => s.as_str(),
@@ -269,6 +277,10 @@ pub fn from_iff_txt(schema: &Schema, text: &str) -> Result<Values, ImportError> 
                 })?;
                 FieldValue::Enum(label)
             }
+            FieldKind::Bool => {
+                let raw = le_bytes_to_i32(&bytes, &field.key)?;
+                FieldValue::Int(if raw != 0 { 1 } else { 0 })
+            }
             FieldKind::Str | FieldKind::FileRef { .. } => {
                 let s = String::from_utf8(bytes.clone()).map_err(|_| {
                     ImportError::new(format!("{}: invalid UTF-8 in string field", field.key))
@@ -412,6 +424,14 @@ pub fn to_iff(schema: &Schema, values: &Values) -> Vec<u8> {
                 builder.write_bytes(&padded);
             }
 
+            FieldKind::Bool => {
+                let raw: i32 = match val {
+                    Some(FieldValue::Int(i)) => if *i != 0 { 1 } else { 0 },
+                    _                        => if field.default_raw != 0 { 1 } else { 0 },
+                };
+                builder.write_le(raw, 4);
+            }
+
             FieldKind::ObjRef { .. } => {
                 // Serialize as 4-byte zero (unresolved at edit time).
                 // The object name cannot be encoded in binary; it lives only
@@ -491,6 +511,14 @@ pub fn from_iff(schema: &Schema, data: &[u8]) -> Result<Values, ImportError> {
                     ))
                 })?;
                 values.insert(field.key.clone(), FieldValue::Enum(label));
+            }
+
+            FieldKind::Bool => {
+                let width = 4;
+                if pos + width > payload.len() { break; }
+                let raw = le_bytes_to_i32(&payload[pos..pos + width], &field.key)?;
+                pos += width;
+                values.insert(field.key.clone(), FieldValue::Int(if raw != 0 { 1 } else { 0 }));
             }
 
             FieldKind::Str | FieldKind::FileRef { .. } => {

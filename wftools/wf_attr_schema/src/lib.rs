@@ -13,8 +13,9 @@
 //! | `Group`         | PropertySheet / GroupStart                | section header, no stored value    |
 //! | `Str`           | String                                    | UTF-8 string value                 |
 //! | `FileRef`       | Filename / MeshName                       | File path string with browse filter|
+//! | `Bool`          | NoInstances / NoMesh / SingleInstance / … | 0/1 flag; serialized as 4 bytes    |
 //!
-//! Everything else (LevelconFlags, XData, ObjectReference, GroupStop, etc.)
+//! Everything else (XData, GroupStop, EndCommon, etc.)
 //! is emitted as [`FieldKind::Skip`] and should be hidden from the editor UI.
 
 use wf_oad::{ButtonType, OadFile};
@@ -41,6 +42,11 @@ pub enum FieldKind {
     GroupEnd,
     /// Free-text string field (String / Filename).
     Str,
+    /// Level-compiler boolean flag (NoInstances / NoMesh / SingleInstance / …).
+    ///
+    /// Serialized as a 4-byte LE integer (0 = false, 1 = true).
+    /// Shown in the editor as a checkbox regardless of `show_as`.
+    Bool,
     /// File path field (Filename / MeshName).
     ///
     /// The value is a UTF-8 filename string (e.g. `"player.iff"`).
@@ -72,6 +78,7 @@ impl FieldKind {
             FieldKind::Group       => "Group",
             FieldKind::GroupEnd    => "GroupEnd",
             FieldKind::Str           => "Str",
+            FieldKind::Bool          => "Bool",
             FieldKind::FileRef { .. } => "FileRef",
             FieldKind::ObjRef { .. } => "ObjRef",
             FieldKind::Skip          => "Skip",
@@ -140,7 +147,9 @@ impl FieldDescriptor {
         if matches!(self.kind, FieldKind::Skip) {
             return false;
         }
-        if self.show_as == 6 {
+        // show_as == 6 means "hidden in attribedit", but Bool/levelcon flags
+        // use it as a default (all flags have show_as=6); always show them.
+        if self.show_as == 6 && !matches!(self.kind, FieldKind::Bool) {
             return false;
         }
         true
@@ -252,6 +261,18 @@ fn field_layout(bt: ButtonType) -> (u8, f64) {
         ButtonType::Int32                              => (4, 0.0),
         ButtonType::String | ButtonType::Filename | ButtonType::MeshName => (0, 0.0), // variable; exporter handles
         ButtonType::PropertySheet | ButtonType::GroupStart => (0, 0.0),
+        // Bool levelcon flags serialize as a 4-byte LE integer (0 or 1).
+        ButtonType::NoInstances
+        | ButtonType::NoMesh
+        | ButtonType::SingleInstance
+        | ButtonType::Template
+        | ButtonType::ExtractCamera
+        | ButtonType::Room
+        | ButtonType::ExtractCamera2
+        | ButtonType::ExtractCameraNew
+        | ButtonType::Waveform
+        | ButtonType::ExtractLight
+        | ButtonType::Shortcut                             => (4, 0.0),
         // Object/class/camera/light references serialize as a 4-byte LE integer index.
         ButtonType::ObjectReference
         | ButtonType::ClassReference
@@ -316,6 +337,19 @@ fn classify(bt: ButtonType, string_field: &str, lpstr_filter: &[u8]) -> FieldKin
         | ButtonType::LightReference => FieldKind::ObjRef {
             class_tag: string_field.trim().to_owned(),
         },
+
+        // Level-compiler boolean flags.
+        ButtonType::NoInstances
+        | ButtonType::NoMesh
+        | ButtonType::SingleInstance
+        | ButtonType::Template
+        | ButtonType::ExtractCamera
+        | ButtonType::Room
+        | ButtonType::ExtractCamera2
+        | ButtonType::ExtractCameraNew
+        | ButtonType::Waveform
+        | ButtonType::ExtractLight
+        | ButtonType::Shortcut => FieldKind::Bool,
 
         // Everything else is not yet surfaced in the editor.
         _ => FieldKind::Skip,

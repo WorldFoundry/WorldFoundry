@@ -93,6 +93,8 @@ def _seed_defaults(obj, schema):
             continue
         if field.kind == "Float":
             obj[key] = field.default_display
+        elif field.kind == "Bool":
+            obj[key] = int(bool(field.default_raw))
         elif field.kind == "Enum":
             items = field.enum_items()
             idx = field.default_raw
@@ -433,6 +435,28 @@ class WF_OT_import_iff(bpy.types.Operator, ImportHelper):
         return {'FINISHED'}
 
 
+# ── WF_OT_toggle_bool ────────────────────────────────────────────────────────
+
+class WF_OT_toggle_bool(bpy.types.Operator):
+    """Toggle a Bool (levelcon flag) field between 0 and 1"""
+    bl_idname  = "wf.toggle_bool"
+    bl_label   = "Toggle Bool"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    field_key: StringProperty(options={'HIDDEN'})
+
+    def execute(self, context):
+        obj = context.active_object
+        if obj is None:
+            return {'CANCELLED'}
+        pk = _prop_key(self.field_key)
+        obj[pk] = 0 if obj.get(pk, 0) else 1
+        for area in context.screen.areas:
+            if area.type == 'PROPERTIES':
+                area.tag_redraw()
+        return {'FINISHED'}
+
+
 # ── WF_OT_pick_file ──────────────────────────────────────────────────────────
 
 class WF_OT_pick_file(bpy.types.Operator):
@@ -473,6 +497,7 @@ _CLASSES = [
     WF_OT_detach_schema,
     WF_OT_toggle_section,
     WF_OT_set_enum,
+    WF_OT_toggle_bool,
     WF_OT_pick_file,
     WF_OT_validate,
     WF_OT_export_iff_txt,
