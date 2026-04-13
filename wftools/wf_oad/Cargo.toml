@@ -1,0 +1,5 @@
+[package]
+name = "wf_oad"
+version = "0.1.0"
+edition = "2021"
+description = "World Foundry OAD (Object Attribute Data) binary reader (port of wftools/oaddump/oad.*)"
