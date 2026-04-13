@@ -5,7 +5,7 @@
 
 There are really **two** formats here:
 
-1. The textual *source* language eaten by `iffcomp` (`.iff.txt` / `.scr`).
+1. The textual *source* language consumed by `iffcomp` (`.iff.txt` / `.scr`).
 2. The *binary* IFF tree it spits out.
 
 Both are documented below.
@@ -68,7 +68,7 @@ The parser disambiguates "chunk vs. state-push" by lookahead: if the next token 
 
 ### Numeric expressions
 
-`expr` allows `item + item` and `item - item`. Only `+` actually accumulates in the action (`$$ = $1 + $3`); the `-` rule has an empty action — looks unfinished.
+`expr` allows `item + item` and `item - item`, both fully implemented (`$$ = $1 + $3` and `$$ = $1 - $3`).
 
 ### Defaults
 
@@ -191,19 +191,17 @@ The file produced by `iffcomp` shares the EA-IFF chunk-header shape but deviates
 | # | EA-IFF 85 | WorldFoundry |
 |---|---|---|
 | 1 | All multi-byte values big-endian | All numeric fields in **native byte order** (little-endian on x86, native on MIPS R3000) |
-| 2 | Chunks padded to **2-byte** boundaries | Chunks padded to **4-byte** boundaries (`align(4)` hard-coded in `exitChunk`) |
+| 2 | Chunks padded to **2-byte** boundaries | Everything except strings aligned to **4-byte** boundaries: chunks on exit (`exitChunk`) and inline FOURCC literals (`out_id`) both call `align(4)`. Required for direct in-place load on MIPS R3000 (unaligned 32-bit loads are a bus error) and beneficial on x86 (avoids the misaligned-read penalty). Strings are exempt — they are accessed byte-by-byte so alignment is irrelevant. |
 | 3 | Parent `ckSize` = payload bytes only | Parent `ckSize` includes the child's 8-byte header + child's trailing pad (`AddToSize(child.size + pad + 8)`) |
 | 4 | Top-level must be a FORM, LIST, or CAT | No container-type constraint; `file := chunk+` allows any top-level chunk sequence |
-| 5 | No inline-FOURCC alignment | `out_id` calls `align(4)` before writing an inline FOURCC literal, silently shifting subsequent payload offsets |
 
 ### Extensions
 
 | # | EA-IFF 85 | WorldFoundry |
 |---|---|---|
-| 6 | No typed scalars | Fixed-point reals: `val × 2^fraction`, packed into int8/int16/int32 by total bit width |
-| 7 | No string convention | C-style **NUL-terminated** strings; escape sequences (`\n \t \\ \" \NNN`) translated at write time |
-| 8 | No back-patching | `.offsetof('A'::'B')` / `.sizeof('A'::'B')` inject 32-bit absolute file offsets/sizes, resolved via `Backpatch` queue |
-| 9 | No string continuation | `out_string_continue` seeks back over the previous NUL and appends — concatenates adjacent string literals into one C string |
+| 5 | No typed scalars | Fixed-point reals: `val × 2^fraction`, packed into int8/int16/int32 by total bit width |
+| 6 | No string convention | C-style **NUL-terminated** strings; escape sequences (`\n \t \\ \" \NNN`) translated at write time. Adjacent string literals (`"hello" "world"`) are concatenated into one C string via `out_string_continue` (seeks back over the previous NUL and appends). |
+| 7 | No back-patching | `.offsetof('A'::'B')` / `.sizeof('A'::'B')` inject 32-bit absolute file offsets/sizes, resolved via `Backpatch` queue |
 
 ### Note on IDs
 
