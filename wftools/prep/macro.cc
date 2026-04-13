@@ -185,7 +185,7 @@ macro::DoSubstitution(ktsRWCTokenizer& next,int& substCount)
 		{
 			DBSTREAM2( cdebug << "default argument for index <" << parameterIndex << "> is <" << DefaultArgument(parameterIndex) << ">" << endl; )
 
-			if(((token = nextParam(",",whiteChars)).length() == 0) && (DefaultArgument(parameterIndex).length() == 0))
+		if(((token = nextParam(",",whiteChars)).length() == 0) && (DefaultArgument(parameterIndex).length() == 0))
 				cerror << SourceError() << "Incorrect # of parameters in macro invocation <"
 				<< next.restOfString() << ">, expected " << ParameterCount()
 				<< ", only found " << parameterIndex << endl;
@@ -219,7 +219,7 @@ macro::DoSubstitution(ktsRWCTokenizer& next,int& substCount)
 
 
             // check for named parameter
-            unsigned delimiterIndex = token.find("=>");
+            std::string::size_type delimiterIndex = token.find("=>");
             if(delimiterIndex != std::string::npos)
             {                                                    
                 // named parameter found
@@ -238,7 +238,7 @@ macro::DoSubstitution(ktsRWCTokenizer& next,int& substCount)
                 DBSTREAM2( cdebug << "Adding named parameter containing <" << value << "> matching <" << name << "> to parameter list for macro <" << GetName() << ">" << endl; )
                 paramDict[name] = value;
             }
-            else 
+            else
             {
                 if(paramDict.find(Parameter(parameterIndex)) == paramDict.end())           // only set if not already set (to prevent defaults from overwritting named parameters)
                 {
