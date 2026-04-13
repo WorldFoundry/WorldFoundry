@@ -124,9 +124,10 @@ Overview with Movement section expanded:
 
 ### 3. Gap 1 — TYPEENTRYBOOLEAN checkbox
 
-No `TYPEENTRYBOOLEAN` fields in `player.oad` — all checkbox-style fields there use
-2-item `Enum` with `show_as=8` (already working pre-gap-fix). Need an OAD file with a
-bare `TYPEENTRYBOOLEAN` (BUTTON_INT32, no pipe items, show_as=8) to verify. ⚠️
+`common.inc` (included in all schemas) has two bare `TYPEENTRYBOOLEAN` fields:
+"Needle Gun Target" and "Script Controls Input". Both render as checkboxes. ✅
+
+![Gap 1: Needle Gun Target checked, Script Controls Input unchecked](screenshots/verify-03-gap1-typeentryboolean-checkbox.png)
 
 ### 4. Gap 3 — Notes field (Str from BUTTON_XDATA)
 
