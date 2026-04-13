@@ -58,9 +58,6 @@ class WF_PT_attributes(bpy.types.Panel):
         path_row = layout.row()
         path_row.label(text=resolved, icon='FILE')
 
-        # Seed any fields added since last attach (e.g. schema reloaded)
-        _seed_defaults(obj, schema)
-
         # ── field loop ────────────────────────────────────────
         # State:
         #   section_open  — whether the current PropertySheet is expanded
