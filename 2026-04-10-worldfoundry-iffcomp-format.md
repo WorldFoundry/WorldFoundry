@@ -192,8 +192,6 @@ The file produced by `iffcomp` shares the EA-IFF chunk-header shape but deviates
 |---|---|---|
 | 1 | All multi-byte values big-endian | All numeric fields in **native byte order** (little-endian on x86, native on MIPS R3000) |
 | 2 | Chunks padded to **2-byte** boundaries | Everything except strings aligned to **4-byte** boundaries: chunks on exit (`exitChunk`) and inline FOURCC literals (`out_id`) both call `align(4)`. Required for direct in-place load on MIPS R3000 (unaligned 32-bit loads are a bus error) and beneficial on x86 (avoids the misaligned-read penalty). Strings are exempt — they are accessed byte-by-byte so alignment is irrelevant. |
-| 3 | Parent `ckSize` = payload bytes only | Parent `ckSize` includes the child's 8-byte header + child's trailing pad (`AddToSize(child.size + pad + 8)`) |
-| 4 | Top-level must be a FORM, LIST, or CAT | No container-type constraint; `file := chunk+` allows any top-level chunk sequence |
 
 ### Extensions
 
