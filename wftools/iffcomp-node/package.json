@@ -1,0 +1,10 @@
+{
+  "name": "iffcomp",
+  "version": "0.1.0",
+  "description": "IFF compiler — Node.js port of WorldFoundry iffcomp",
+  "bin": { "iffcomp": "src/main.js" },
+  "scripts": {
+    "test": "node --test test/byte_exact.test.js"
+  },
+  "engines": { "node": ">=20" }
+}
