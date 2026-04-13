@@ -6,7 +6,7 @@
 There are really **two** formats here:
 
 1. The textual *source* language consumed by `iffcomp` (`.iff.txt`) — platform-independent, human-readable.
-2. The *binary* output — native-endian, ready for direct load on the target platform (x86 or MIPS R3000).
+2. The *binary* output — native-endian, ready for direct load on the target platform.
 
 Both are documented below.
 
