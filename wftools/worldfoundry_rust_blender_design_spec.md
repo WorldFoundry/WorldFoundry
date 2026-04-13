@@ -381,28 +381,21 @@ The Blender plugin should not invent its own parallel parser or serializer.
 
 ## 11. Import/export strategy
 
-### Phase 1 recommendation
-Prototype with:
+### Formats are first-class and interchangeable
+`.iff.txt` and binary `.iff` are equivalent representations that round-trip losslessly.
+`iffcomp` compiles `.iff.txt` → `.iff`; `iffdump -f-` decompiles `.iff` → `.iff.txt`.
+Blender import accepts both; export targets `.iff.txt` directly and binary `.iff` via `iffcomp` or native Rust serialization.
 
-- import: OAD/schema + instance values
-- export: `.iff.txt`
-
-Reason:
-
-- easy to inspect
-- easy to diff
-- easy to debug
-- faster development loop
+### Phase 1
+- export: `.iff.txt` (done)
+- import: `.iff.txt` and `.iff` (reads values back into Blender object properties)
 
 ### Phase 2
-Add binary `.iff` export once:
-
-- schema mapping is stable
-- live editing model is stable
-- validation is trustworthy
+- native binary `.iff` write path in Rust (requires `wf_iff` writer crate)
+- eliminates the `iffcomp` subprocess step for binary output
 
 ### Principle
-Use Rust for all export serialization.
+Use Rust for all serialization. Python does not implement format logic.
 
 ---
 
@@ -578,7 +571,10 @@ These should be resolved during milestone 1:
 3. Which real schema is best for the first vertical slice?
 4. How much of the old plugin’s grouping model maps naturally to Blender panels/subpanels?
 5. Which legacy field/reference controls require custom Blender widgets earliest?
-6. Should `.iff.txt` be considered the first-class editable export artifact long-term, or only a debug stage?
+6. ~~Should `.iff.txt` be considered the first-class editable export artifact long-term, or only a debug stage?~~
+   **Resolved:** `.iff.txt` is a first-class storage format, fully interchangeable with binary `.iff`.
+   The two formats round-trip losslessly via `iffcomp` (`.iff.txt` → `.iff`) and `iffdump -f-` (`.iff` → `.iff.txt`).
+   Blender import must accept both. `wf_attr_serialize` must treat them symmetrically.
 
 ---
 
