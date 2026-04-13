@@ -172,7 +172,7 @@ Responsibilities:
 
 This is the bridge between OAD semantics and host UI rendering.
 
-### `wf_attr_validate`
+### `wf_attr_validate` ✓ implemented
 Responsibilities:
 
 - type checks
@@ -181,13 +181,14 @@ Responsibilities:
 - required/reference checks
 - cross-field validation if needed
 
-### `wf_attr_serialize`
+### `wf_attr_serialize` ✓ implemented (export); import in progress
 Responsibilities:
 
 - convert instance values into exportable forms
-- emit `.iff`
-- emit `.iff.txt`
-- import existing data into normalized instance form
+- emit `.iff.txt` ✓
+- emit `.iff` (Phase 2 — requires `wf_iff` writer)
+- import `.iff.txt` → `Values` (parse by field key from comments)
+- import `.iff` → `Values` (Phase 2 — requires `wf_iff` reader)
 
 ---
 

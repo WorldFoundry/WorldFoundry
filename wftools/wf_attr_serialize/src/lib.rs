@@ -1,9 +1,9 @@
-//! Serialization of World Foundry attribute values to `.iff.txt` format.
+//! Serialization and deserialization of World Foundry attribute values.
 //!
 //! `.iff.txt` is a first-class format, fully interchangeable with binary `.iff`
 //! via `iffcomp` (`.iff.txt` → `.iff`) and `iffdump -f-` (`.iff` → `.iff.txt`).
 //!
-//! # Usage
+//! # Export
 //!
 //! ```rust,ignore
 //! use wf_attr_schema::{Schema, Values};
@@ -11,6 +11,15 @@
 //!
 //! let text = to_iff_txt(&schema, &values);
 //! std::fs::write("enemy.iff.txt", &text).unwrap();
+//! ```
+//!
+//! # Import
+//!
+//! ```rust,ignore
+//! use wf_attr_serialize::from_iff_txt;
+//!
+//! let text = std::fs::read_to_string("enemy.iff.txt").unwrap();
+//! let values = from_iff_txt(&schema, &text)?;
 //! ```
 
 use wf_attr_schema::{FieldKind, FieldValue, Schema, Values};
@@ -116,6 +125,147 @@ pub fn to_iff_txt(schema: &Schema, values: &Values) -> String {
     out
 }
 
+// ── from_iff_txt ──────────────────────────────────────────────────────────────
+
+/// Error returned by [`from_iff_txt`].
+#[derive(Debug, Clone, PartialEq)]
+pub struct ImportError {
+    pub message: String,
+}
+
+impl std::fmt::Display for ImportError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.message)
+    }
+}
+
+impl std::error::Error for ImportError {}
+
+impl ImportError {
+    fn new(msg: impl Into<String>) -> Self {
+        ImportError { message: msg.into() }
+    }
+}
+
+/// Parse an iffcomp-format `.iff.txt` string into a `Values` map.
+///
+/// Fields are matched by the `// key` comment that [`to_iff_txt`] emits on
+/// every data line, so field order in the file does not have to match the
+/// schema order and unknown keys are silently skipped.
+///
+/// Returns only the fields that were present in the file; callers should fill
+/// in missing fields from schema defaults as needed.
+pub fn from_iff_txt(schema: &Schema, text: &str) -> Result<Values, ImportError> {
+    // Build a quick lookup: key → field descriptor.
+    let field_map: std::collections::HashMap<&str, _> = schema
+        .visible_fields()
+        .map(|f| (f.key.as_str(), f))
+        .collect();
+
+    let mut values = Values::new();
+
+    for line in text.lines() {
+        let trimmed = line.trim();
+
+        // Handle empty-string fields: `// key (empty string)`
+        if trimmed.starts_with("//") {
+            let comment = trimmed[2..].trim();
+            if let Some(key) = comment.strip_suffix("(empty string)").map(str::trim) {
+                if field_map.contains_key(key) {
+                    values.insert(key.to_owned(), FieldValue::Str(String::new()));
+                }
+            }
+            continue;
+        }
+
+        // Only process data lines: start with '$' after whitespace stripping.
+        if !trimmed.starts_with('$') {
+            continue;
+        }
+
+        // Split on '//' to separate the hex payload from the comment.
+        // Format: `$XX $XX ...  // key` or `$XX $XX ...  // key (display)`
+        let Some(comment_start) = trimmed.find("//") else {
+            continue;
+        };
+        let hex_part     = trimmed[..comment_start].trim();
+        let comment_part = trimmed[comment_start + 2..].trim();
+
+        // Extract the key from the comment.  Float fields append " (display_value)"
+        // so we strip from the first '(' and trim — this also handles multi-word
+        // keys like "Render Type" or "Mesh Name" correctly.
+        let key = if let Some(paren) = comment_part.find('(') {
+            comment_part[..paren].trim()
+        } else {
+            comment_part.trim()
+        };
+        if key.is_empty() {
+            continue;
+        }
+
+        let Some(field) = field_map.get(key) else {
+            // Key not in schema — skip gracefully.
+            continue;
+        };
+
+        // Parse the hex bytes.
+        let bytes: Result<Vec<u8>, _> = hex_part
+            .split_whitespace()
+            .map(|token| {
+                let digits = token.trim_start_matches('$');
+                u8::from_str_radix(digits, 16)
+                    .map_err(|_| ImportError::new(format!("bad hex token {:?}", token)))
+            })
+            .collect();
+        let bytes = bytes?;
+
+        let scale = if field.fp_scale > 0.0 { field.fp_scale } else { 1.0 };
+
+        let fv = match &field.kind {
+            FieldKind::Int => {
+                let raw = le_bytes_to_i32(&bytes, &field.key)?;
+                FieldValue::Int(raw as i64)
+            }
+            FieldKind::Float => {
+                let raw = le_bytes_to_i32(&bytes, &field.key)?;
+                FieldValue::Float(raw as f64 / scale)
+            }
+            FieldKind::Enum { items } => {
+                let raw = le_bytes_to_i32(&bytes, &field.key)? as usize;
+                let label = items.get(raw).cloned().ok_or_else(|| {
+                    ImportError::new(format!(
+                        "{}: enum index {} out of range (max {})",
+                        field.key, raw, items.len().saturating_sub(1)
+                    ))
+                })?;
+                FieldValue::Enum(label)
+            }
+            FieldKind::Str => {
+                let s = String::from_utf8(bytes.clone()).map_err(|_| {
+                    ImportError::new(format!("{}: invalid UTF-8 in string field", field.key))
+                })?;
+                FieldValue::Str(s)
+            }
+            _ => continue,
+        };
+
+        values.insert(field.key.clone(), fv);
+    }
+
+    Ok(values)
+}
+
+fn le_bytes_to_i32(bytes: &[u8], key: &str) -> Result<i32, ImportError> {
+    match bytes.len() {
+        1 => Ok(i8::from_le_bytes([bytes[0]]) as i32),
+        2 => Ok(i16::from_le_bytes([bytes[0], bytes[1]]) as i32),
+        4 => Ok(i32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]])),
+        n => Err(ImportError::new(format!(
+            "{}: expected 1/2/4 bytes, got {}", key, n
+        ))),
+    }
+}
+
 // ── helpers ───────────────────────────────────────────────────────────────────
 
 fn hex_bytes(b: &[u8]) -> String {
@@ -188,5 +338,47 @@ mod tests {
             &text[text.find("// Mass").unwrap_or(0)..],
         );
         let _ = mass; // suppress unused warning
+    }
+
+    #[test]
+    fn round_trip_default_values() {
+        let schema = player_schema();
+
+        // Build a Values map from schema defaults.
+        let mut original = Values::new();
+        for field in schema.visible_fields() {
+            let scale = if field.fp_scale > 0.0 { field.fp_scale } else { 1.0 };
+            let fv = match &field.kind {
+                wf_attr_schema::FieldKind::Int   => FieldValue::Int(field.default_raw as i64),
+                wf_attr_schema::FieldKind::Float => FieldValue::Float(field.default_raw as f64 / scale),
+                wf_attr_schema::FieldKind::Enum { items } => {
+                    let idx = field.default_raw.max(0) as usize;
+                    FieldValue::Enum(items.get(idx).cloned().unwrap_or_default())
+                }
+                wf_attr_schema::FieldKind::Str => FieldValue::Str(String::new()),
+                _ => continue,
+            };
+            original.insert(field.key.clone(), fv);
+        }
+
+        // Export → import → compare.
+        let text = to_iff_txt(&schema, &original);
+        let imported = from_iff_txt(&schema, &text).expect("round-trip parse failed");
+
+        for (key, orig_val) in &original {
+            let imp_val = imported.get(key).unwrap_or_else(|| {
+                panic!("field {:?} missing after round-trip", key)
+            });
+            match (orig_val, imp_val) {
+                (FieldValue::Float(a), FieldValue::Float(b)) => {
+                    // Fixed-point quantisation: allow ±1 ULP in raw space.
+                    let field = schema.visible_fields().find(|f| &f.key == key).unwrap();
+                    let scale = if field.fp_scale > 0.0 { field.fp_scale } else { 1.0 };
+                    let diff = ((a - b) * scale).abs();
+                    assert!(diff < 1.5, "Float {key}: {a} vs {b} (diff {diff} raw ULPs)");
+                }
+                _ => assert_eq!(orig_val, imp_val, "field {key} mismatch"),
+            }
+        }
     }
 }

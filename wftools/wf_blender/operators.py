@@ -296,6 +296,57 @@ class WF_OT_export_iff_txt(bpy.types.Operator, ExportHelper):
         return {'FINISHED'}
 
 
+# ── WF_OT_import_iff_txt ─────────────────────────────────────────────────────
+
+from bpy_extras.io_utils import ImportHelper
+
+
+class WF_OT_import_iff_txt(bpy.types.Operator, ImportHelper):
+    """Import attribute values from a .iff.txt file into this object"""
+    bl_idname  = "wf.import_iff_txt"
+    bl_label   = "Import .iff.txt"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    filename_ext = ".iff.txt"
+    filter_glob: StringProperty(default="*.iff.txt", options={'HIDDEN'})
+
+    def execute(self, context):
+        obj = context.active_object
+        if obj is None:
+            self.report({'ERROR'}, "No active object")
+            return {'CANCELLED'}
+        schema = _get_schema(obj)
+        if schema is None:
+            self.report({'ERROR'}, "No schema attached — attach a schema first")
+            return {'CANCELLED'}
+
+        try:
+            with open(self.filepath, 'r', encoding='utf-8') as f:
+                text = f.read()
+        except OSError as e:
+            self.report({'ERROR'}, f"Could not read file: {e}")
+            return {'CANCELLED'}
+
+        try:
+            imported = wf_core.import_iff_txt(schema, text)
+        except Exception as e:
+            self.report({'ERROR'}, f"Parse error: {e}")
+            return {'CANCELLED'}
+
+        # Seed defaults first so every field exists, then overwrite with
+        # imported values.
+        _seed_defaults(obj, schema)
+        count = 0
+        for key, val in imported.items():
+            prop_key = _prop_key(key)
+            if prop_key in obj:
+                obj[prop_key] = val
+                count += 1
+
+        self.report({'INFO'}, f"Imported {count} fields from {self.filepath}")
+        return {'FINISHED'}
+
+
 # ── registration ──────────────────────────────────────────────────────────────
 
 _CLASSES = [
@@ -305,6 +356,7 @@ _CLASSES = [
     WF_OT_set_enum,
     WF_OT_validate,
     WF_OT_export_iff_txt,
+    WF_OT_import_iff_txt,
 ]
 
 

@@ -245,6 +245,33 @@ fn export_iff_txt(
     Ok(wf_attr_serialize::to_iff_txt(&schema.inner, &values))
 }
 
+/// Import values from an iffcomp-format `.iff.txt` string.
+///
+/// Returns a plain Python dict mapping field keys to display values
+/// (same shape as the dict accepted by `validate` and `export_iff_txt`).
+/// Fields absent from the text are omitted from the dict; callers should
+/// seed missing fields from schema defaults.
+#[pyfunction]
+fn import_iff_txt(
+    py: Python<'_>,
+    schema: &PySchema,
+    text: &str,
+) -> PyResult<pyo3::Py<pyo3::types::PyDict>> {
+    let values = wf_attr_serialize::from_iff_txt(&schema.inner, text)
+        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.message))?;
+
+    let dict = pyo3::types::PyDict::new_bound(py);
+    for (key, val) in &values {
+        match val {
+            FieldValue::Int(i)   => dict.set_item(key, i)?,
+            FieldValue::Float(f) => dict.set_item(key, f)?,
+            FieldValue::Enum(s)  => dict.set_item(key, s)?,
+            FieldValue::Str(s)   => dict.set_item(key, s)?,
+        }
+    }
+    Ok(dict.into())
+}
+
 // ── module entry point ────────────────────────────────────────────────────────
 
 /// World Foundry core library — OAD schema loading, validation, and export.
@@ -253,6 +280,7 @@ fn wf_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(load_schema, m)?)?;
     m.add_function(wrap_pyfunction!(validate, m)?)?;
     m.add_function(wrap_pyfunction!(export_iff_txt, m)?)?;
+    m.add_function(wrap_pyfunction!(import_iff_txt, m)?)?;
     m.add_class::<PySchema>()?;
     m.add_class::<PyField>()?;
     m.add_class::<PyValidationIssue>()?;
