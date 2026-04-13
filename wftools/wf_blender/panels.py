@@ -173,6 +173,18 @@ class WF_PT_attributes(bpy.types.Panel):
             op.field_key   = field.key
             op.filter_glob = field.file_filter or "*.iff"
 
+        elif kind == "Int" and show_as == 7:
+            # Packed 0x00RRGGBB color — show hex swatch + picker button
+            packed = int(obj.get(prop_key, 0))
+            row = layout.row(align=True)
+            row.label(text=field.label + ":")
+            op = row.operator(
+                "wf.pick_color",
+                text=f"#{packed:06X}",
+                icon='COLOR',
+            )
+            op.field_key = field.key
+
         elif kind in ("Int", "Float", "Str"):
             layout.prop(obj, f'["{prop_key}"]', text=field.label)
 

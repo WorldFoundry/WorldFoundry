@@ -21,7 +21,7 @@ Storage convention
 """
 
 import bpy
-from bpy.props import StringProperty
+from bpy.props import FloatVectorProperty, StringProperty
 from bpy_extras.io_utils import ExportHelper, ImportHelper
 import wf_core
 
@@ -490,6 +490,52 @@ class WF_OT_pick_file(bpy.types.Operator):
         return {'FINISHED'}
 
 
+# ── WF_OT_pick_color ─────────────────────────────────────────────────────────
+
+class WF_OT_pick_color(bpy.types.Operator):
+    """Open a color picker for a packed-RGB integer field (show_as=7)"""
+    bl_idname  = "wf.pick_color"
+    bl_label   = "Pick Color"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    field_key: StringProperty(options={'HIDDEN'})
+    color: FloatVectorProperty(
+        name="Color",
+        subtype='COLOR',
+        size=3,
+        min=0.0, max=1.0,
+        default=(1.0, 1.0, 1.0),
+    )
+
+    def invoke(self, context, event):
+        obj = context.active_object
+        if obj is None:
+            return {'CANCELLED'}
+        packed = int(obj.get(_prop_key(self.field_key), 0))
+        self.color = (
+            ((packed >> 16) & 0xFF) / 255.0,
+            ((packed >>  8) & 0xFF) / 255.0,
+            ( packed        & 0xFF) / 255.0,
+        )
+        return context.window_manager.invoke_props_dialog(self)
+
+    def draw(self, context):
+        self.layout.prop(self, "color", text="")
+
+    def execute(self, context):
+        obj = context.active_object
+        if obj is None:
+            return {'CANCELLED'}
+        r = int(round(self.color[0] * 255))
+        g = int(round(self.color[1] * 255))
+        b = int(round(self.color[2] * 255))
+        obj[_prop_key(self.field_key)] = (r << 16) | (g << 8) | b
+        for area in context.screen.areas:
+            if area.type == 'PROPERTIES':
+                area.tag_redraw()
+        return {'FINISHED'}
+
+
 # ── registration ──────────────────────────────────────────────────────────────
 
 _CLASSES = [
@@ -498,6 +544,7 @@ _CLASSES = [
     WF_OT_toggle_section,
     WF_OT_set_enum,
     WF_OT_toggle_bool,
+    WF_OT_pick_color,
     WF_OT_pick_file,
     WF_OT_validate,
     WF_OT_export_iff_txt,

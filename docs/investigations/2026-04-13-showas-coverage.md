@@ -17,7 +17,7 @@ files but are not yet correctly handled.
 | Int8/16/32 — no pipe items (4) | 1 number | Int | `layout.prop()` | ✅ |
 | Int8/16/32 — no pipe items (4) | 2 slider | Int | `layout.prop()` + min/max → slider | ✅ |
 | Int8/16/32 — no pipe items (4) | **8 checkbox** | Int | `layout.prop()` as plain integer | ❌ `TYPEENTRYBOOLEAN` — should render as checkbox |
-| Int8/16/32 — no pipe items (4) | 7 color | Int | `layout.prop()` as plain integer | ⚠️ 3 fields (FoggingColor etc); real color picker is complex |
+| Int8/16/32 — no pipe items (4) | 7 color | Int | hex swatch + `wf.pick_color` dialog | ✅ |
 | Int8/16/32 + pipe items (4) | 4 dropmenu | Enum | horizontal button row | ⚠️ functional but cramped for 5+ items |
 | Int8/16/32 + pipe items (4) | 5 radiobuttons | Enum | horizontal button row | ✅ correct |
 | Int8/16/32 + pipe items (4) | 8 checkbox | Enum | checkbox toggle (2-item) | ✅ |
@@ -128,11 +128,15 @@ ButtonType::XData => {
 is seeded as `""` in `_seed_defaults()`, and renders as `layout.prop()` in panels.py.
 No further changes needed.
 
-### Gap 4 — Int show_as=7 (color): 3 fields  ⚠️ DEFERRED
+### Gap 4 — Int show_as=7 (color): 3 fields  ✅ DONE
 
-`FoggingColor`, `Background Color` (camera.oad) are packed ARGB integers.  A true Blender
-color picker requires splitting the packed int into 3 or 4 float components, which is
-non-trivial with custom ID properties.  **Defer** — plain integer is functional for now.
+`FoggingColor`, `Background Color` (camera.oad / mesh.inc) are 24-bit packed RGB integers
+(`0x00RRGGBB`, range 0..0xFFFFFF).
+
+Storage stays as a plain integer ID property.  The panel renders a `#RRGGBB` hex label
+and a `wf.pick_color` button.  Clicking opens an `invoke_props_dialog` with a native
+Blender `FloatVectorProperty(subtype='COLOR')` picker; on confirm the RGB floats are
+packed back to an int and written to the property.
 
 ---
 
@@ -141,9 +145,10 @@ non-trivial with custom ID properties.  **Defer** — plain integer is functiona
 | File | Change |
 |------|--------|
 | `wftools/wf_attr_schema/src/lib.rs` | Add `show_as: u8` param to `classify()`; map Int+show_as=8→Bool; map XData+show_as=11→Str |
-| `wftools/wf_blender/panels.py` | Enum dropmenu layout: column for 5+ items when show_as=4/5 |
+| `wftools/wf_blender/panels.py` | Enum dropmenu: 2-col grid for 5+ items; Int show_as=7: hex swatch + pick_color button |
+| `wftools/wf_blender/operators.py` | Add `WF_OT_pick_color`: invoke_props_dialog with FloatVectorProperty(subtype='COLOR') |
 
-No changes needed to `wf_py`, `wf_blender/operators.py`, `wf_attr_serialize`, or `wf_attr_validate`.
+No changes needed to `wf_py`, `wf_attr_serialize`, or `wf_attr_validate`.
 
 ---
 
