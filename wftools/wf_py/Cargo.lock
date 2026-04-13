@@ -180,6 +180,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "wf_attr_serialize"
+version = "0.1.0"
+dependencies = [
+ "wf_attr_schema",
+]
+
+[[package]]
+name = "wf_attr_validate"
+version = "0.1.0"
+dependencies = [
+ "wf_attr_schema",
+]
+
+[[package]]
 name = "wf_oad"
 version = "0.1.0"
 
@@ -189,5 +203,7 @@ version = "0.1.0"
 dependencies = [
  "pyo3",
  "wf_attr_schema",
+ "wf_attr_serialize",
+ "wf_attr_validate",
  "wf_oad",
 ]
