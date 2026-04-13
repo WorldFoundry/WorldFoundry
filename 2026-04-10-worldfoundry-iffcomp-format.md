@@ -81,6 +81,8 @@ From `Grammar::construct`:
 
 Written by `IffWriterBinary` (`wfsource/source/iffwrite/binary.cc`). Standard EA-IFF in shape, with a couple of World Foundry quirks.
 
+The chunk payloads are typically one of two things: the in-memory layout of C/C++ structs that define object attributes (loaded directly into engine data structures at runtime), or verbatim binary data such as TGA, BMP, and WAV files embedded whole. Native byte order follows naturally from the first case — the structs are read straight off disk into memory with no conversion.
+
 ### Chunk layout
 
 ```
@@ -192,16 +194,16 @@ The file produced by `iffcomp` shares the EA-IFF chunk-header shape but deviates
 | 2 | Chunks padded to **2-byte** boundaries | Chunks padded to **4-byte** boundaries (`align(4)` hard-coded in `exitChunk`) |
 | 3 | Parent `ckSize` = payload bytes only | Parent `ckSize` includes the child's 8-byte header + child's trailing pad (`AddToSize(child.size + pad + 8)`) |
 | 4 | Top-level must be a FORM, LIST, or CAT | No container-type constraint; `file := chunk+` allows any top-level chunk sequence |
+| 5 | No inline-FOURCC alignment | `out_id` calls `align(4)` before writing an inline FOURCC literal, silently shifting subsequent payload offsets |
 
 ### Extensions
 
 | # | EA-IFF 85 | WorldFoundry |
 |---|---|---|
-| 5 | No typed scalars | Fixed-point reals: `val × 2^fraction`, packed into int8/int16/int32 by total bit width |
-| 6 | No string convention | C-style **NUL-terminated** strings; escape sequences (`\n \t \\ \" \NNN`) translated at write time |
-| 7 | No back-patching | `.offsetof('A'::'B')` / `.sizeof('A'::'B')` inject 32-bit absolute file offsets/sizes, resolved via `Backpatch` queue |
-| 8 | No string continuation | `out_string_continue` seeks back over the previous NUL and appends — concatenates adjacent string literals into one C string |
-| 9 | No inline-FOURCC alignment | `out_id` calls `align(4)` before writing an inline FOURCC literal |
+| 6 | No typed scalars | Fixed-point reals: `val × 2^fraction`, packed into int8/int16/int32 by total bit width |
+| 7 | No string convention | C-style **NUL-terminated** strings; escape sequences (`\n \t \\ \" \NNN`) translated at write time |
+| 8 | No back-patching | `.offsetof('A'::'B')` / `.sizeof('A'::'B')` inject 32-bit absolute file offsets/sizes, resolved via `Backpatch` queue |
+| 9 | No string continuation | `out_string_continue` seeks back over the previous NUL and appends — concatenates adjacent string literals into one C string |
 
 ### Note on IDs
 
