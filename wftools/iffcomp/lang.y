@@ -86,6 +86,12 @@
 
 %type <unsigned long> item expr
 
+%left PLUS MINUS
+
+// 1 inherent shift/reduce: "hello" "world" continuation — shift (concatenate)
+// is correct, bison's default.
+%expect 1
+
 %%
 
 statement_list
@@ -108,7 +114,7 @@ chunk
 
 chunk_statement_list
     : chunk_statement_list chunk_statement
-    | chunk_statement
+    | %empty
     ;
 
 chunk_statement
@@ -116,7 +122,6 @@ chunk_statement
     | alignment
     | fillchar                                  {}
     | expr                                      {}
-    | %empty                                    {}
     ;
 
 fillchar
@@ -136,7 +141,7 @@ alignment
 
 expr_list
     : expr_list expr                            {}
-    | item                                      {}
+    | expr                                      {}
     ;
 
 size_specifier
@@ -183,7 +188,6 @@ chunkSpecifier
 
 extractSpecifierList
     : extractSpecifierList extractSpecifier     {}
-    | extractSpecifier                          {}
     | %empty                                    {}
     ;
 

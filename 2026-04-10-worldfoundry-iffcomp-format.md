@@ -5,7 +5,7 @@
 
 There are really **two** formats here:
 
-1. The textual *source* language eaten by `iffcomp` (`.iff.txt` / `.scr`).
+1. The textual *source* language consumed by `iffcomp` (`.iff.txt` / `.scr`).
 2. The *binary* IFF tree it spits out.
 
 Both are documented below.
@@ -68,7 +68,7 @@ The parser disambiguates "chunk vs. state-push" by lookahead: if the next token 
 
 ### Numeric expressions
 
-`expr` allows `item + item` and `item - item`. Only `+` actually accumulates in the action (`$$ = $1 + $3`); the `-` rule has an empty action — looks unfinished.
+`expr` allows `item + item` and `item - item`, both fully implemented (`$$ = $1 + $3` and `$$ = $1 - $3`).
 
 ### Defaults
 
