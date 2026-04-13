@@ -1,0 +1,68 @@
+{ 'GAME'
+	{ 'TOC'
+		'SHEL'	.OFFSETOF( ::'GAME'::'SHEL' )	.SIZEOF( ::'GAME'::'SHEL' )
+		'L0'	.OFFSETOF( ::'GAME'::'L0' )	.SIZEOF( ::'GAME'::'L0' )
+		'L1'	.OFFSETOF( ::'GAME'::'L1' )	.SIZEOF( ::'GAME'::'L1' )
+		'L2'	.OFFSETOF( ::'GAME'::'L2' )	.SIZEOF( ::'GAME'::'L2' )
+		'L3'	.OFFSETOF( ::'GAME'::'L3' )	.SIZEOF( ::'GAME'::'L3' )
+		'L4'	.OFFSETOF( ::'GAME'::'L4' )	.SIZEOF( ::'GAME'::'L4' )
+		'L5'	.OFFSETOF( ::'GAME'::'L5' )	.SIZEOF( ::'GAME'::'L5' )
+		'L6'	.OFFSETOF( ::'GAME'::'L6' )	.SIZEOF( ::'GAME'::'L6' )
+	}
+	{ 'ALGN' .ALIGN( 2048 ) }
+
+	{ 'SHEL' [ "shell.aib" ]
+	}
+	{ 'ALGN' .ALIGN( 2048 ) }
+
+
+	{
+		'L0'
+		{ 'ALGN' .ALIGN( 2048 ) }
+		[ "cubemenu.iff" ]
+	}
+	{ 'ALGN' .ALIGN( 2048 ) }
+
+	{
+		'L1'
+		{ 'ALGN' .ALIGN( 2048 ) }
+		[ "3dtext.iff" ]
+	}
+	{ 'ALGN' .ALIGN( 2048 ) }
+
+	{
+		'L2'
+		{ 'ALGN' .ALIGN( 2048 ) }
+		[ "cyberthug.iff" ]
+	}
+	{ 'ALGN' .ALIGN( 2048 ) }
+
+	{
+		'L3'
+		{ 'ALGN' .ALIGN( 2048 ) }
+		[ "primitives.iff" ]
+	}
+	{ 'ALGN' .ALIGN( 2048 ) }
+
+	{
+		'L4'
+		{ 'ALGN' .ALIGN( 2048 ) }
+		[ "snowgoons.iff" ]
+	}
+	{ 'ALGN' .ALIGN( 2048 ) }
+
+	{
+		'L5'
+		{ 'ALGN' .ALIGN( 2048 ) }
+		[ "bubba.iff" ]
+	}
+	{ 'ALGN' .ALIGN( 2048 ) }
+
+	{
+		'L6'
+		{ 'ALGN' .ALIGN( 2048 ) }
+		[ "whitestar.iff" ]
+	}
+	{ 'ALGN' .ALIGN( 2048 ) }
+
+}
