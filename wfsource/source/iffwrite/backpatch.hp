@@ -39,17 +39,17 @@ public:
 	ChunkSizeBackpatch(ID newID, int newPos, uint32_t newSize, const  char* name)
 	{
 		id = newID;
-		_size = newSize;
+		sizeChunk = newSize;
 		pos = newPos;
 		strncpy(szID,name,256);
-		DBSTREAM1(ciff << "ChunkSizeBackpatch::Constructor: name = " << name << ", pos = " << pos << ", size = " << _size << std::endl; )
+		DBSTREAM1(ciff << "ChunkSizeBackpatch::Constructor: name = " << name << ", pos = " << pos << ", size = " << sizeChunk << std::endl; )
 	}
-	ChunkSizeBackpatch()	{ _size = 0; pos = 0; szID[0] =0; }
+	ChunkSizeBackpatch()	{ sizeChunk = 0; pos = 0; szID[0] =0; }
 	~ChunkSizeBackpatch()	{}
 
     uint32_t GetSize() const
     {
-         return _size;
+         return sizeChunk;
     }
     int GetPos() const
     {
@@ -71,28 +71,28 @@ public:
     void AddToSize(uint32_t offset)
     {
         assert(offset != 0);
-		DBSTREAM1(ciff << "Backpatch::AddToSize: offset = " << offset << ", old size = " << _size << ", new size = " << _size+offset << std::endl; )
-        _size += offset;
+		DBSTREAM1(ciff << "Backpatch::AddToSize: offset = " << offset << ", old size = " << sizeChunk << ", new size = " << sizeChunk+offset << std::endl; )
+        sizeChunk += offset;
     }
 
     void SubtractFromSize(uint32_t offset)
     {
-        assert(_size >= offset);
+        assert(sizeChunk >= offset);
         assert(offset != 0);
-		DBSTREAM1(ciff << "Backpatch::SubtractFromSize: offset = " << offset << ", old size = " << _size << ", new size = " << _size-offset << std::endl; )
-        _size -= offset;
+		DBSTREAM1(ciff << "Backpatch::SubtractFromSize: offset = " << offset << ", old size = " << sizeChunk << ", new size = " << sizeChunk-offset << std::endl; )
+        sizeChunk -= offset;
     }
 
 	//IOSTREAMS( friend std::ostream& operator<<(std::ostream& out, const ChunkSizeBackpatch &) const; )
 #if DO_IOSTREAMS
     friend std::ostream& operator<<(std::ostream& out, const ChunkSizeBackpatch & csb) 
     {
-        out << "size = " << csb._size << ", pos = " << csb.pos << ", id = " << csb.id << ", szID = " << csb.szID;
+        out << "size = " << csb.sizeChunk << ", pos = " << csb.pos << ", id = " << csb.id << ", szID = " << csb.szID;
         return out;
     }
 #endif
 private:
-	uint32_t _size;
+	uint32_t sizeChunk;
 	int pos;
 	ID id;
 

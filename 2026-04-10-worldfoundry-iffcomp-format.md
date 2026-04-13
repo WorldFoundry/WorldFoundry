@@ -200,9 +200,8 @@ The file produced by `iffcomp` shares the EA-IFF chunk-header shape but deviates
 | # | EA-IFF 85 | WorldFoundry |
 |---|---|---|
 | 5 | No typed scalars | Fixed-point reals: `val × 2^fraction`, packed into int8/int16/int32 by total bit width |
-| 6 | No string convention | C-style **NUL-terminated** strings; escape sequences (`\n \t \\ \" \NNN`) translated at write time |
+| 6 | No string convention | C-style **NUL-terminated** strings; escape sequences (`\n \t \\ \" \NNN`) translated at write time. Adjacent string literals (`"hello" "world"`) are concatenated into one C string via `out_string_continue` (seeks back over the previous NUL and appends). |
 | 7 | No back-patching | `.offsetof('A'::'B')` / `.sizeof('A'::'B')` inject 32-bit absolute file offsets/sizes, resolved via `Backpatch` queue |
-| 8 | No string continuation | `out_string_continue` seeks back over the previous NUL and appends — concatenates adjacent string literals into one C string |
 
 ### Note on IDs
 
