@@ -55,6 +55,11 @@ impl FieldKind {
 
 // ── field descriptor ──────────────────────────────────────────────────────────
 
+/// Fixed-point scale factor for Fixed32 fields (2^16).
+pub const FIXED32_SCALE: f64 = 65536.0;
+/// Fixed-point scale factor for Fixed16 fields (2^8).
+pub const FIXED16_SCALE: f64 = 256.0;
+
 /// A normalized description of one field in a schema.
 #[derive(Debug, Clone)]
 pub struct FieldDescriptor {
@@ -70,12 +75,28 @@ pub struct FieldDescriptor {
     /// Section/group this field belongs to (from the enclosing PropertySheet
     /// or GroupStart entry).
     pub group: String,
-    /// Raw i32 minimum from OAD. For `Float` fields divide by 65536.
+    /// Raw i32 minimum from OAD.
     pub min_raw: i32,
-    /// Raw i32 maximum from OAD. For `Float` fields divide by 65536.
+    /// Raw i32 maximum from OAD.
     pub max_raw: i32,
-    /// Raw i32 default from OAD. For `Float` fields divide by 65536.
+    /// Raw i32 default from OAD.
     pub default_raw: i32,
+    /// Byte width of the serialized value (1, 2, or 4).
+    /// Used by the exporter to pack the correct number of bytes.
+    /// 0 for Group and Skip fields (they contribute no bytes).
+    pub byte_width: u8,
+    /// Fixed-point scale factor (for Float fields only).
+    /// `display_value = raw_value / fp_scale`.
+    /// 0.0 for non-Float fields.
+    pub fp_scale: f64,
+    /// Raw `visualRepresentation` byte from the OAD entry.
+    /// Useful for rendering hints:
+    ///   0 → plain numeric
+    ///   4 → dropmenu (use dropdown)
+    ///   5 → dropmenu (use dropdown)
+    ///   6 → hidden / internal (consider skipping in UI)
+    ///   8 → checkbox (render bool-style toggle)
+    pub show_as: u8,
 }
 
 impl FieldDescriptor {
@@ -137,19 +158,40 @@ pub fn from_oad(oad: &OadFile) -> Schema {
             _ => {}
         }
 
+        let (byte_width, fp_scale) = field_layout(entry.button_type);
+
         fields.push(FieldDescriptor {
             key,
             label,
             kind,
             help,
-            group: current_group.clone(),
+            group:       current_group.clone(),
             min_raw:     entry.min,
             max_raw:     entry.max,
             default_raw: entry.def,
+            byte_width,
+            fp_scale,
+            show_as:     entry.show_as,
         });
     }
 
     Schema { name, fields }
+}
+
+/// Return `(byte_width, fp_scale)` for a field's binary serialization layout.
+/// `byte_width` is 0 for Group/Skip (no bytes in output).
+/// `fp_scale` is the divisor to convert raw i32 to display float; 0.0 if not float.
+fn field_layout(bt: ButtonType) -> (u8, f64) {
+    match bt {
+        ButtonType::Fixed16                            => (2, FIXED16_SCALE),
+        ButtonType::Fixed32                            => (4, FIXED32_SCALE),
+        ButtonType::Int8                               => (1, 0.0),
+        ButtonType::Int16                              => (2, 0.0),
+        ButtonType::Int32                              => (4, 0.0),
+        ButtonType::String | ButtonType::Filename      => (0, 0.0), // variable; exporter handles
+        ButtonType::PropertySheet | ButtonType::GroupStart => (0, 0.0),
+        _                                              => (0, 0.0),
+    }
 }
 
 /// Map an OAD `ButtonType` + `string` field content to a [`FieldKind`].

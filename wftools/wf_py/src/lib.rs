@@ -21,6 +21,12 @@ use wf_oad::OadFile;
 // ── PyField ───────────────────────────────────────────────────────────────────
 
 /// Python-visible descriptor for one OAD field.
+///
+/// For `Float` fields, `default_display`, `min_display`, `max_display` are
+/// the human-readable float values (raw / fp_scale).  Store and edit these
+/// display values in Blender; the exporter converts them back to raw.
+///
+/// For all other field kinds, `default_display` equals `default_raw` cast to float.
 #[pyclass(name = "Field")]
 #[derive(Clone)]
 struct PyField {
@@ -28,6 +34,7 @@ struct PyField {
     key: String,
     #[pyo3(get)]
     label: String,
+    /// `"Int"` | `"Float"` | `"Enum"` | `"Group"` | `"Str"` | `"Skip"`
     #[pyo3(get)]
     kind: String,
     #[pyo3(get)]
@@ -40,7 +47,25 @@ struct PyField {
     max_raw: i32,
     #[pyo3(get)]
     default_raw: i32,
-    // For Enum fields: the list of choice labels.
+    /// Human-readable display value for the default.
+    /// Float fields: default_raw / fp_scale.  Others: default_raw as f64.
+    #[pyo3(get)]
+    default_display: f64,
+    #[pyo3(get)]
+    min_display: f64,
+    #[pyo3(get)]
+    max_display: f64,
+    /// Fixed-point divisor (e.g. 65536 for Fixed32).  0.0 for non-Float.
+    #[pyo3(get)]
+    fp_scale: f64,
+    /// Serialized byte width (1, 2, or 4).  0 for Group/Skip/variable.
+    #[pyo3(get)]
+    byte_width: u8,
+    /// Raw `visualRepresentation` from the OAD.
+    /// 0=plain, 4/5=dropmenu, 6=hidden, 8=checkbox.
+    #[pyo3(get)]
+    show_as: u8,
+    // Enum item labels (non-empty only for Enum fields).
     enum_items: Vec<String>,
 }
 
@@ -62,15 +87,31 @@ fn field_from_desc(desc: &wf_attr_schema::FieldDescriptor) -> PyField {
         FieldKind::Enum { items } => ("Enum".to_owned(), items.clone()),
         other => (other.tag().to_owned(), Vec::new()),
     };
+    let scale = if desc.fp_scale > 0.0 { desc.fp_scale } else { 1.0 };
+    let (default_display, min_display, max_display) = if desc.fp_scale > 0.0 {
+        (
+            desc.default_raw as f64 / scale,
+            desc.min_raw     as f64 / scale,
+            desc.max_raw     as f64 / scale,
+        )
+    } else {
+        (desc.default_raw as f64, desc.min_raw as f64, desc.max_raw as f64)
+    };
     PyField {
-        key:         desc.key.clone(),
-        label:       desc.label.clone(),
-        kind:        kind_tag,
-        help:        desc.help.clone(),
-        group:       desc.group.clone(),
-        min_raw:     desc.min_raw,
-        max_raw:     desc.max_raw,
-        default_raw: desc.default_raw,
+        key:             desc.key.clone(),
+        label:           desc.label.clone(),
+        kind:            kind_tag,
+        help:            desc.help.clone(),
+        group:           desc.group.clone(),
+        min_raw:         desc.min_raw,
+        max_raw:         desc.max_raw,
+        default_raw:     desc.default_raw,
+        default_display,
+        min_display,
+        max_display,
+        fp_scale:        desc.fp_scale,
+        byte_width:      desc.byte_width,
+        show_as:         desc.show_as,
         enum_items,
     }
 }
@@ -135,7 +176,12 @@ impl PyValidationIssue {
 
 /// Validate `values` against `schema`.
 ///
-/// `values` is a Python dict mapping field keys to raw int/float/str values.
+/// `values` is a Python dict mapping field keys to display values:
+/// - `Int` fields: integer or float (truncated)
+/// - `Float` fields: display float (e.g. 50.0 for Mass, not the raw 3276800)
+/// - `Enum` fields: string item label (e.g. `"Physics"`) or int index
+/// - `Str` fields: string
+///
 /// Returns a list of [`ValidationIssue`] objects (empty = all good).
 #[pyfunction]
 fn validate(
@@ -147,6 +193,8 @@ fn validate(
     for field in schema.inner.visible_fields() {
         let raw_val = values.get_item(field.key.as_str())?;
         let Some(raw_val) = raw_val else { continue };
+
+        let scale = if field.fp_scale > 0.0 { field.fp_scale } else { 1.0 };
 
         match &field.kind {
             wf_attr_schema::FieldKind::Int => {
@@ -163,26 +211,36 @@ fn validate(
                 }
             }
             wf_attr_schema::FieldKind::Float => {
-                let v: i64 = raw_val.extract().unwrap_or(0);
-                if v < field.min_raw as i64 || v > field.max_raw as i64 {
+                // values dict stores display float; convert back to raw for range check
+                let display: f64 = raw_val.extract().unwrap_or(0.0);
+                let raw = (display * scale).round() as i64;
+                if raw < field.min_raw as i64 || raw > field.max_raw as i64 {
                     issues.push(PyValidationIssue {
-                        key:      field.key.clone(),
-                        message:  format!(
-                            "raw value {} out of range [{}, {}]",
-                            v, field.min_raw, field.max_raw
+                        key:     field.key.clone(),
+                        message: format!(
+                            "{:.4} out of range [{:.4}, {:.4}]",
+                            display,
+                            field.min_raw as f64 / scale,
+                            field.max_raw as f64 / scale,
                         ),
                         is_error: true,
                     });
                 }
             }
             wf_attr_schema::FieldKind::Enum { items } => {
-                let v: i64 = raw_val.extract().unwrap_or(-1);
-                if v < 0 || v as usize >= items.len() {
+                // Accept either a string label or an int index
+                let idx: i64 = if let Ok(s) = raw_val.extract::<String>() {
+                    items.iter().position(|i| i == &s).map(|p| p as i64).unwrap_or(-1)
+                } else {
+                    raw_val.extract().unwrap_or(-1)
+                };
+                if idx < 0 || idx as usize >= items.len() {
                     issues.push(PyValidationIssue {
                         key:      field.key.clone(),
                         message:  format!(
-                            "enum index {} out of range [0, {}]",
-                            v, items.len().saturating_sub(1)
+                            "invalid enum value {:?} — valid: {:?}",
+                            raw_val.str().map(|s| s.to_string()).unwrap_or_default(),
+                            items,
                         ),
                         is_error: true,
                     });
@@ -197,46 +255,115 @@ fn validate(
 
 // ── export_iff_txt ────────────────────────────────────────────────────────────
 
-/// Export `values` as a human-readable `.iff.txt` artifact.
+/// Export `values` as an iffcomp-format `.iff.txt` artifact.
 ///
-/// `values` is a Python dict mapping field keys to raw int/str values.
+/// `values` is a Python dict mapping field keys to display values
+/// (same contract as [`validate`]).  Missing fields use the schema default.
+///
+/// The output is valid iffcomp source: each field's value is serialized as
+/// little-endian bytes on a `$XX $XX ...` line followed by a `// key` comment.
+///
 /// Returns the text as a Python string.
-///
-/// This is a milestone-1 debug format: each visible field is listed as a
-/// comment line with its key, kind, label, and current value.  Full binary
-/// IFF serialization is deferred to milestone 2.
 #[pyfunction]
 fn export_iff_txt(
     schema: &PySchema,
     values: &pyo3::Bound<'_, pyo3::types::PyDict>,
 ) -> PyResult<String> {
+    // Build the FOURCC from the first 1–4 chars of the schema name, space-padded.
+    let name_bytes = schema.inner.name.as_bytes();
+    let mut fourcc = [b' '; 4];
+    for (i, &b) in name_bytes.iter().take(4).enumerate() {
+        fourcc[i] = b.to_ascii_uppercase();
+    }
+    let fourcc_str: String = fourcc.iter().map(|&b| b as char).collect();
+
+    // Collect bytes for all visible fields.
+    let mut payload: Vec<u8> = Vec::new();
+    // Lines of iffcomp source for the payload.
+    let mut lines: Vec<String> = Vec::new();
+
+    for field in schema.inner.visible_fields() {
+        let raw_val = values.get_item(field.key.as_str())?;
+        let scale = if field.fp_scale > 0.0 { field.fp_scale } else { 1.0 };
+
+        match &field.kind {
+            wf_attr_schema::FieldKind::Int | wf_attr_schema::FieldKind::Enum { .. } => {
+                let raw: i32 = if let Some(v) = &raw_val {
+                    // Enum: accept string label or int
+                    if let wf_attr_schema::FieldKind::Enum { items } = &field.kind {
+                        if let Ok(s) = v.extract::<String>() {
+                            items.iter().position(|i| i == &s)
+                                .map(|p| p as i32)
+                                .unwrap_or(field.default_raw)
+                        } else {
+                            v.extract::<i32>().unwrap_or(field.default_raw)
+                        }
+                    } else {
+                        v.extract::<i32>().unwrap_or(field.default_raw)
+                    }
+                } else {
+                    field.default_raw
+                };
+                let bytes = raw.to_le_bytes();
+                let width = field.byte_width.max(4) as usize;
+                let b = &bytes[..width];
+                payload.extend_from_slice(b);
+                lines.push(format!(
+                    "\t{}\t// {}",
+                    b.iter().map(|x| format!("${:02X}", x)).collect::<Vec<_>>().join(" "),
+                    field.key,
+                ));
+            }
+            wf_attr_schema::FieldKind::Float => {
+                let display: f64 = raw_val.as_ref()
+                    .and_then(|v| v.extract::<f64>().ok())
+                    .unwrap_or(field.default_raw as f64 / scale);
+                let raw = (display * scale).round() as i32;
+                let bytes = raw.to_le_bytes();
+                let width = field.byte_width.max(4) as usize;
+                let b = &bytes[..width];
+                payload.extend_from_slice(b);
+                lines.push(format!(
+                    "\t{}\t// {} ({:.6})",
+                    b.iter().map(|x| format!("${:02X}", x)).collect::<Vec<_>>().join(" "),
+                    field.key,
+                    display,
+                ));
+            }
+            wf_attr_schema::FieldKind::Str => {
+                // String: write raw bytes as-is; no fixed width in M1 export.
+                let s: String = raw_val.as_ref()
+                    .and_then(|v| v.extract::<String>().ok())
+                    .unwrap_or_default();
+                let b = s.as_bytes();
+                payload.extend_from_slice(b);
+                if !b.is_empty() {
+                    lines.push(format!(
+                        "\t{}\t// {}",
+                        b.iter().map(|x| format!("${:02X}", x)).collect::<Vec<_>>().join(" "),
+                        field.key,
+                    ));
+                } else {
+                    lines.push(format!("\t// {} (empty string)", field.key));
+                }
+            }
+            _ => {}
+        }
+    }
+
+    let size = payload.len();
     let mut out = String::new();
-    out.push_str(&format!(
-        "//=============================================================================\n"
-    ));
+    out.push_str("//=============================================================================\n");
     out.push_str(&format!(
         "// {} — exported by wf_core v{}\n",
         schema.inner.name,
-        env!("CARGO_PKG_VERSION")
+        env!("CARGO_PKG_VERSION"),
     ));
-    out.push_str(
-        "//=============================================================================\n",
-    );
-    out.push_str(&format!("{{ '{}'\n", &schema.inner.name[..4.min(schema.inner.name.len())]));
-    out.push_str("//\t[kind]\tkey\t= value\n");
-
-    for field in schema.inner.visible_fields() {
-        let val = values.get_item(field.key.as_str())?;
-        let val_str = match val {
-            Some(v) => v.str().map(|s| s.to_string()).unwrap_or_else(|_| "?".to_owned()),
-            None => "(default)".to_owned(),
-        };
-        out.push_str(&format!(
-            "//\t[{}]\t{}\t= {}\n",
-            field.kind.tag(),
-            field.key,
-            val_str
-        ));
+    out.push_str("//=============================================================================\n");
+    out.push_str(&format!("{{ '{}'\t\t// Size = {}\n", fourcc_str, size));
+    for line in &lines {
+        out.push_str(line);
+        out.push('\n');
     }
     out.push_str("}\n");
     Ok(out)

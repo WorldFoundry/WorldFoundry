@@ -1,17 +1,10 @@
 """
-World Foundry property panel.
-
-Rendered dynamically from the Rust-provided schema descriptors — no
-hardcoded field layout.  One panel per object in Properties > Object.
+World Foundry property panel — dynamic, driven by Rust schema descriptors.
 """
 
 import bpy
 import wf_core
-from .operators import SCHEMA_PATH_KEY, _prop_key, _get_schema
-
-# ── WF_PT_attributes ─────────────────────────────────────────────────────────
-
-FIXED32_SCALE = 65536.0  # 2^16
+from .operators import SCHEMA_PATH_KEY, _prop_key, _get_schema, _seed_defaults
 
 
 class WF_PT_attributes(bpy.types.Panel):
@@ -29,90 +22,96 @@ class WF_PT_attributes(bpy.types.Panel):
 
         schema_path = obj.get(SCHEMA_PATH_KEY)
 
-        # ── header row: schema name + attach/detach buttons ──
+        # ── header ────────────────────────────────────────────
         row = layout.row(align=True)
         if schema_path:
             try:
                 schema = wf_core.load_schema(schema_path)
-                row.label(text=schema.name, icon='OBJECT_DATA')
             except Exception as e:
                 row.label(text=f"Schema error: {e}", icon='ERROR')
                 row.operator("wf.attach_schema", text="", icon='FILE_FOLDER')
                 return
+            row.label(text=schema.name, icon='OBJECT_DATA')
         else:
             row.label(text="No schema attached", icon='QUESTION')
 
-        row.operator("wf.attach_schema",  text="", icon='FILE_FOLDER')
-        row.operator("wf.detach_schema",  text="", icon='X')
+        row.operator("wf.attach_schema", text="", icon='FILE_FOLDER')
+        row.operator("wf.detach_schema", text="", icon='X')
 
         if not schema_path:
             return
 
-        # ── field rows ───────────────────────────────────────
-        current_group = None
-        box = None
+        # Ensure any fields added since last attach have defaults
+        _seed_defaults(obj, schema)
+
+        # ── field rows ────────────────────────────────────────
+        current_box = None
+        current_group_name = None
 
         for field in schema.fields():
             if field.kind == "Skip":
                 continue
 
             if field.kind == "Group":
-                # Start a new collapsible section
-                box = layout.box()
-                row = box.row()
-                row.label(text=field.label, icon='DOWNARROW_HLT')
-                current_group = field.label
+                current_box = layout.box()
+                current_box.label(text=field.label, icon='DOWNARROW_HLT')
+                current_group_name = field.label
                 continue
 
-            # Use the box if we're inside a group, otherwise the root layout
-            target = box if box is not None else layout
+            container = current_box if current_box is not None else layout
+            prop_key  = _prop_key(field.key)
 
-            prop_key = _prop_key(field.key)
             if prop_key not in obj:
-                # Field not seeded yet (schema changed?) — show placeholder
-                target.label(text=f"{field.label}: (not set)", icon='ERROR')
+                container.label(text=f"{field.label}: (not set)", icon='ERROR')
                 continue
 
-            self._draw_field(target, obj, field, prop_key)
+            self._draw_field(container, obj, field, prop_key)
 
-        # ── footer: validate + export buttons ────────────────
+        # ── footer ────────────────────────────────────────────
         layout.separator()
         row = layout.row(align=True)
-        row.operator("wf.validate",        text="Validate",      icon='CHECKMARK')
-        row.operator("wf.export_iff_txt",  text="Export .iff.txt", icon='EXPORT')
+        row.operator("wf.validate",       text="Validate",        icon='CHECKMARK')
+        row.operator("wf.export_iff_txt", text="Export .iff.txt", icon='EXPORT')
 
     @staticmethod
     def _draw_field(layout, obj, field, prop_key):
-        """Render one field row appropriate to its kind."""
-        kind = field.kind
+        kind    = field.kind
+        show_as = field.show_as
 
-        if kind == "Int":
+        if kind in ("Int", "Float", "Str"):
             layout.prop(obj, f'["{prop_key}"]', text=field.label)
-
-        elif kind == "Float":
-            # Show raw fixed-point as a float via a custom draw
-            row = layout.row()
-            row.label(text=field.label)
-            raw = obj.get(prop_key, 0)
-            # Display as float; editing updates raw via modal operator (future).
-            # For now show read-only float alongside the raw int prop.
-            row.label(text=f"{raw / FIXED32_SCALE:.4f}")
-            row.prop(obj, f'["{prop_key}"]', text="raw")
 
         elif kind == "Enum":
-            items = field.enum_items()
-            idx = obj.get(prop_key, 0)
-            label = items[idx] if 0 <= idx < len(items) else f"? ({idx})"
-            row = layout.row()
-            row.label(text=field.label)
-            row.label(text=label)
-            # TODO: replace with a proper EnumProperty once schema is stable
-            row.prop(obj, f'["{prop_key}"]', text="idx")
+            items   = field.enum_items()
+            current = obj.get(prop_key, "")
 
-        elif kind == "Str":
-            layout.prop(obj, f'["{prop_key}"]', text=field.label)
+            if show_as == 8 and len(items) == 2:
+                # ShowAs=8 → checkbox-style toggle (False / True)
+                is_true = (current == items[1])
+                row = layout.row()
+                row.label(text=field.label + ":")
+                op = row.operator(
+                    "wf.set_enum",
+                    text=items[1] if is_true else items[0],
+                    icon='CHECKBOX_HLT' if is_true else 'CHECKBOX_DEHLT',
+                    depress=is_true,
+                )
+                op.field_key  = field.key
+                op.item_label = items[0] if is_true else items[1]
 
-        # Group handled by caller; Skip never reaches here.
+            else:
+                # ShowAs=4/5 → row of labelled buttons (highlight selected)
+                row = layout.row(align=True)
+                row.label(text=field.label + ":")
+                sub = row.row(align=True)
+                for item in items:
+                    op = sub.operator(
+                        "wf.set_enum",
+                        text=item,
+                        depress=(item == current),
+                    )
+                    op.field_key  = field.key
+                    op.item_label = item
 
 
 # ── registration ──────────────────────────────────────────────────────────────
