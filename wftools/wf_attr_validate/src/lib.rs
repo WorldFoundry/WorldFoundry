@@ -110,6 +110,10 @@ pub fn validate(schema: &Schema, values: &Values) -> Vec<ValidationIssue> {
                 }
             }
 
+            // FileRef: the file's existence cannot be checked in Rust; pass through.
+            // Blender-side code may warn about missing files separately.
+            FieldKind::FileRef { .. } => {}
+
             // ObjRef: existence of the referenced object cannot be checked
             // in Rust (no Blender scene access); pass through without error.
             // Blender-side code is responsible for warning about dangling refs.
@@ -202,6 +206,7 @@ mod tests {
                     byte_width:  0,
                     fp_scale:    0.0,
                     show_as:     0,
+                    file_filter: String::new(),
                 },
             ],
         };
@@ -236,6 +241,7 @@ mod tests {
                     byte_width:  0,
                     fp_scale:    0.0,
                     show_as:     0,
+                    file_filter: String::new(),
                 },
             ],
         };

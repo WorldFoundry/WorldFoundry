@@ -36,7 +36,7 @@ struct PyField {
     key: String,
     #[pyo3(get)]
     label: String,
-    /// `"Int"` | `"Float"` | `"Enum"` | `"Section"` | `"Group"` | `"GroupEnd"` | `"Str"` | `"ObjRef"` | `"Skip"`
+    /// `"Int"` | `"Float"` | `"Enum"` | `"Section"` | `"Group"` | `"GroupEnd"` | `"Str"` | `"FileRef"` | `"ObjRef"` | `"Skip"`
     #[pyo3(get)]
     kind: String,
     #[pyo3(get)]
@@ -71,6 +71,10 @@ struct PyField {
     /// Always empty for non-ObjRef fields.
     #[pyo3(get)]
     class_tag: String,
+    /// For `FileRef` fields: semicolon-separated glob patterns for the file
+    /// browser (e.g. `"*.iff;*.bmp;*.tga"`).  Empty string for other fields.
+    #[pyo3(get)]
+    file_filter: String,
 }
 
 #[pymethods]
@@ -85,10 +89,11 @@ impl PyField {
 }
 
 fn field_from_desc(desc: &FieldDescriptor) -> PyField {
-    let (kind_tag, enum_items, class_tag) = match &desc.kind {
-        FieldKind::Enum { items }       => ("Enum".to_owned(),   items.clone(), String::new()),
-        FieldKind::ObjRef { class_tag } => ("ObjRef".to_owned(), Vec::new(),    class_tag.clone()),
-        other => (other.tag().to_owned(), Vec::new(), String::new()),
+    let (kind_tag, enum_items, class_tag, file_filter) = match &desc.kind {
+        FieldKind::Enum { items }       => ("Enum".to_owned(),    items.clone(), String::new(),          String::new()),
+        FieldKind::ObjRef { class_tag } => ("ObjRef".to_owned(),  Vec::new(),    class_tag.clone(),      String::new()),
+        FieldKind::FileRef { filter }   => ("FileRef".to_owned(), Vec::new(),    String::new(),           filter.clone()),
+        other                           => (other.tag().to_owned(), Vec::new(), String::new(),            String::new()),
     };
     let scale = if desc.fp_scale > 0.0 { desc.fp_scale } else { 1.0 };
     let (default_display, min_display, max_display) = if desc.fp_scale > 0.0 {
@@ -117,6 +122,7 @@ fn field_from_desc(desc: &FieldDescriptor) -> PyField {
         show_as:         desc.show_as,
         enum_items,
         class_tag,
+        file_filter,
     }
 }
 
@@ -202,6 +208,8 @@ fn dict_to_values(
                 FieldValue::Enum(label)
             }
             FieldKind::Str        => FieldValue::Str(raw.extract().unwrap_or_default()),
+            // FileRef stores a file path (string).
+            FieldKind::FileRef { .. } => FieldValue::Str(raw.extract().unwrap_or_default()),
             // ObjRef stores a Blender object name (string); treat as Str for
             // serialization purposes.
             FieldKind::ObjRef { .. } => FieldValue::Str(raw.extract().unwrap_or_default()),

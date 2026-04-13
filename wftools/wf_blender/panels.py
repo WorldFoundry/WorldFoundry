@@ -153,6 +153,14 @@ class WF_PT_attributes(bpy.types.Panel):
             if name and name not in bpy.data.objects:
                 row.label(text="", icon='ERROR')
 
+        elif kind == "FileRef":
+            # Text field + file-browser button.
+            row = layout.row(align=True)
+            row.prop(obj, f'["{prop_key}"]', text=field.label)
+            op = row.operator("wf.pick_file", text="", icon='FILE_FOLDER')
+            op.field_key   = field.key
+            op.filter_glob = field.file_filter or "*.iff"
+
         elif kind in ("Int", "Float", "Str"):
             layout.prop(obj, f'["{prop_key}"]', text=field.label)
 

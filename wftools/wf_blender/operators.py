@@ -97,7 +97,7 @@ def _seed_defaults(obj, schema):
             items = field.enum_items()
             idx = field.default_raw
             obj[key] = items[idx] if 0 <= idx < len(items) else (items[0] if items else "")
-        elif field.kind in ("Str", "ObjRef"):
+        elif field.kind in ("Str", "ObjRef", "FileRef"):
             obj[key] = ""
         else:
             obj[key] = field.default_raw
@@ -433,6 +433,39 @@ class WF_OT_import_iff(bpy.types.Operator, ImportHelper):
         return {'FINISHED'}
 
 
+# ── WF_OT_pick_file ──────────────────────────────────────────────────────────
+
+class WF_OT_pick_file(bpy.types.Operator):
+    """Browse for a file and store its path in a FileRef field"""
+    bl_idname  = "wf.pick_file"
+    bl_label   = "Pick File"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    field_key:   StringProperty(options={'HIDDEN'})
+    filter_glob: StringProperty(default="*.iff", options={'HIDDEN'})
+    filepath:    StringProperty(subtype='FILE_PATH')
+
+    def invoke(self, context, event):
+        context.window_manager.fileselect_add(self)
+        return {'RUNNING_MODAL'}
+
+    def execute(self, context):
+        obj = context.active_object
+        if obj is None:
+            return {'CANCELLED'}
+        prop_key = _prop_key(self.field_key)
+        # Store //-relative path when the blend file is saved.
+        stored = (
+            bpy.path.relpath(self.filepath)
+            if bpy.data.is_saved else self.filepath
+        )
+        obj[prop_key] = stored
+        for area in context.screen.areas:
+            if area.type == 'PROPERTIES':
+                area.tag_redraw()
+        return {'FINISHED'}
+
+
 # ── registration ──────────────────────────────────────────────────────────────
 
 _CLASSES = [
@@ -440,6 +473,7 @@ _CLASSES = [
     WF_OT_detach_schema,
     WF_OT_toggle_section,
     WF_OT_set_enum,
+    WF_OT_pick_file,
     WF_OT_validate,
     WF_OT_export_iff_txt,
     WF_OT_import_iff_txt,

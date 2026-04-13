@@ -30,6 +30,9 @@
 
 use wf_attr_schema::{FieldKind, FieldValue, Schema, Values};
 
+// FileRef serializes identically to Str: the value is a plain filename string.
+// A macro avoids repeating the identical arm bodies.
+
 // ── to_iff_txt ────────────────────────────────────────────────────────────────
 
 /// Serialize `values` as an iffcomp-compatible `.iff.txt` string.
@@ -91,7 +94,7 @@ pub fn to_iff_txt(schema: &Schema, values: &Values) -> String {
                 );
             }
 
-            FieldKind::Str => {
+            FieldKind::Str | FieldKind::FileRef { .. } => {
                 let s: &str = match val {
                     Some(FieldValue::Str(s)) => s.as_str(),
                     _                        => "",
@@ -266,7 +269,7 @@ pub fn from_iff_txt(schema: &Schema, text: &str) -> Result<Values, ImportError> 
                 })?;
                 FieldValue::Enum(label)
             }
-            FieldKind::Str => {
+            FieldKind::Str | FieldKind::FileRef { .. } => {
                 let s = String::from_utf8(bytes.clone()).map_err(|_| {
                     ImportError::new(format!("{}: invalid UTF-8 in string field", field.key))
                 })?;
@@ -391,7 +394,7 @@ pub fn to_iff(schema: &Schema, values: &Values) -> Vec<u8> {
                 builder.write_le(raw, width);
             }
 
-            FieldKind::Str => {
+            FieldKind::Str | FieldKind::FileRef { .. } => {
                 if field.max_raw <= 0 {
                     // No fixed width defined in schema — skip in binary format.
                     continue;
@@ -490,7 +493,7 @@ pub fn from_iff(schema: &Schema, data: &[u8]) -> Result<Values, ImportError> {
                 values.insert(field.key.clone(), FieldValue::Enum(label));
             }
 
-            FieldKind::Str => {
+            FieldKind::Str | FieldKind::FileRef { .. } => {
                 if field.max_raw <= 0 {
                     // No fixed width defined — skipped in to_iff, return empty here.
                     values.insert(field.key.clone(), FieldValue::Str(String::new()));

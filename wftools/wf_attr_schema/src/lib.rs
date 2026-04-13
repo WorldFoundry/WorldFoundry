@@ -11,7 +11,8 @@
 //! | `Float`         | Fixed16 / Fixed32                         | raw i32; scale = 65536 for Fixed32 |
 //! | `Enum`          | Int8 / Int16 / Int32 + pipe-sep string    | items from `string` field          |
 //! | `Group`         | PropertySheet / GroupStart                | section header, no stored value    |
-//! | `Str`           | String / Filename                         | UTF-8 string value                 |
+//! | `Str`           | String                                    | UTF-8 string value                 |
+//! | `FileRef`       | Filename / MeshName                       | File path string with browse filter|
 //!
 //! Everything else (LevelconFlags, XData, ObjectReference, GroupStop, etc.)
 //! is emitted as [`FieldKind::Skip`] and should be hidden from the editor UI.
@@ -40,6 +41,12 @@ pub enum FieldKind {
     GroupEnd,
     /// Free-text string field (String / Filename).
     Str,
+    /// File path field (Filename / MeshName).
+    ///
+    /// The value is a UTF-8 filename string (e.g. `"player.iff"`).
+    /// `filter` is a semicolon-separated glob pattern derived from the OAD
+    /// `lpstr_filter` field (e.g. `"*.iff;*.bmp;*.tga"`); empty if no filter.
+    FileRef { filter: String },
     /// Reference to another game object (ObjectReference / ClassReference /
     /// CameraReference / LightReference).
     ///
@@ -64,9 +71,10 @@ impl FieldKind {
             FieldKind::Section     => "Section",
             FieldKind::Group       => "Group",
             FieldKind::GroupEnd    => "GroupEnd",
-            FieldKind::Str         => "Str",
+            FieldKind::Str           => "Str",
+            FieldKind::FileRef { .. } => "FileRef",
             FieldKind::ObjRef { .. } => "ObjRef",
-            FieldKind::Skip        => "Skip",
+            FieldKind::Skip          => "Skip",
         }
     }
 }
@@ -115,6 +123,10 @@ pub struct FieldDescriptor {
     ///   6 → hidden / internal (consider skipping in UI)
     ///   8 → checkbox (render bool-style toggle)
     pub show_as: u8,
+    /// Semicolon-separated glob patterns for `FileRef` fields (e.g. `"*.iff;*.bmp"`).
+    /// Derived from the OAD `lpstr_filter` Windows file-dialog filter string.
+    /// Empty string for all other field kinds.
+    pub file_filter: String,
 }
 
 impl FieldDescriptor {
@@ -136,6 +148,8 @@ impl FieldDescriptor {
 
     /// Returns `true` if this field contributes bytes to the serialized payload.
     /// Structural fields (Section, Group, GroupEnd) do not.
+    /// FileRef fields with max_raw == 0 also contribute no bytes (variable-width,
+    /// handled by the level compiler rather than the Blender exporter).
     pub fn has_payload(&self) -> bool {
         !matches!(
             self.kind,
@@ -183,7 +197,7 @@ pub fn from_oad(oad: &OadFile) -> Schema {
         };
         let help  = entry.help_str().to_owned();
 
-        let kind = classify(entry.button_type, entry.string_str());
+        let kind = classify(entry.button_type, entry.string_str(), entry.lpstr_filter_bytes());
 
         // Track the current group from PropertySheet / GroupStart names.
         match entry.button_type {
@@ -201,6 +215,11 @@ pub fn from_oad(oad: &OadFile) -> Schema {
         }
 
         let (byte_width, fp_scale) = field_layout(entry.button_type);
+        let file_filter = if let FieldKind::FileRef { filter } = &kind {
+            filter.clone()
+        } else {
+            String::new()
+        };
 
         fields.push(FieldDescriptor {
             key,
@@ -214,6 +233,7 @@ pub fn from_oad(oad: &OadFile) -> Schema {
             byte_width,
             fp_scale,
             show_as:     entry.show_as,
+            file_filter,
         });
     }
 
@@ -230,7 +250,7 @@ fn field_layout(bt: ButtonType) -> (u8, f64) {
         ButtonType::Int8                               => (1, 0.0),
         ButtonType::Int16                              => (2, 0.0),
         ButtonType::Int32                              => (4, 0.0),
-        ButtonType::String | ButtonType::Filename      => (0, 0.0), // variable; exporter handles
+        ButtonType::String | ButtonType::Filename | ButtonType::MeshName => (0, 0.0), // variable; exporter handles
         ButtonType::PropertySheet | ButtonType::GroupStart => (0, 0.0),
         // Object/class/camera/light references serialize as a 4-byte LE integer index.
         ButtonType::ObjectReference
@@ -241,8 +261,22 @@ fn field_layout(bt: ButtonType) -> (u8, f64) {
     }
 }
 
+/// Extract semicolon-separated glob patterns from a Windows file-dialog filter byte string.
+///
+/// The filter format is null-separated pairs: `Desc\0Pattern\0Desc\0Pattern\0\0`.
+/// This function returns the patterns (odd segments) joined by `;`.
+fn parse_filter(raw: &[u8]) -> String {
+    raw.split(|&b| b == 0)
+        .filter(|seg| !seg.is_empty())
+        .enumerate()
+        .filter(|(i, _)| i % 2 == 1) // odd indices = patterns
+        .map(|(_, seg)| String::from_utf8_lossy(seg).into_owned())
+        .collect::<Vec<_>>()
+        .join(";")
+}
+
 /// Map an OAD `ButtonType` + `string` field content to a [`FieldKind`].
-fn classify(bt: ButtonType, string_field: &str) -> FieldKind {
+fn classify(bt: ButtonType, string_field: &str, lpstr_filter: &[u8]) -> FieldKind {
     match bt {
         // Numeric integer fields — check for pipe-separated enum items first.
         ButtonType::Int8 | ButtonType::Int16 | ButtonType::Int32 => {
@@ -257,8 +291,12 @@ fn classify(bt: ButtonType, string_field: &str) -> FieldKind {
         // Fixed-point numeric fields.
         ButtonType::Fixed16 | ButtonType::Fixed32 => FieldKind::Float,
 
-        // Free-text string fields.
-        ButtonType::String | ButtonType::Filename => FieldKind::Str,
+        // Free-text string fields (no file filter).
+        ButtonType::String => FieldKind::Str,
+
+        // File-path fields — carry a browse filter from lpstr_filter.
+        ButtonType::Filename | ButtonType::MeshName =>
+            FieldKind::FileRef { filter: parse_filter(lpstr_filter) },
 
         // Collapsible section header (rollup in attribedit).
         ButtonType::PropertySheet => FieldKind::Section,
@@ -375,13 +413,29 @@ mod tests {
     }
 
     #[test]
-    fn player_schema_has_str_field() {
+    fn player_schema_has_fileref_field() {
         let oad = load_fixture("player.oad");
         let schema = from_oad(&oad);
         let field = schema.fields.iter()
             .find(|f| f.key == "Mesh Name")
             .expect("Mesh Name field");
-        assert!(matches!(field.kind, FieldKind::Str));
+        match &field.kind {
+            FieldKind::FileRef { filter } => {
+                assert!(filter.contains("*.iff"), "filter should include *.iff: {filter}");
+            }
+            other => panic!("expected FileRef, got {other:?}"),
+        }
+        assert!(field.file_filter.contains("*.iff"),
+            "file_filter shortcut should contain *.iff: {}", field.file_filter);
+    }
+
+    #[test]
+    fn parse_filter_extracts_patterns() {
+        // Simulate: "World Foundry IFF (*.iff)\0*.iff\0Targa (*.tga)\0*.tga\0\0"
+        let mut raw = b"World Foundry IFF (*.iff)\0*.iff\0Targa (*.tga)\0*.tga\0\0".to_vec();
+        raw.resize(512, 0); // pad to OAD field size
+        let result = super::parse_filter(&raw);
+        assert_eq!(result, "*.iff;*.tga");
     }
 
     #[test]

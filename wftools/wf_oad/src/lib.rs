@@ -297,6 +297,9 @@ impl OadEntry {
     pub fn name_str(&self) -> &str { cstr(&self.name) }
     pub fn string_str(&self) -> &str { cstr(&self.string) }
     pub fn help_str(&self) -> &str { cstr(&self.help_message) }
+    /// Raw bytes of the Windows file-dialog filter string (null-separated pairs).
+    /// Format: `Desc1\0Pattern1\0Desc2\0Pattern2\0\0`.
+    pub fn lpstr_filter_bytes(&self) -> &[u8] { &self.lpstr_filter }
 
     /// Display name from the xdata union (first 64 bytes of union).
     pub fn display_name(&self) -> &str { cstr(&self.union_bytes[5..69]) }
