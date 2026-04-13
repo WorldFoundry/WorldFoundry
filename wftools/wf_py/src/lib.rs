@@ -2,6 +2,11 @@
 //!
 //! Compiled as `wf_core.so` (abi3, Python ≥ 3.10).
 //!
+//! This crate is a thin boundary layer.  All schema logic lives in
+//! `wf_attr_schema`, validation in `wf_attr_validate`, and serialization in
+//! `wf_attr_serialize`.  This file converts between Python types and the
+//! canonical Rust types, then delegates.
+//!
 //! # Python API
 //!
 //! ```python
@@ -11,22 +16,19 @@
 //! print(schema.name)              # "Room"
 //! for field in schema.fields():
 //!     print(field.key, field.kind, field.label)
+//!
+//! issues = wf_core.validate(schema, {"hp": 5, "Mass": 1.5})
+//! text   = wf_core.export_iff_txt(schema, {"hp": 5, "Mass": 1.5})
 //! ```
 
 use pyo3::prelude::*;
 use std::io::Cursor;
-use wf_attr_schema::{FieldKind, Schema, FieldDescriptor};
+use wf_attr_schema::{FieldDescriptor, FieldKind, FieldValue, Schema, Values};
 use wf_oad::OadFile;
 
 // ── PyField ───────────────────────────────────────────────────────────────────
 
 /// Python-visible descriptor for one OAD field.
-///
-/// For `Float` fields, `default_display`, `min_display`, `max_display` are
-/// the human-readable float values (raw / fp_scale).  Store and edit these
-/// display values in Blender; the exporter converts them back to raw.
-///
-/// For all other field kinds, `default_display` equals `default_raw` cast to float.
 #[pyclass(name = "Field")]
 #[derive(Clone)]
 struct PyField {
@@ -34,7 +36,7 @@ struct PyField {
     key: String,
     #[pyo3(get)]
     label: String,
-    /// `"Int"` | `"Float"` | `"Enum"` | `"Group"` | `"Str"` | `"Skip"`
+    /// `"Int"` | `"Float"` | `"Enum"` | `"Section"` | `"Group"` | `"GroupEnd"` | `"Str"` | `"Skip"`
     #[pyo3(get)]
     kind: String,
     #[pyo3(get)]
@@ -47,8 +49,7 @@ struct PyField {
     max_raw: i32,
     #[pyo3(get)]
     default_raw: i32,
-    /// Human-readable display value for the default.
-    /// Float fields: default_raw / fp_scale.  Others: default_raw as f64.
+    /// Human-readable default: `default_raw / fp_scale` for Float, else `default_raw as f64`.
     #[pyo3(get)]
     default_display: f64,
     #[pyo3(get)]
@@ -61,18 +62,14 @@ struct PyField {
     /// Serialized byte width (1, 2, or 4).  0 for Group/Skip/variable.
     #[pyo3(get)]
     byte_width: u8,
-    /// Raw `visualRepresentation` from the OAD.
-    /// 0=plain, 4/5=dropmenu, 6=hidden, 8=checkbox.
+    /// Raw `visualRepresentation`: 0=plain, 4/5=dropmenu, 6=hidden, 8=checkbox.
     #[pyo3(get)]
     show_as: u8,
-    // Enum item labels (non-empty only for Enum fields).
     enum_items: Vec<String>,
 }
 
 #[pymethods]
 impl PyField {
-    /// For Enum fields, returns the list of choice labels.
-    /// Returns an empty list for non-Enum fields.
     fn enum_items(&self) -> Vec<String> {
         self.enum_items.clone()
     }
@@ -118,7 +115,6 @@ fn field_from_desc(desc: &FieldDescriptor) -> PyField {
 
 // ── PySchema ──────────────────────────────────────────────────────────────────
 
-/// Python-visible schema loaded from an OAD file.
 #[pyclass(name = "Schema")]
 struct PySchema {
     inner: Schema,
@@ -126,19 +122,15 @@ struct PySchema {
 
 #[pymethods]
 impl PySchema {
-    /// The display name of the schema (e.g. "Room").
     #[getter]
     fn name(&self) -> &str {
         &self.inner.name
     }
 
-    /// All fields, including Group headers and Skip entries.
     fn fields(&self) -> Vec<PyField> {
         self.inner.fields.iter().map(field_from_desc).collect()
     }
 
-    /// Only the fields that should appear in the editor UI
-    /// (excludes Group and Skip).
     fn visible_fields(&self) -> Vec<PyField> {
         self.inner.visible_fields().map(field_from_desc).collect()
     }
@@ -152,9 +144,8 @@ impl PySchema {
     }
 }
 
-// ── validate ──────────────────────────────────────────────────────────────────
+// ── PyValidationIssue ─────────────────────────────────────────────────────────
 
-/// A single validation error or warning.
 #[pyclass(name = "ValidationIssue")]
 #[derive(Clone)]
 struct PyValidationIssue {
@@ -174,210 +165,48 @@ impl PyValidationIssue {
     }
 }
 
-/// Validate `values` against `schema`.
+// ── dict → Values boundary conversion ────────────────────────────────────────
+
+/// Convert a Python dict to the canonical `Values` map.
 ///
-/// `values` is a Python dict mapping field keys to display values:
-/// - `Int` fields: integer or float (truncated)
-/// - `Float` fields: display float (e.g. 50.0 for Mass, not the raw 3276800)
-/// - `Enum` fields: string item label (e.g. `"Physics"`) or int index
-/// - `Str` fields: string
-///
-/// Returns a list of [`ValidationIssue`] objects (empty = all good).
-#[pyfunction]
-fn validate(
-    schema: &PySchema,
-    values: &pyo3::Bound<'_, pyo3::types::PyDict>,
-) -> PyResult<Vec<PyValidationIssue>> {
-    let mut issues = Vec::new();
+/// Enum fields accept either a string label or an integer index; both are
+/// normalized to a string label here so the pure-Rust crates see a clean type.
+fn dict_to_values(
+    schema: &Schema,
+    dict: &pyo3::Bound<'_, pyo3::types::PyDict>,
+) -> PyResult<Values> {
+    let mut values = Values::new();
 
-    for field in schema.inner.visible_fields() {
-        let raw_val = values.get_item(field.key.as_str())?;
-        let Some(raw_val) = raw_val else { continue };
+    for field in schema.visible_fields() {
+        let Some(raw) = dict.get_item(field.key.as_str())? else {
+            continue;
+        };
 
-        let scale = if field.fp_scale > 0.0 { field.fp_scale } else { 1.0 };
-
-        match &field.kind {
-            wf_attr_schema::FieldKind::Section
-            | wf_attr_schema::FieldKind::Group
-            | wf_attr_schema::FieldKind::GroupEnd => continue,
-            wf_attr_schema::FieldKind::Int => {
-                let v: i64 = raw_val.extract().unwrap_or(0);
-                if v < field.min_raw as i64 || v > field.max_raw as i64 {
-                    issues.push(PyValidationIssue {
-                        key:      field.key.clone(),
-                        message:  format!(
-                            "value {} out of range [{}, {}]",
-                            v, field.min_raw, field.max_raw
-                        ),
-                        is_error: true,
-                    });
-                }
-            }
-            wf_attr_schema::FieldKind::Float => {
-                // values dict stores display float; convert back to raw for range check
-                let display: f64 = raw_val.extract().unwrap_or(0.0);
-                let raw = (display * scale).round() as i64;
-                if raw < field.min_raw as i64 || raw > field.max_raw as i64 {
-                    issues.push(PyValidationIssue {
-                        key:     field.key.clone(),
-                        message: format!(
-                            "{:.4} out of range [{:.4}, {:.4}]",
-                            display,
-                            field.min_raw as f64 / scale,
-                            field.max_raw as f64 / scale,
-                        ),
-                        is_error: true,
-                    });
-                }
-            }
-            wf_attr_schema::FieldKind::Enum { items } => {
-                // Accept either a string label or an int index
-                let idx: i64 = if let Ok(s) = raw_val.extract::<String>() {
-                    items.iter().position(|i| i == &s).map(|p| p as i64).unwrap_or(-1)
+        let fv = match &field.kind {
+            FieldKind::Int => FieldValue::Int(raw.extract().unwrap_or(0)),
+            FieldKind::Float => FieldValue::Float(raw.extract().unwrap_or(0.0)),
+            FieldKind::Enum { items } => {
+                let label = if let Ok(s) = raw.extract::<String>() {
+                    if items.contains(&s) { s } else { items.first().cloned().unwrap_or_default() }
                 } else {
-                    raw_val.extract().unwrap_or(-1)
+                    let idx: usize = raw.extract().unwrap_or(0);
+                    items.get(idx).cloned().unwrap_or_default()
                 };
-                if idx < 0 || idx as usize >= items.len() {
-                    issues.push(PyValidationIssue {
-                        key:      field.key.clone(),
-                        message:  format!(
-                            "invalid enum value {:?} — valid: {:?}",
-                            raw_val.str().map(|s| s.to_string()).unwrap_or_default(),
-                            items,
-                        ),
-                        is_error: true,
-                    });
-                }
+                FieldValue::Enum(label)
             }
-            _ => {}
-        }
+            FieldKind::Str => FieldValue::Str(raw.extract().unwrap_or_default()),
+            _ => continue,
+        };
+
+        values.insert(field.key.clone(), fv);
     }
 
-    Ok(issues)
+    Ok(values)
 }
 
-// ── export_iff_txt ────────────────────────────────────────────────────────────
+// ── Python functions ──────────────────────────────────────────────────────────
 
-/// Export `values` as an iffcomp-format `.iff.txt` artifact.
-///
-/// `values` is a Python dict mapping field keys to display values
-/// (same contract as [`validate`]).  Missing fields use the schema default.
-///
-/// The output is valid iffcomp source: each field's value is serialized as
-/// little-endian bytes on a `$XX $XX ...` line followed by a `// key` comment.
-///
-/// Returns the text as a Python string.
-#[pyfunction]
-fn export_iff_txt(
-    schema: &PySchema,
-    values: &pyo3::Bound<'_, pyo3::types::PyDict>,
-) -> PyResult<String> {
-    // Build the FOURCC from the first 1–4 chars of the schema name, space-padded.
-    let name_bytes = schema.inner.name.as_bytes();
-    let mut fourcc = [b' '; 4];
-    for (i, &b) in name_bytes.iter().take(4).enumerate() {
-        fourcc[i] = b.to_ascii_uppercase();
-    }
-    let fourcc_str: String = fourcc.iter().map(|&b| b as char).collect();
-
-    // Collect bytes for all visible fields.
-    let mut payload: Vec<u8> = Vec::new();
-    // Lines of iffcomp source for the payload.
-    let mut lines: Vec<String> = Vec::new();
-
-    for field in schema.inner.visible_fields() {
-        let raw_val = values.get_item(field.key.as_str())?;
-        let scale = if field.fp_scale > 0.0 { field.fp_scale } else { 1.0 };
-
-        match &field.kind {
-            wf_attr_schema::FieldKind::Section
-            | wf_attr_schema::FieldKind::Group
-            | wf_attr_schema::FieldKind::GroupEnd => continue,
-            wf_attr_schema::FieldKind::Int | wf_attr_schema::FieldKind::Enum { .. } => {
-                let raw: i32 = if let Some(v) = &raw_val {
-                    // Enum: accept string label or int
-                    if let wf_attr_schema::FieldKind::Enum { items } = &field.kind {
-                        if let Ok(s) = v.extract::<String>() {
-                            items.iter().position(|i| i == &s)
-                                .map(|p| p as i32)
-                                .unwrap_or(field.default_raw)
-                        } else {
-                            v.extract::<i32>().unwrap_or(field.default_raw)
-                        }
-                    } else {
-                        v.extract::<i32>().unwrap_or(field.default_raw)
-                    }
-                } else {
-                    field.default_raw
-                };
-                let bytes = raw.to_le_bytes();
-                let width = field.byte_width.max(4) as usize;
-                let b = &bytes[..width];
-                payload.extend_from_slice(b);
-                lines.push(format!(
-                    "\t{}\t// {}",
-                    b.iter().map(|x| format!("${:02X}", x)).collect::<Vec<_>>().join(" "),
-                    field.key,
-                ));
-            }
-            wf_attr_schema::FieldKind::Float => {
-                let display: f64 = raw_val.as_ref()
-                    .and_then(|v| v.extract::<f64>().ok())
-                    .unwrap_or(field.default_raw as f64 / scale);
-                let raw = (display * scale).round() as i32;
-                let bytes = raw.to_le_bytes();
-                let width = field.byte_width.max(4) as usize;
-                let b = &bytes[..width];
-                payload.extend_from_slice(b);
-                lines.push(format!(
-                    "\t{}\t// {} ({:.6})",
-                    b.iter().map(|x| format!("${:02X}", x)).collect::<Vec<_>>().join(" "),
-                    field.key,
-                    display,
-                ));
-            }
-            wf_attr_schema::FieldKind::Str => {
-                // String: write raw bytes as-is; no fixed width in M1 export.
-                let s: String = raw_val.as_ref()
-                    .and_then(|v| v.extract::<String>().ok())
-                    .unwrap_or_default();
-                let b = s.as_bytes();
-                payload.extend_from_slice(b);
-                if !b.is_empty() {
-                    lines.push(format!(
-                        "\t{}\t// {}",
-                        b.iter().map(|x| format!("${:02X}", x)).collect::<Vec<_>>().join(" "),
-                        field.key,
-                    ));
-                } else {
-                    lines.push(format!("\t// {} (empty string)", field.key));
-                }
-            }
-            _ => {}
-        }
-    }
-
-    let size = payload.len();
-    let mut out = String::new();
-    out.push_str("//=============================================================================\n");
-    out.push_str(&format!(
-        "// {} — exported by wf_core v{}\n",
-        schema.inner.name,
-        env!("CARGO_PKG_VERSION"),
-    ));
-    out.push_str("//=============================================================================\n");
-    out.push_str(&format!("{{ '{}'\t\t// Size = {}\n", fourcc_str, size));
-    for line in &lines {
-        out.push_str(line);
-        out.push('\n');
-    }
-    out.push_str("}\n");
-    Ok(out)
-}
-
-// ── module entry point ────────────────────────────────────────────────────────
-
-/// Load an OAD schema from `path` and return a [`Schema`] object.
+/// Load an OAD schema from `path` and return a `Schema` object.
 #[pyfunction]
 fn load_schema(path: &str) -> PyResult<PySchema> {
     let data = std::fs::read(path)
@@ -387,6 +216,36 @@ fn load_schema(path: &str) -> PyResult<PySchema> {
     let schema = wf_attr_schema::from_oad(&oad);
     Ok(PySchema { inner: schema })
 }
+
+/// Validate `values` against `schema`.
+///
+/// `values`: Python dict mapping field keys to display values
+/// (Int→int, Float→display float, Enum→string label or int index, Str→string).
+/// Returns a list of `ValidationIssue` objects (empty = all good).
+#[pyfunction]
+fn validate(
+    schema: &PySchema,
+    values: &pyo3::Bound<'_, pyo3::types::PyDict>,
+) -> PyResult<Vec<PyValidationIssue>> {
+    let values = dict_to_values(&schema.inner, values)?;
+    Ok(wf_attr_validate::validate(&schema.inner, &values)
+        .into_iter()
+        .map(|i| PyValidationIssue { key: i.key, message: i.message, is_error: i.is_error })
+        .collect())
+}
+
+/// Export `values` as an iffcomp-format `.iff.txt` string.
+/// Missing fields use schema defaults.  Same value contract as `validate`.
+#[pyfunction]
+fn export_iff_txt(
+    schema: &PySchema,
+    values: &pyo3::Bound<'_, pyo3::types::PyDict>,
+) -> PyResult<String> {
+    let values = dict_to_values(&schema.inner, values)?;
+    Ok(wf_attr_serialize::to_iff_txt(&schema.inner, &values))
+}
+
+// ── module entry point ────────────────────────────────────────────────────────
 
 /// World Foundry core library — OAD schema loading, validation, and export.
 #[pymodule]

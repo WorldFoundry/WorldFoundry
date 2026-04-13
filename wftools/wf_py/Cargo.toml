@@ -9,5 +9,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = { version = "0.22", features = ["extension-module", "abi3-py310"] }
-wf_attr_schema = { path = "../wf_attr_schema" }
+wf_attr_schema    = { path = "../wf_attr_schema" }
+wf_attr_validate  = { path = "../wf_attr_validate" }
+wf_attr_serialize = { path = "../wf_attr_serialize" }
 wf_oad = { path = "../wf_oad" }

@@ -1,0 +1,10 @@
+[package]
+name = "wf_attr_validate"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+wf_attr_schema = { path = "../wf_attr_schema" }
+
+[dev-dependencies]
+wf_oad = { path = "../wf_oad" }

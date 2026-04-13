@@ -258,6 +258,27 @@ fn parse_pipe_items(s: &str) -> Vec<String> {
     s.split('|').map(|item| item.to_owned()).collect()
 }
 
+// ── field values ─────────────────────────────────────────────────────────────
+
+/// A normalized, host-agnostic field value used for validation and serialization.
+///
+/// `Float` fields use *display* values (e.g. `50.0` for Mass), not raw fixed-point.
+/// `Enum` fields use the string item label, already resolved from an index if needed.
+#[derive(Debug, Clone, PartialEq)]
+pub enum FieldValue {
+    /// Integer value (`Int` fields).
+    Int(i64),
+    /// Human-readable float (`Float` fields; raw ÷ `fp_scale` = this).
+    Float(f64),
+    /// Enum item label (`Enum` fields).
+    Enum(String),
+    /// UTF-8 string (`Str` fields).
+    Str(String),
+}
+
+/// Map from field key to value — the input type for validation and serialization.
+pub type Values = std::collections::HashMap<String, FieldValue>;
+
 // ── tests ─────────────────────────────────────────────────────────────────────
 
 #[cfg(test)]
