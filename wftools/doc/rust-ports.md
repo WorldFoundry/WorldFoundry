@@ -4,8 +4,9 @@
 
 | Tool | C++ LOC | Verdict | Rationale |
 |------|---------|---------|-----------|
-| **iffdump** | ~372 | **Port first** | Natural companion to iffcomp-rs; IFF binary format already understood; all deps are trivial stubs |
-| **oaddump** | ~546 | Port second | Self-contained OAD parser; small; no external deps |
+| **oas2oad** | ~400 (wpp+wlink chain) | **Done** | Shells out to fixed `prep`; parses C initializer output; writes binary OAD — 41/41 .oas files pass |
+| **iffdump** | ~372 | **Port next** | Natural companion to iffcomp-rs; IFF binary format already understood; all deps are trivial stubs |
+| **oaddump** | ~546 | Port after iffdump | Self-contained OAD parser; small; no external deps |
 | eval | ~53 (CLI) + ~400 (grammar) | Blender work | Expression evaluator grammar (`wfsource/source/eval/`) needed by `wf_attr_validate`; belongs with Blender integration, not here |
 | prep | ~1 615 | Maybe later | Custom tokenizer + macro expander; interesting but larger scope |
 | chargrab / textile | ~4 000+ | Maybe later | Image packing tools; Windows I/O mixed in; bigger effort |
@@ -220,54 +221,50 @@ The Linux replacement is `oas2oad-rs` (see below).
 ## Tool: `oas2oad-rs` — Linux OAS → OAD compiler
 
 Replaces the Windows-only `wpp + wlink + exe2bin` chain with a Rust binary
-that runs on Linux. Uses `prep` (already working on Linux) for macro
-expansion, then parses the generated C initializer syntax and writes the
-binary `.oad` directly.
+that runs on Linux.
 
-### Why Option B (prep + C parser) over Option A (direct OAS parser)
+### Design note
 
-Reimplementing `prep`'s macro expansion for the OAD domain would require
-testing correctness independently. Using the existing `prep` binary means
-macro expansion is already validated — we only add a C-initializer parser
-on top, which has a much smaller surface area.
+The key property of the `.oas` → `prep` pipeline is that a single source
+file produces two things in lockstep: the `.oad` binary and the C struct
+declarations (`.ht` files) used by the game engine to interpret that binary.
+They are guaranteed to agree because they come from the same `prep` run.
+
+The Linux pipeline mirrors the original: compile `prep`'s C output with
+`g++` and extract the `.data` section with `objcopy`. The binary layout is
+therefore determined by the same compiler and the same struct definitions —
+not reimplemented independently.
+
+The fixups needed to compile `prep`'s Watcom-targeted output with `g++`:
+- Strip the `huge` keyword (Watcom memory model, meaningless on Linux)
+- Replace `pigtool.h` / `oad.h` with a portable equivalent using `int32_t`
+  instead of `long` (which is 8 bytes on 64-bit Linux)
+- Add `__attribute__((aligned(1)))` to `tempstruct` to suppress inter-variable
+  alignment padding that would corrupt the `.data` layout
+- Define `name_KIND=0` (`EActorKind` enum value from ungenerated `objects.h`)
+- Define `DEFAULT_VISIBILITY=1` (prep default from `movebloc.inc`, absent in
+  `mesh.oas` which doesn't pull in that include chain)
+- Define `BITMAP_FILESPEC` / `MAP_FILESPEC` (prep string macros from
+  `xdata.inc`, absent when `xdata.inc` isn't in the include chain)
 
 ### Pipeline
 
 ```
-oas2oad-rs <name>.oas → (shells out) prep -DTYPEFILE_OAS=<name> types3ds.s → <name>.pp
-                       → parse C initializers from <name>.pp
-                       → write binary <name>.oad
+oas2oad-rs <name>.oas
+  → prep -DTYPEFILE_OAS=<name> types3ds.s   (macro expansion)
+  → strip 'huge', replace headers, fix alignment attr
+  → g++ -c -x c++                           (compile to object file)
+  → objcopy --only-section=.data -O binary  (extract raw .data → .oad)
 ```
 
-The `prep` binary must be on `$PATH` or specified via `--prep=<path>`.
-`types3ds.s` location defaults to `$WF_DIR/wfsource/source/oas/types3ds.s`
-or can be overridden with `--types=<path>`.
-
-### What the C output looks like
-
-`prep` with `types3ds.s` produces two initializers:
-
-```c
-_oadHeader header = {'OAD ', 0, "DisplayName", 0x00010202};
-
-typeDescriptor huge tempstruct[] = {
-    { BUTTON_INT32, "speed", 0, 65536, 0, 0, "", SHOW_AS_NUMBER,
-      -1, -1, "help text", {XDATA_IGNORE, 0, "Speed", "1", 0} },
-    ...
-};
-```
-
-The parser needs to handle:
-- String literals (including escaped chars)
-- Integer literals (decimal, hex `0x...`)
-- Named constants (`BUTTON_INT32`, `SHOW_AS_NUMBER`, `XDATA_IGNORE`, etc.)
-- Nested `{ ... }` for the union field
-- Multi-char literals (`'OAD '`) — only in the header, value is known
+`prep` must be on `$PATH` or specified via `--prep=<path>`.
+`types3ds.s` defaults to `$WF_DIR/wfsource/source/oas/types3ds.s`
+or `--types=<path>`. `g++` can be overridden with `--gpp=<path>`.
 
 ### CLI
 
 ```
-oas2oad-rs [--prep=<path>] [--types=<path>] [-o <outfile>] <infile.oas>
+oas2oad-rs [--prep=<path>] [--types=<path>] [--gpp=<path>] [-o <outfile>] <infile.oas>
 ```
 
 Exit codes: `0` success, `1` error.
@@ -278,13 +275,75 @@ Exit codes: `0` success, `1` error.
 oas2oad-rs/
   Cargo.toml
   src/
-    main.rs     — CLI, temp file management, shells out to prep
-    parser.rs   — tokenizer + C initializer parser → OadHeader + Vec<OadEntry>
-    error.rs    — OasError enum
+    main.rs   — CLI, fixups, orchestrates prep → g++ → objcopy
 ```
 
 Depends on `wf_oad` for `OadHeader`, `OadEntry`, and the binary serializer
 (which needs to be added to `wf_oad` alongside the existing reader).
+
+### Parser edge cases
+
+- `LEVELCONFLAG_COMMONBLOCK` / `LEVELCONFLAG_ENDCOMMON` entries omit the union field entirely (11 fields instead of 12)
+- `GROUP_STOP` union has only 3 fields: `{conv, bRequired, displayName}` — no `szEnableExpression`
+- `szEnableExpression` can be an unquoted integer (`1`) or negative integer (`-1`) instead of a quoted string
+
+### Prerequisites delivered
+
+- **`wftools/prep/macro.cc`** — one-line 64-bit portability fix: `unsigned delimiterIndex` → `std::string::size_type delimiterIndex` (truncation of `string::npos` on 64-bit caused named-parameter branch to fire for all tokens)
+- **`wftools/prep/build.sh`** — captures working `g++ -std=c++14` command including `regexp/` sources
+
+### Smoke test results — 41/41 pass
+
+All `.oas` files in `wfsource/source/oas/` are standalone types (none are include-only).
+Shared property blocks live in `.inc` files: `activate.inc` `actor.inc` `common.inc` `mesh.inc` `meter.inc` `movebloc.inc` `shadow.inc` `toolset.inc` `xdata.inc`
+
+Bold = not referenced by any `.inc`; plain = has a corresponding `.inc` used by other `.oas` files.
+
+Entry count = `(bytes − 80) ÷ 1491` (80-byte `_oadHeader` + 1491 bytes per `_typeDescriptor`).
+
+| File | Size (bytes) | Entries |
+|------|-------------|---------|
+| **actbox** | 222,239 | 148 |
+| **actboxor** | 207,329 | 138 |
+| activate | 10,517 | 7 |
+| actor | 190,928 | 128 |
+| **alias** | 4,553 | 3 |
+| **camera** | 204,347 | 136 |
+| **camshot** | 235,658 | 157 |
+| common | 20,954 | 14 |
+| **destroyer** | 205,838 | 137 |
+| **dir** | 192,419 | 129 |
+| **director** | 192,419 | 129 |
+| **disabled** | 1,571 | 1 |
+| **enemy** | 192,419 | 129 |
+| **explode** | 195,401 | 131 |
+| **file** | 192,419 | 129 |
+| **font** | 193,910 | 130 |
+| **generator** | 211,802 | 141 |
+| **handle** | 23,936 | 16 |
+| **init** | 193,910 | 130 |
+| **levelobj** | 402,650 | 269 |
+| **light** | 204,347 | 136 |
+| **matte** | 192,419 | 129 |
+| mesh | 77,612 | 52 |
+| meter | 210,311 | 140 |
+| **missile** | 196,892 | 132 |
+| movebloc | 61,211 | 41 |
+| **movie** | 220,748 | 147 |
+| **platform** | 192,419 | 129 |
+| **player** | 192,419 | 129 |
+| **pole** | 199,874 | 134 |
+| **room** | 32,882 | 22 |
+| shadow | 192,419 | 129 |
+| **shadowp** | 6,044 | 4 |
+| **shield** | 199,874 | 134 |
+| **spike** | 205,838 | 137 |
+| **statplat** | 192,419 | 129 |
+| **target** | 190,928 | 128 |
+| **template** | 192,419 | 129 |
+| **tool** | 213,293 | 142 |
+| toolset | 12,008 | 8 |
+| **warp** | 205,838 | 137 |
 
 ### Testing
 

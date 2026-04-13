@@ -107,6 +107,8 @@ pub enum ButtonType {
 }
 
 impl ButtonType {
+    pub fn from_u8_pub(v: u8) -> Self { Self::from_u8(v) }
+
     fn from_u8(v: u8) -> Self {
         match v {
             0 => ButtonType::Fixed16,
@@ -345,6 +347,30 @@ pub struct OadFile {
 }
 
 impl OadFile {
+    /// Write an OAD binary to a writer.
+    pub fn write<W: std::io::Write>(&self, w: &mut W) -> io::Result<()> {
+        w.write_all(&self.header.chunk_id.to_le_bytes())?;
+        w.write_all(&self.header.chunk_size.to_le_bytes())?;
+        w.write_all(&self.header.name)?;
+        w.write_all(&self.header.version.to_le_bytes())?;
+        for e in &self.entries {
+            w.write_all(&[e.button_type.raw()])?;
+            w.write_all(&e.name)?;
+            w.write_all(&e.min.to_le_bytes())?;
+            w.write_all(&e.max.to_le_bytes())?;
+            w.write_all(&e.def.to_le_bytes())?;
+            w.write_all(&e.len.to_le_bytes())?;
+            w.write_all(&e.string)?;
+            w.write_all(&[e.show_as])?;
+            w.write_all(&e.x.to_le_bytes())?;
+            w.write_all(&e.y.to_le_bytes())?;
+            w.write_all(&e.help_message)?;
+            w.write_all(&e.union_bytes)?;
+            w.write_all(&e.lpstr_filter)?;
+        }
+        Ok(())
+    }
+
     /// Parse an OAD binary from a reader.
     pub fn read<R: Read>(r: &mut R) -> Result<Self> {
         let header = OadHeader::read(r)?;
