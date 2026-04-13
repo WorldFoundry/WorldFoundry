@@ -339,9 +339,7 @@ IffWriterBinary::exitChunk()
     // the 4 is the size of the IFF size field
 	_out->seekp( cs->GetPos(), std::ios::beg );
 
-    // IFF size field is always 4 bytes; on LP64 Linux `long` is 8 bytes,
-    // so use an explicit 32-bit integer here.
-    int32_t size = static_cast< int32_t >( cs->GetSize() );
+    uint32_t size = cs->GetSize();
     _out->write( reinterpret_cast< char const* >( &size ), 4 );
 	_out->seekp( pos, std::ios::beg );
 
