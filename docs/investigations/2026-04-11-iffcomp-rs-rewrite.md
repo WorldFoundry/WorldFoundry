@@ -186,7 +186,7 @@ None of these are blockers. The torture fixture is comfortable coverage for a to
 
 ## 8. Next steps
 
-1. **Wire `wfsource/source/iffwrite/test.scr`** into all three test harnesses as another cross-checked fixture.
+1. **Wire `wfsource/source/iffwrite/test.iff.txt`** into all three test harnesses as another cross-checked fixture.
 2. **Commit `.oas`-derived `.iff.txt` files** from `wfsource/source/oas/` as differential testdata. Every one is a free regression test against the real asset pipeline output.
 3. **`cargo fuzz`** over the lexer — the speculative-rollback paths in `scan_number` and the string-literal `(N)` size-override parser are the most likely future regression sites.
 4. **Decide which port is the primary.** The [wftools rewrite analysis](2026-04-11-wftools-rewrite-analysis.md) argues for Rust long-term. Short-term the choice is about who ships the tool: Go builds faster, Rust produces smaller binaries, both have zero upstream patch requirements. No urgency to pick yet; both tests run in ~2 ms and both binaries are trivially maintainable.

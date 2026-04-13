@@ -130,7 +130,7 @@ And the **shared substrate** the C++ version depends on — all ~900 lines of `i
 
 - **OAD descriptors emitted by the `.oas` pipeline.** `prep` compiles `.oas` source against `.s` templates to produce `.iff.txt` files that are then fed to `iffcomp` to produce the on-disk OAD binary. The OAD format uses multi-level nested chunks, mandatory `.sizeof` / `.offsetof` back-patches, and structured per-type sub-chunks (`NAME`, `DSNM`, `RANG`, `DATA`, `DISP`, `HELP`). `test.iff.txt` exercises none of that — the Go version has reasonable-looking code paths for all of it but nothing has actually proven they produce byte-exact output against the C++ version. Every `.oas` output file in the tree is a free regression fixture if we commit it as testdata.
 - **Level files from the level build path.** Same story: big complicated IFF trees that the Go code *should* handle but hasn't been tested on.
-- **`wfsource/source/iffwrite/test.scr`**, a two-chunk nested file I documented the expected byte layout for in [`2026-04-10-worldfoundry-iffcomp-format.md`](../../2026-04-10-worldfoundry-iffcomp-format.md#4-walk-through-of-iffwritetestscr) but didn't wire into the test harness. This is the simplest next fixture.
+- **`wfsource/source/iffwrite/test.iff.txt`**, a two-chunk nested file I documented the expected byte layout for in [`2026-04-10-worldfoundry-iffcomp-format.md`](../../2026-04-10-worldfoundry-iffcomp-format.md#4-walk-through-of-iffwritetestifftxt) but didn't wire into the test harness. This is the simplest next fixture.
 
 **Test harness structure.** Go tests drive it. `iffcomp_test.go` already has the shape: for each fixture, compile it with the Go implementation, read the reference output from `testdata/`, diff byte-exactly. Adding a new fixture is:
 
@@ -174,7 +174,7 @@ Every one of these is a known-thin area. Most have plausible-looking Go code but
 
 ## 8. Next steps
 
-1. **Wire `wfsource/source/iffwrite/test.scr` into the test harness.** Two nested chunks, documented expected bytes in the format investigation. First new fixture should take ~10 minutes.
+1. **Wire `wfsource/source/iffwrite/test.iff.txt` into the test harness.** Two nested chunks, documented expected bytes in the format investigation. First new fixture should take ~10 minutes.
 2. **Add a fixture that exercises `.sizeof` / `.offsetof`.** Either find one in the existing `.iff.txt` files emitted by `prep`, or hand-write a small one. This is the highest-value coverage gap.
 3. **Add fuzzing** (`go test -fuzz`) over the lexer. The speculative-rollback paths in `scanNumber` and the string-literal `(N)` size-override parser are the most likely places for subtle regressions to hide.
 4. **Commit real `.oas`-derived `.iff.txt` files from `wfsource/source/oas/`** as testdata. Every one is a free differential regression test.

@@ -5,7 +5,7 @@
 
 There are really **two** formats here:
 
-1. The textual *source* language consumed by `iffcomp` (`.iff.txt` / `.scr`).
+1. The textual *source* language consumed by `iffcomp` (`.iff.txt`).
 2. The *binary* IFF tree it spits out.
 
 Both are documented below.
@@ -158,9 +158,9 @@ Source (from `wftools/iffcomp/test.iff.txt`):
 
 Total payload size (header excluded): `4 + 4 + 4 + 4 + 13 + 256 + 4 + 4 + 4 + sizeof(TODO)` = `297 + sizeof(TODO)` bytes, written little-endian into the placeholder slot.
 
-## 4. Walk-through of `iffwrite/test.scr`
+## 4. Walk-through of `iffwrite/test.iff.txt`
 
-Source (from `wfsource/source/iffwrite/test.scr`):
+Source (from `wfsource/source/iffwrite/test.iff.txt`):
 
 ```
 { 'FILE'
@@ -224,5 +224,5 @@ Chunk `ID` bytes are the one field that matches standard IFF byte order. `ID::ID
   - `fixed.cc` / `fixed.hp` — fixed-point conversion
   - `id.hp` — FOURCC byte-swap
   - `backpatch.hp` — `ChunkSizeBackpatch` (size + position bookkeeping)
-  - `test.scr` — sample 2
+  - `test.iff.txt` — sample 2
 - EA-IFF 85 spec: ["EA IFF 85" Standard for Interchange Format Files](https://wiki.amigaos.net/wiki/EA_IFF_85_Standard_for_Interchange_Format_Files) — original spec on the AmigaOS wiki
