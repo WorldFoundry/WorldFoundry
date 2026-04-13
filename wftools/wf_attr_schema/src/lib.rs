@@ -206,7 +206,7 @@ pub fn from_oad(oad: &OadFile) -> Schema {
         };
         let help  = entry.help_str().to_owned();
 
-        let kind = classify(entry.button_type, entry.string_str(), entry.lpstr_filter_bytes());
+        let kind = classify(entry.button_type, entry.string_str(), entry.lpstr_filter_bytes(), entry.show_as);
 
         // Track the current group from PropertySheet / GroupStart names.
         match entry.button_type {
@@ -297,13 +297,14 @@ fn parse_filter(raw: &[u8]) -> String {
 }
 
 /// Map an OAD `ButtonType` + `string` field content to a [`FieldKind`].
-fn classify(bt: ButtonType, string_field: &str, lpstr_filter: &[u8]) -> FieldKind {
+fn classify(bt: ButtonType, string_field: &str, lpstr_filter: &[u8], show_as: u8) -> FieldKind {
     match bt {
         // Numeric integer fields — check for pipe-separated enum items first.
+        // show_as == 8 (checkbox) with no items → Bool (TYPEENTRYBOOLEAN).
         ButtonType::Int8 | ButtonType::Int16 | ButtonType::Int32 => {
             let items = parse_pipe_items(string_field);
             if items.is_empty() {
-                FieldKind::Int
+                if show_as == 8 { FieldKind::Bool } else { FieldKind::Int }
             } else {
                 FieldKind::Enum { items }
             }
@@ -350,6 +351,13 @@ fn classify(bt: ButtonType, string_field: &str, lpstr_filter: &[u8]) -> FieldKin
         | ButtonType::Waveform
         | ButtonType::ExtractLight
         | ButtonType::Shortcut => FieldKind::Bool,
+
+        // XData: show_as=11 (texteditor) is a free-text Notes/Comments field
+        // (TYPEENTRYXDATA_NOTES via common.inc). Surface as Str so artists can
+        // read and edit it. All other XData variants carry no editable content.
+        ButtonType::XData => {
+            if show_as == 11 { FieldKind::Str } else { FieldKind::Skip }
+        }
 
         // Everything else is not yet surfaced in the editor.
         _ => FieldKind::Skip,
@@ -523,6 +531,38 @@ mod tests {
         let mass = schema.fields.iter().find(|f| f.key == "Mass").expect("Mass");
         // Mass comes after the "Common" PropertySheet
         assert_eq!(mass.group, "Common");
+    }
+
+    #[test]
+    fn xdata_show_as_11_maps_to_str() {
+        // TYPEENTRYXDATA_NOTES: BUTTON_XDATA + show_as=11 (texteditor) → Str.
+        let kind = super::classify(wf_oad::ButtonType::XData, "", &[0u8; 512], 11);
+        assert!(matches!(kind, FieldKind::Str), "expected Str, got {kind:?}");
+    }
+
+    #[test]
+    fn xdata_show_as_0_maps_to_skip() {
+        let kind = super::classify(wf_oad::ButtonType::XData, "", &[0u8; 512], 0);
+        assert!(matches!(kind, FieldKind::Skip), "expected Skip, got {kind:?}");
+    }
+
+    #[test]
+    fn int_show_as_8_maps_to_bool() {
+        // TYPEENTRYBOOLEAN uses BUTTON_INT32 + show_as=8 (checkbox), no pipe items.
+        // classify() must produce Bool, not Int.
+        let kind = super::classify(
+            wf_oad::ButtonType::Int32,
+            "",          // no pipe items
+            &[0u8; 512], // no filter
+            8,           // show_as = checkbox
+        );
+        assert!(matches!(kind, FieldKind::Bool), "expected Bool, got {kind:?}");
+    }
+
+    #[test]
+    fn int_show_as_0_maps_to_int() {
+        let kind = super::classify(wf_oad::ButtonType::Int32, "", &[0u8; 512], 0);
+        assert!(matches!(kind, FieldKind::Int), "expected Int, got {kind:?}");
     }
 
     #[test]

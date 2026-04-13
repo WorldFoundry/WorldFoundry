@@ -65,7 +65,7 @@ All macros expand to a `typeDescriptor` struct literal (with a trailing comma).
 | `TYPEENTRYWAVEFORM(name, displayName)` | `BUTTON_WAVEFORM` | |
 | `TYPEENTRYSTRING(name, displayName, count, labels, showas)` | `BUTTON_XDATA` | In-memory string, not serialised |
 | `TYPEENTRYSTRING_IGNORE(name, displayName)` | `BUTTON_XDATA` | `XDATA_IGNORE` — notes/comments field |
-| `TYPEENTRYXDATA(name, displayName, chunkName)` | `BUTTON_XDATA` | DLL-handled chunk |
+| `TYPEENTRYXDATA(name, displayName, chunkName)` | `BUTTON_XDATA` | XData chunk; `chunkName` stored in `string` field; `conversionAction=XDATA_IGNORE` |
 | `TYPEENTRYXDATA_CONVERT(name, displayName, chunkName, required, conversion)` | `BUTTON_XDATA` | Level-converter data conversion |
 | `LEVELCONFLAGCOMMONBLOCK(name)` | `LEVELCONFLAG_COMMONBLOCK` | Inserts flag + `@include name.inc` |
 | `LEVELCONFLAGENDCOMMON` | `LEVELCONFLAG_ENDCOMMON` | Closes common block |
@@ -233,7 +233,8 @@ typedef struct _typeDescriptor            // 1491 bytes total, #pragma pack(1)
 - **`xdata.szEnableExpression`** — conditional enable expression evaluated by attribedit,
   e.g. `"ModelType==1 || ModelType==2"`.  `"1"` = always enabled.
 - **`xdata.conversionAction`** — `XDATA_IGNORE`(0) for most fields; non-zero for
-  `BUTTON_XDATA` fields where the level converter invokes a DLL handler.
+  `BUTTON_XDATA` fields, directing levelcon how to emit the XData chunk
+  (copy raw bytes, parse as object list, compile as AI script, etc.).
 - **`lpstrFilter`** — for `BUTTON_FILENAME`: Windows file-dialog filter string
   (null-separated `Desc\0Pattern\0` pairs, double-null terminated).  Empty otherwise.
 
@@ -320,7 +321,7 @@ defined in `oad.h`; the constant names are `#define`s, not a real C enum.
 | 17 | `LEVELCONFLAG_COMMONBLOCK` | `LEVELCONFLAGCOMMONBLOCK(name)` | 0 (structural) | `SHOW_AS_HIDDEN` |
 | 18 | `LEVELCONFLAG_ENDCOMMON` | `LEVELCONFLAGENDCOMMON` | 0 (structural) | `SHOW_AS_HIDDEN` |
 | 19 | `BUTTON_MESHNAME` | *(defined but unused — `BUTTON_FILENAME` used instead)* | 0 | `SHOW_AS_N_A` |
-| 20 | `BUTTON_XDATA` | `TYPEENTRYXDATA`, `TYPEENTRYXDATA_CONVERT`, `TYPEENTRYSTRING_IGNORE` | variable (DLL-handled) | `SHOW_AS_N_A`, `SHOW_AS_TEXTEDITOR` |
+| 20 | `BUTTON_XDATA` | `TYPEENTRYXDATA`, `TYPEENTRYXDATA_CONVERT`, `TYPEENTRYSTRING_IGNORE` | variable; `chunkName` in `string` field | `SHOW_AS_N_A`, `SHOW_AS_TEXTEDITOR` |
 | 21 | `BUTTON_EXTRACT_CAMERA` | `TYPEENTRYCAMERA` | 4 | `SHOW_AS_N_A` |
 | 22 | `LEVELCONFLAG_EXTRACTCAMERANEW` | `LEVELCONFLAGEXTRACTCAMERANEW` | 4 | `SHOW_AS_HIDDEN` |
 | 23 | `BUTTON_WAVEFORM` | `TYPEENTRYWAVEFORM` | 4 | `SHOW_AS_N_A` |
@@ -364,7 +365,7 @@ in `oad.h`.
 |---|--------|---------|
 | 0 | `XDATA_IGNORE` | Do not process; field is metadata only |
 | 1 | `XDATA_COPY` | Copy raw chunk data into level output |
-| 2 | `XDATA_OBJECTLIST` | Object list chunk; DLL handler parses |
+| 2 | `XDATA_OBJECTLIST` | Object list chunk; levelcon parses linked-object names |
 | 3 | `XDATA_CONTEXTUALANIMATIONLIST` | Contextual animation list chunk |
 | 4 | `XDATA_SCRIPT` | AI script chunk |
 
