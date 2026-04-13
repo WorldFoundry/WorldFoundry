@@ -50,8 +50,9 @@ except ImportError as _e:
 # Sub-module registration
 # ---------------------------------------------------------------------------
 
-from . import operators  # noqa: E402
-from . import panels     # noqa: E402
+from . import operators      # noqa: E402
+from . import panels         # noqa: E402
+from . import export_level   # noqa: E402
 
 
 def register():
@@ -70,9 +71,11 @@ def register():
 
     operators.register()
     panels.register()
+    export_level.register()
 
 
 def unregister():
     if _WF_CORE_OK:
+        export_level.unregister()
         panels.unregister()
         operators.unregister()

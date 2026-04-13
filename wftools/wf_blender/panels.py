@@ -210,12 +210,9 @@ class WF_PT_attributes(bpy.types.Panel):
                 op.item_label = items[0] if is_true else items[1]
 
             elif show_as in (4, 5) and len(items) > 3:
-                # Dropmenu / radiobuttons with 4+ items → balanced grid, max 3 per row
-                n = len(items)
-                num_rows = (n + 2) // 3
-                cols = (n + num_rows - 1) // num_rows
+                # Dropmenu / radiobuttons with 4+ items → 2 per row
                 layout.label(text=field.label + ":")
-                grid = layout.grid_flow(columns=cols, align=True)
+                grid = layout.grid_flow(columns=2, align=True)
                 for item in items:
                     op = grid.operator(
                         "wf.set_enum",
@@ -240,9 +237,25 @@ class WF_PT_attributes(bpy.types.Panel):
                     op.item_label = item
 
 
+# ── WF_PT_level ───────────────────────────────────────────────────────────────
+
+class WF_PT_level(bpy.types.Panel):
+    """Scene-level panel for importing / exporting a WF level."""
+    bl_label       = "World Foundry Level"
+    bl_idname      = "WF_PT_level"
+    bl_space_type  = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context     = 'scene'
+
+    def draw(self, context):
+        layout = self.layout
+        layout.operator("wf.import_level", icon='IMPORT')
+        layout.operator("wf.export_level", icon='EXPORT')
+
+
 # ── registration ──────────────────────────────────────────────────────────────
 
-_CLASSES = [WF_PT_attributes]
+_CLASSES = [WF_PT_attributes, WF_PT_level]
 
 
 def register():

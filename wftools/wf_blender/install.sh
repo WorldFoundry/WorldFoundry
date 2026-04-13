@@ -63,9 +63,10 @@ DEST="$ADDONS_DIR/wf_blender"
 mkdir -p "$DEST"
 
 # ── copy add-on Python files ──────────────────────────────────────────────────
-cp "$SCRIPT_DIR/__init__.py"  "$DEST/"
-cp "$SCRIPT_DIR/operators.py" "$DEST/"
-cp "$SCRIPT_DIR/panels.py"    "$DEST/"
+cp "$SCRIPT_DIR/__init__.py"      "$DEST/"
+cp "$SCRIPT_DIR/operators.py"    "$DEST/"
+cp "$SCRIPT_DIR/panels.py"       "$DEST/"
+cp "$SCRIPT_DIR/export_level.py" "$DEST/"
 
 # ── copy native library ───────────────────────────────────────────────────────
 cp "$SO" "$DEST/wf_core.so"
