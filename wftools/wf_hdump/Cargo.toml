@@ -1,0 +1,9 @@
+[package]
+name = "wf_hdump"
+version = "0.1.0"
+edition = "2021"
+description = "World Foundry hex+ASCII dumper (port of wfsource/source/recolib/hdump.cc)"
+
+[lib]
+name = "wf_hdump"
+path = "src/lib.rs"
