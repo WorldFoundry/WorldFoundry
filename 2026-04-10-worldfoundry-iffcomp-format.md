@@ -1,7 +1,7 @@
 # Investigation: World Foundry `iffcomp` File Format
 
 **Date:** 2026-04-10
-**Context:** Reverse-engineering the input and output formats of `iffcomp`, a flex/bison-based source-to-binary compiler from the [World Foundry](https://github.com/wbniv/WorldFoundry/tree/master/wftools/iffcomp) 3D engine project (1996–2003). It transforms a platform-independent textual description into a native-endian binary blob ready for direct load on the target hardware. Source: `wftools/iffcomp/` (lexer, grammar, sample) and `wfsource/source/iffwrite/` (the binary writer library).
+**Context:** Reverse-engineering the input and output formats of `iffcomp`, a flex/bison-based source-to-binary compiler from the [World Foundry](https://github.com/WorldFoundry/WorldFoundry/tree/master/wftools/iffcomp) 3D engine project (1996–2003). It transforms a platform-independent textual description into a native-endian binary blob ready for direct load on the target hardware. Source: `wftools/iffcomp/` (lexer, grammar, sample) and `wfsource/source/iffwrite/` (the binary writer library).
 
 There are really **two** formats here:
 
@@ -214,12 +214,12 @@ The 4-byte chunk ID convention itself traces back to the Macintosh resource fork
 
 ## References
 
-- Tool source: [`wbniv/WorldFoundry/wftools/iffcomp/`](https://github.com/wbniv/WorldFoundry/tree/master/wftools/iffcomp)
+- Tool source: [`WorldFoundry/WorldFoundry/wftools/iffcomp/`](https://github.com/WorldFoundry/WorldFoundry/tree/master/wftools/iffcomp)
   - `lang.l` — flex lexer
   - `lang.y` — bison grammar
   - `grammar.cc` / `grammar.hpp` — parser driver, `Backpatch`, `State`
   - `test.iff.txt` — sample 1
-- Writer library: [`wbniv/WorldFoundry/wfsource/source/iffwrite/`](https://github.com/wbniv/WorldFoundry/tree/master/wfsource/source/iffwrite)
+- Writer library: [`WorldFoundry/WorldFoundry/wfsource/source/iffwrite/`](https://github.com/WorldFoundry/WorldFoundry/tree/master/wfsource/source/iffwrite)
   - `iffwrite.hp` — abstract base + `IffWriterBinary` / `IffWriterText` declarations
   - `binary.cc` — binary writer (chunk header layout, alignment, back-patching)
   - `_iffwr.cc` — base writer + `enterChunk` / `exitChunk` accounting
