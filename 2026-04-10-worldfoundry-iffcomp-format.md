@@ -190,7 +190,7 @@ The file produced by `iffcomp` shares the EA-IFF chunk-header shape but deviates
 
 | # | EA-IFF 85 | WorldFoundry |
 |---|---|---|
-| 1 | Chunks padded to **2-byte** boundaries | Everything except strings aligned to **4-byte** boundaries: chunks on exit (`exitChunk`) and inline FOURCC literals (`out_id`) both call `align(4)`. Required for direct in-place load on MIPS R3000 (unaligned 32-bit loads are a bus error) and beneficial on x86 (avoids the misaligned-read penalty). Strings are exempt — they are accessed byte-by-byte so alignment is irrelevant. |
+| 1 | Chunks padded to **2-byte** boundaries | Everything except strings aligned to **4-byte** boundaries: chunks on exit (`exitChunk`) and inline FOURCC literals (`out_id`) both call `align(4)`. Required for direct in-place load on MIPS R3000 (unaligned 32-bit loads are a bus error) and beneficial on x86 (avoids the misaligned-read penalty). Strings are exempt — they are accessed byte-by-byte so alignment is irrelevant. The EA-IFF 85 spec itself encourages this: *"word-alignment greatly helps 68000 access at insignificant cost to 8088 programs"* — WF simply extends that reasoning to 32-bit word alignment for 32-bit processors. The original spec was written in the era of 16-bit processors where a 2-byte boundary was the natural unit; for a 32-bit target like MIPS R3000 (where unaligned word access is a hard bus error, not a performance hint) or x86-32 (where it costs extra bus cycles), 4-byte alignment is the direct analogue. This is arguably the direction a modern successor to EA-IFF 85 should take. |
 | 2 | All multi-byte values big-endian | All numeric fields in **native byte order** |
 
 ### Extensions
