@@ -118,18 +118,18 @@ No changes needed to `wf_py`, `wf_attr_serialize`, or `wf_attr_validate`.
 Movement section → "At End Of Path" (5 items, show_as=4): renders as balanced grid
 (3,2) with max 3 per row. ✅
 
-<img src="screenshots/verify-02-gap2-enum-grid.png" width="800">
+<img src="screenshots/verify-02-gap2-enum-grid.png" style="max-width:800px">
 
 Overview with Movement section expanded:
 
-<img src="screenshots/verify-01-overview.png" width="800">
+<img src="screenshots/verify-01-overview.png" style="max-width:800px">
 
 ### 3. Gap 1 — TYPEENTRYBOOLEAN checkbox
 
 `common.inc` (included in all schemas) has two bare `TYPEENTRYBOOLEAN` fields:
 "Needle Gun Target" and "Script Controls Input". Both render as checkboxes. ✅
 
-<img src="screenshots/verify-03-gap1-typeentryboolean-checkbox.png" width="800">
+<img src="screenshots/verify-03-gap1-typeentryboolean-checkbox.png" style="max-width:800px">
 
 ### 4. Gap 3 — Notes field (Str from BUTTON_XDATA)
 
@@ -144,8 +144,8 @@ clicking opens the Blender color wheel dialog. ✅
 
 Color field hex button and picker dialog open:
 
-<img src="screenshots/verify-05a-gap4-color-picker-dialog.png" width="800">
+<img src="screenshots/verify-05a-gap4-color-picker-dialog.png" style="max-width:800px">
 
 Panel with color hex button rendered in Fogging section:
 
-<img src="screenshots/verify-05b-gap4-color-hex-field.png" width="800">
+<img src="screenshots/verify-05b-gap4-color-hex-field.png" style="max-width:800px">

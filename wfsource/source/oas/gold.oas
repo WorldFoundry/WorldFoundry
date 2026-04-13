@@ -1,0 +1,12 @@
+@*============================================================================
+@* gold.oas - stub for gold/collectible object
+@*============================================================================
+
+@define DEFAULT_MASS		0
+@define DEFAULT_VISIBILITY	0
+@define DEFAULT_MODEL_TYPE	0
+
+TYPEHEADER(Gold,Gold)
+	@include actor.inc
+
+TYPEFOOTER

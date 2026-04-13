@@ -661,7 +661,7 @@ QLevel::AddXDataToCommonData(void)
 //============================================================================
 
 int32
-QLevel::ParseTextFileIntoObjectList(char* textBuffer, int32 sourceSize, long* objectReferenceArray,int32 maxEntries)
+QLevel::ParseTextFileIntoObjectList(char* textBuffer, int32 sourceSize, int32* objectReferenceArray,int32 maxEntries)
 {
 #if 0
 	cout << "ParseTextFileIntoObjectList: sourceSize = " << sourceSize << endl;
@@ -702,7 +702,7 @@ QLevel::ParseTextFileIntoObjectList(char* textBuffer, int32 sourceSize, long* ob
 int32
 QLevel::ParseTextFileIntoContextualAnimationList(char* textBuffer,
 												 int32 sourceSize,
-												 long contextAnimArray[][2],
+												 int32 contextAnimArray[][2],
 												 int32 maxEntries,
 												 int32 roomNum)
 {

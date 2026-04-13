@@ -202,7 +202,7 @@ public:
 
 protected:
 #if defined(SCALAR_TYPE_FIXED)
-	long	_value;
+	int32	_value;
 #elif defined(SCALAR_TYPE_FLOAT) || defined(SCALAR_TYPE_DOUBLE)
    FLOAT_TYPE _value;
 #else

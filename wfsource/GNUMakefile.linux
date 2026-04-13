@@ -37,7 +37,7 @@ XLIBS = -L/usr/X11/lib -L/usr/X11R6/lib -lX11 -lXext -lXmu -lXt -lXi -lSM -lICE
 #LIBS_linux +=  $(XLIBS) -L/usr/local/lib/libGL -llibGL  -lMesaaux -lMesatk -lMesaGLU -lMesaGL -lm $(XLIBS)
 
 #LNARGS += -L/usr/lib -L/usr/local/lib -L/usr/X11R6/lib
-LNARGS += -L/usr/local/lib -L/usr/X11R6/lib
+LNARGS += -L/usr/local/lib -L/usr/X11R6/lib -L/usr/lib/x86_64-linux-gnu -L$(WF_DIR)/xlib-stubs
 
 #LIBS_linux +=  -L/usr/lib -L/usr/local/lib
 SYS_LIBS += -lm -lX11 -lXext -lXmu -lXt -lXi -lSM -lICE -lpthread -lc -lstdc++

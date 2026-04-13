@@ -71,8 +71,7 @@ Point6::operator==(const Point6& left) const
 	assert(0);	
 	return
 	 (
-		(_pos == left._pos) 
-#pragma message ("KTS " __FILE__ ": finish this")
+		(_pos == left._pos)
 //		&& (_rot == left._rot)
 	 );
 }

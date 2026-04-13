@@ -118,10 +118,10 @@ private:
 	void SortCameraBoxes();								// sort actboxca objects by nesting order
 	bool ValidateVelocityLevel() const;					// Do Velocity-specific consistancy checks on the level
 
-	int32 ParseTextFileIntoObjectList(char* textBuffer, int32 sourceSize, long* objectReferenceArray,int32 maxEntries);
+	int32 ParseTextFileIntoObjectList(char* textBuffer, int32 sourceSize, int32* objectReferenceArray,int32 maxEntries);
 	int32 ParseTextFileIntoContextualAnimationList(char* textBuffer,
 												   int32 sourceSize,
-												   long contextAnimationArray[][2],
+												   int32 contextAnimationArray[][2],
 												   int32 maxEntries,
 												   int32 roomNum);
 
