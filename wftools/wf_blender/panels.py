@@ -206,10 +206,11 @@ class WF_PT_attributes(bpy.types.Panel):
                 op.field_key  = field.key
                 op.item_label = items[0] if is_true else items[1]
 
-            elif show_as in (4, 5) and len(items) > 4:
-                # Dropmenu / many radiobuttons → multi-column grid
-                # 2 cols for ≤8 items, 3 cols for 9–12, 4 cols for 13+
-                cols = 2 if len(items) <= 8 else (3 if len(items) <= 12 else 4)
+            elif show_as in (4, 5) and len(items) > 3:
+                # Dropmenu / radiobuttons with 4+ items → balanced grid, max 3 per row
+                n = len(items)
+                num_rows = (n + 2) // 3
+                cols = (n + num_rows - 1) // num_rows
                 layout.label(text=field.label + ":")
                 grid = layout.grid_flow(columns=cols, align=True)
                 for item in items:

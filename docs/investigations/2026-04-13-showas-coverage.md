@@ -69,9 +69,12 @@ to `FieldKind::Bool`, rendering as a checkbox in Blender. No serialization chang
 
 ### Gap 2 — Enum show_as=4 (dropmenu): cramped button row  ✅ DONE
 
-Enum fields with `show_as` 3/4/5 and 5+ items render as a 2-column `grid_flow` layout
-(3 cols for 9–12 items, 4 cols for 13+). Fields with ≤4 items keep the horizontal button
-row. Pure Python change in `panels.py`.
+Enum fields with `show_as` 4/5 and 4+ items render as a balanced `grid_flow` grid with
+max 3 items per row. Column count is `ceil(n / ceil(n/3))`, so:
+- 4 items → (2,2); 5 → (3,2); 6 → (3,3); 7 → (3,3,1); 8 → (3,3,2); 9 → (3,3,3); etc.
+
+Fields with ≤3 items keep the existing horizontal button row. Pure Python change in
+`panels.py`.
 
 ### Gap 3 — BUTTON_XDATA show_as=11 (Notes): hidden  ✅ DONE
 
@@ -104,22 +107,43 @@ No changes needed to `wf_py`, `wf_attr_serialize`, or `wf_attr_validate`.
 
 ## Verification
 
-```bash
-# 1. Rust unit tests (gap 1: Bool from TYPEENTRYBOOLEAN; gap 3: Str from XData notes)
-cargo test -p wf_attr_schema
+### 1. Rust tests
 
-# 2. Rebuild Python extension
-cd wftools/wf_py && maturin develop
+16 tests passing (`cargo test` in `wf_attr_schema/`).
 
-# 3. Python smoke test — confirm "No Roll" is Bool, "Notes" is Str
-python3 -c "
-import wf_core
-s = wf_core.load_schema('wftools/wf_oad/tests/fixtures/player.oad')
-for f in s.fields():
-    if f.kind in ('Bool',):
-        print(f.kind, f.show_as, f.key)
-"
+### 2. Gap 2 — Enum dropmenu grid (player.oad)
 
-# 4. Blender: attach player.oad → verify 'No Roll' shows checkbox, not integer
-#    attach an OAD with a dropmenu (actbox.oad) → verify 'Mobility' stacks vertically
-```
+Movement section → "At End Of Path" (5 items, show_as=4): renders as balanced grid
+(3,2) with max 3 per row. ✅
+
+![Gap 2: At End Of Path 2-column grid](screenshots/verify-02-gap2-enum-grid.png)
+
+Overview with Movement section expanded:
+
+![Overview with Movement section](screenshots/verify-01-overview.png)
+
+### 3. Gap 1 — TYPEENTRYBOOLEAN checkbox
+
+No `TYPEENTRYBOOLEAN` fields in `player.oad` — all checkbox-style fields there use
+2-item `Enum` with `show_as=8` (already working pre-gap-fix). Need an OAD file with a
+bare `TYPEENTRYBOOLEAN` (BUTTON_INT32, no pipe items, show_as=8) to verify. ⚠️
+
+### 4. Gap 3 — Notes field (Str from BUTTON_XDATA)
+
+`TYPEENTRYSTRING_IGNORE` hardcodes `SHOW_AS_N_A` (0) in the compiled OAD — the
+`SHOW_AS_TEXTEDITOR` in `TYPEENTRYXDATA_NOTES` is an extra argument that the macro
+ignores. The Notes field therefore has `show_as=0`, not 11, and still maps to `Skip`.
+**Gap 3 fix is incomplete — needs rework.** ⚠️
+
+### 5. Gap 4 — Color picker
+
+`camera.oad` attached → Fogging section → "Color" field renders as `#RRGGBB` hex button;
+clicking opens the Blender color wheel dialog. ✅
+
+Color field hex button and picker dialog open:
+
+![Gap 4: Pick Color dialog with color wheel](screenshots/verify-05a-gap4-color-picker-dialog.png)
+
+Panel with color hex button rendered in Fogging section:
+
+![Gap 4: Color hex field in panel](screenshots/verify-05b-gap4-color-hex-field.png)
