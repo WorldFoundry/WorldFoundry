@@ -101,8 +101,17 @@ pub struct FieldDescriptor {
 
 impl FieldDescriptor {
     /// Returns `true` if this field should be shown in the editor UI.
+    ///
+    /// Excludes [`FieldKind::Skip`], [`FieldKind::Group`], and fields with
+    /// `show_as == 6` (hidden/internal in the original `attribedit`).
     pub fn is_visible(&self) -> bool {
-        !matches!(self.kind, FieldKind::Skip | FieldKind::Group)
+        if matches!(self.kind, FieldKind::Skip | FieldKind::Group) {
+            return false;
+        }
+        if self.show_as == 6 {
+            return false;
+        }
+        true
     }
 }
 
@@ -322,13 +331,25 @@ mod tests {
     }
 
     #[test]
-    fn visible_fields_excludes_skip_and_group() {
+    fn visible_fields_excludes_skip_group_and_hidden() {
         let oad = load_fixture("player.oad");
         let schema = from_oad(&oad);
         for f in schema.visible_fields() {
             assert!(!matches!(f.kind, FieldKind::Skip | FieldKind::Group),
                 "visible_fields should not include {}: {:?}", f.key, f.kind);
+            assert_ne!(f.show_as, 6,
+                "visible_fields should not include show_as=6 field: {}", f.key);
         }
+    }
+
+    #[test]
+    fn show_as_6_fields_not_visible() {
+        let oad = load_fixture("player.oad");
+        let schema = from_oad(&oad);
+        // slopeA–slopeD are BUTTON_FIXED32 with show_as=6 — hidden/internal
+        let slope = schema.fields.iter().find(|f| f.key == "slopeA").expect("slopeA");
+        assert_eq!(slope.show_as, 6);
+        assert!(!slope.is_visible(), "slopeA (show_as=6) should not be visible");
     }
 
     #[test]

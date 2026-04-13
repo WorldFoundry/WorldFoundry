@@ -86,13 +86,13 @@ class WF_PT_attributes(bpy.types.Panel):
             current = obj.get(prop_key, "")
 
             if show_as == 8 and len(items) == 2:
-                # ShowAs=8 → checkbox-style toggle (False / True)
+                # ShowAs=8 → checkbox toggle: label on left, icon button on right
                 is_true = (current == items[1])
                 row = layout.row()
                 row.label(text=field.label + ":")
                 op = row.operator(
                     "wf.set_enum",
-                    text=items[1] if is_true else items[0],
+                    text="",           # icon only — avoids redundant True/False text
                     icon='CHECKBOX_HLT' if is_true else 'CHECKBOX_DEHLT',
                     depress=is_true,
                 )
