@@ -204,6 +204,8 @@ packed C structs from `wfsource/source/oas/oad.h` with `#pragma pack(1)`:
 toolchain (`wpp`, `wlink`, `exe2bin`) is Windows-only. Test fixtures in
 `wf_oad` are synthesized directly from the known binary layout.
 
+The Linux replacement is `oas2oad-rs` (see below).
+
 ### Reference files
 
 | File | Purpose |
@@ -212,3 +214,84 @@ toolchain (`wpp`, `wlink`, `exe2bin`) is Windows-only. Test fixtures in
 | `wfsource/source/oas/types3ds.s` | `prep` template that generates the C source compiled into `.oad` |
 | `wfsource/source/oas/objects.mas` | Master Makefile template showing the full `prep`→`wpp`→`exe2bin` pipeline |
 | `wftools/oaddump/oad.{cc,hp}` | Original C++ parser and display logic |
+
+---
+
+## Tool: `oas2oad-rs` — Linux OAS → OAD compiler
+
+Replaces the Windows-only `wpp + wlink + exe2bin` chain with a Rust binary
+that runs on Linux. Uses `prep` (already working on Linux) for macro
+expansion, then parses the generated C initializer syntax and writes the
+binary `.oad` directly.
+
+### Why Option B (prep + C parser) over Option A (direct OAS parser)
+
+Reimplementing `prep`'s macro expansion for the OAD domain would require
+testing correctness independently. Using the existing `prep` binary means
+macro expansion is already validated — we only add a C-initializer parser
+on top, which has a much smaller surface area.
+
+### Pipeline
+
+```
+oas2oad-rs <name>.oas → (shells out) prep -DTYPEFILE_OAS=<name> types3ds.s → <name>.pp
+                       → parse C initializers from <name>.pp
+                       → write binary <name>.oad
+```
+
+The `prep` binary must be on `$PATH` or specified via `--prep=<path>`.
+`types3ds.s` location defaults to `$WF_DIR/wfsource/source/oas/types3ds.s`
+or can be overridden with `--types=<path>`.
+
+### What the C output looks like
+
+`prep` with `types3ds.s` produces two initializers:
+
+```c
+_oadHeader header = {'OAD ', 0, "DisplayName", 0x00010202};
+
+typeDescriptor huge tempstruct[] = {
+    { BUTTON_INT32, "speed", 0, 65536, 0, 0, "", SHOW_AS_NUMBER,
+      -1, -1, "help text", {XDATA_IGNORE, 0, "Speed", "1", 0} },
+    ...
+};
+```
+
+The parser needs to handle:
+- String literals (including escaped chars)
+- Integer literals (decimal, hex `0x...`)
+- Named constants (`BUTTON_INT32`, `SHOW_AS_NUMBER`, `XDATA_IGNORE`, etc.)
+- Nested `{ ... }` for the union field
+- Multi-char literals (`'OAD '`) — only in the header, value is known
+
+### CLI
+
+```
+oas2oad-rs [--prep=<path>] [--types=<path>] [-o <outfile>] <infile.oas>
+```
+
+Exit codes: `0` success, `1` error.
+
+### Directory layout
+
+```
+oas2oad-rs/
+  Cargo.toml
+  src/
+    main.rs     — CLI, temp file management, shells out to prep
+    parser.rs   — tokenizer + C initializer parser → OadHeader + Vec<OadEntry>
+    error.rs    — OasError enum
+```
+
+Depends on `wf_oad` for `OadHeader`, `OadEntry`, and the binary serializer
+(which needs to be added to `wf_oad` alongside the existing reader).
+
+### Testing
+
+With `oas2oad-rs` working, `wf_oad` tests can use real `.oad` fixtures
+generated from the `.oas` files in `wfsource/source/oas/`. Round-trip:
+
+```bash
+oas2oad-rs missile.oas -o /tmp/missile.oad
+oaddump-rs /tmp/missile.oad
+```
