@@ -92,7 +92,7 @@ The chunk payloads are typically one of two things: the in-memory layout of C/C+
 ```
 
 - `ID`: 4 raw ASCII bytes, source order (already byte-swapped in `ID::ID(unsigned long)`).
-- `size`: **uint32** — payload size **excluding** the 8-byte header. Written via raw `_out->write` → **native byte order** (little-endian on x86 — *not* the big-endian of standard IFF).
+- `size`: **uint32** — payload size **excluding** the 8-byte header. Written via raw `_out->write` → **native byte order** (not the big-endian of standard IFF).
 - payload: nested chunks and/or raw items.
 - After the payload, `align(4)` zero-pads to a 4-byte boundary.
 
@@ -116,7 +116,7 @@ Alignment between siblings is forced to 4 (`align(4)`); the in-chunk `align()` w
 
 ### Endianness — native by design
 
-The textual `.iff.txt` source *is* an interchange format in the meaningful sense: it is platform-independent and can be compiled for any target. The binary output, however, is not — it is a native blob consumed directly on the target platform (x86 or MIPS R3000). Numeric values — integers, sizes, fixed-point reals — are therefore written in the platform's **native byte order**, not the big-endian byte order of the original EA-IFF spec.
+The textual `.iff.txt` source *is* an interchange format in the meaningful sense: it is platform-independent and can be compiled for any target. The binary output, however, is not — it is a native blob consumed directly on the target platform. Numeric values — integers, sizes, fixed-point reals — are therefore written in the platform's **native byte order**, not the big-endian byte order of the original EA-IFF spec.
 
 The one exception is the chunk `ID` field: `ID::ID(unsigned long)` byte-swaps so the on-disk bytes are literally the source-order ASCII characters (`'TEST'` → `54 45 53 54`), making ID matching byte-order-agnostic. All other multi-byte fields are raw native writes.
 
@@ -190,8 +190,8 @@ The file produced by `iffcomp` shares the EA-IFF chunk-header shape but deviates
 
 | # | EA-IFF 85 | WorldFoundry |
 |---|---|---|
-| 1 | All multi-byte values big-endian | All numeric fields in **native byte order** |
-| 2 | Chunks padded to **2-byte** boundaries | Everything except strings aligned to **4-byte** boundaries: chunks on exit (`exitChunk`) and inline FOURCC literals (`out_id`) both call `align(4)`. Required for direct in-place load on MIPS R3000 (unaligned 32-bit loads are a bus error) and beneficial on x86 (avoids the misaligned-read penalty). Strings are exempt — they are accessed byte-by-byte so alignment is irrelevant. |
+| 1 | Chunks padded to **2-byte** boundaries | Everything except strings aligned to **4-byte** boundaries: chunks on exit (`exitChunk`) and inline FOURCC literals (`out_id`) both call `align(4)`. Required for direct in-place load on MIPS R3000 (unaligned 32-bit loads are a bus error) and beneficial on x86 (avoids the misaligned-read penalty). Strings are exempt — they are accessed byte-by-byte so alignment is irrelevant. |
+| 2 | All multi-byte values big-endian | All numeric fields in **native byte order** |
 
 ### Extensions
 
