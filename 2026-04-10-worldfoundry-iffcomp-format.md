@@ -1,0 +1,198 @@
+# Investigation: World Foundry `iffcomp` File Format
+
+**Date:** 2026-04-10
+**Context:** Reverse-engineering the input and output formats of `iffcomp`, a flex/bison-based IFF chunk authoring tool from the [World Foundry](https://github.com/wbniv/WorldFoundry/tree/master/wftools/iffcomp) 3D engine project (1996–2003). Source: `wftools/iffcomp/` (lexer, grammar, sample) and `wfsource/source/iffwrite/` (the binary writer library).
+
+There are really **two** formats here:
+
+1. The textual *source* language eaten by `iffcomp` (`.iff.txt` / `.scr`).
+2. The *binary* IFF tree it spits out.
+
+Both are documented below.
+
+## 1. The textual source language
+
+A small flex+bison DSL whose only output is a binary IFF tree.
+
+### Top-level structure
+
+```
+file        := chunk+
+chunk       := '{' ID chunk-body '}'
+chunk-body  := ( chunk | item | directive )*
+```
+
+A file is a sequence of `{ … }` chunks; chunks may nest arbitrarily. Comments are `// to end of line`. `include "f"` and `include <f>` pull in nested source files.
+
+### Chunk IDs (`'TEST'`, `'FILE'`, …)
+
+- 1–4 ASCII characters in **single** quotes (lexer rule `'.{1,4}'`).
+- The lexer packs them MSB-first into a 32-bit value (`shift = 24; …`), then `ID(unsigned long)` byte-swaps it back so the on-disk bytes are literally `T E S T` in source order. Shorter IDs are right-padded with NULs (`'AB'` → `41 42 00 00`).
+
+### Items (the things that produce bytes)
+
+| Syntax | Emits |
+|---|---|
+| `123`, `-456`, `$DEADBEEF` | An integer. Width = current `sizeOverride` (default 1 byte). |
+| `123y`, `123w`, `123l` | Same, but force width to 1 / 2 / 4 bytes respectively. Hex form `$1234w` works too. |
+| `'AB'`, `'WAVE'` | A 4-byte FOURCC inline (uses `out_id`, which 4-aligns first). |
+| `3.14`, `.5`, `3.0` | A fixed-point real using the current default precision. |
+| `3.14(1.15.16)` | A fixed-point real with explicit `(sign.whole.fraction)` precision. Total-bit count picks int8 / int16 / int32. |
+| `"hello"` | NUL-terminated C string. |
+| `"hello"(256)` | NUL-terminated C string padded with zeros to *exactly* N bytes. Warns if too long. |
+| `"abc" "def"` | Concatenation — `out_string_continue` seeks back over the previous NUL and appends. Result is one C string `"abcdef\0"`. |
+| `[ "path/to/file.bin" ]` | Raw bytes of an external file, copied verbatim. |
+| `[ "f.bin" .start(N) .length(M) ]` | Same but only the slice `[N, N+M)`. |
+| `.timestamp` | Unix `time_t` as a 32-bit int. |
+| `.offsetof('A'::'B')` | Back-patched 32-bit absolute file offset of chunk `A`→`B`'s payload. |
+| `.offsetof('A'::'B', N)` | Same plus a constant byte offset. |
+| `.sizeof('A'::'B')` | Back-patched 32-bit payload size of chunk `A`→`B`. |
+
+`.offsetof` / `.sizeof` use a `Backpatch` queue: if the named chunk is already known when the directive is parsed, the value is written immediately; otherwise the current file position is recorded and the gap is filled in `Grammar::~Grammar()` after parsing finishes.
+
+### Directives
+
+| Syntax | Effect |
+|---|---|
+| `.align(N)` | Pad with fill bytes until current file position ≡ 0 (mod N). |
+| `.fillchar(N)` | Set the byte value used for alignment padding (default 0). |
+
+### State-push blocks (the other meaning of `{ … }`)
+
+A `{` followed by a *non*-CHAR_LITERAL token is a temporary state push, popped at the matching `}`. Two flavours:
+
+- `{ Y … }`, `{ W … }`, `{ L … }` — push a default integer width of 1 / 2 / 4 bytes for unsuffixed integers inside the block. Note this is **uppercase** Y/W/L (single chars), distinct from the lowercase `y/w/l` that suffix individual literals.
+- `{ .precision(1.15.16) … }` — push a default fixed-point precision for unparenthesised reals inside the block.
+
+The parser disambiguates "chunk vs. state-push" by lookahead: if the next token is a CHAR_LITERAL it's a chunk, otherwise a state push.
+
+### Numeric expressions
+
+`expr` allows `item + item` and `item - item`. Only `+` actually accumulates in the action (`$$ = $1 + $3`); the `-` rule has an empty action — looks unfinished.
+
+### Defaults
+
+From `Grammar::construct`:
+
+- Default size override: **1 byte** (so bare `123` writes one byte).
+- Default precision: `1.15.16` (sign 1 bit, whole 15 bits, fraction 16 bits → 32-bit total).
+
+## 2. The binary output format
+
+Written by `IffWriterBinary` (`wfsource/source/iffwrite/binary.cc`). Standard EA-IFF in shape, with a couple of World Foundry quirks.
+
+### Chunk layout
+
+```
++--------+--------+--------- … ---------+--- pad ---+
+| ID (4) | size(4)|       payload       |  to mod 4 |
++--------+--------+--------- … ---------+-----------+
+```
+
+- `ID`: 4 raw ASCII bytes, source order (already byte-swapped in `ID::ID(unsigned long)`).
+- `size`: 32-bit signed int — payload size **excluding** the 8-byte header. Written as `int32` via raw `_out->write` → **native byte order** (little-endian on x86 — *not* the big-endian of standard IFF).
+- payload: nested chunks and/or raw items.
+- After the payload, `align(4)` zero-pads to a 4-byte boundary.
+
+`enterChunk` writes ID + a `0xFFFFFFFF` size placeholder; `exitChunk` seeks back and patches the real size, then aligns and bumps the parent chunk's accumulated size by `child.size + pad + 8`.
+
+### Other primitives
+
+| What | Bytes |
+|---|---|
+| `out_int8` | 1 byte |
+| `out_int16` | 2 bytes, native (LE) |
+| `out_int32` | 4 bytes, native (LE) |
+| `out_id` | `align(4)` then 4 bytes |
+| `out_string` | `strlen+1` bytes, NUL-terminated. Escape codes `\n \t \\ \" \NNN` are translated by `translate_escape_codes` first. |
+| `out_string_continue` | seeks back -1 (over previous NUL), then `out_string` |
+| `out_timestamp` | 4 bytes — `time_t` (Unix epoch seconds) — note: Y2038-broken |
+| `out_file` | raw file bytes (`LoadBinaryFile` + `out_mem`) |
+| `out_fixed` | `val × 2^fraction`, truncated to unsigned, width = 1 / 2 / 4 bytes by total bit count |
+
+Alignment between siblings is forced to 4 (`align(4)`); the in-chunk `align()` writes zeros, while `alignFunction()` (the user-callable `.align(N)`) writes `fillChar()` instead.
+
+### Endianness gotcha
+
+The `ID` class explicitly byte-swaps in its `unsigned long` constructor so the on-disk bytes match source order — but `out_int32` / `out_int16` write native bytes. So a file from this tool reads cleanly with byte-order-agnostic ID matching but everything else is little-endian. A standard IFF reader written for big-endian data will read the IDs correctly and then mis-decode every size field.
+
+## 3. Walk-through of `test.iff.txt`
+
+Source (from `wftools/iffcomp/test.iff.txt`):
+
+```
+{ 'TEST'
+  3(1.15.16)
+  0.3(1.15.16)
+  0.4
+  .5(1.15.16)
+  "Hello string"
+  "Hello string"(256)
+  0y 1y 2y 3y
+  4w 5w
+  66666666l
+  [ "TODO" ]
+}
+```
+
+| Source | On-disk bytes (little-endian) | Notes |
+|---|---|---|
+| `{ 'TEST'` | `54 45 53 54  FF FF FF FF` | Chunk header `'TEST'` + size placeholder |
+| `3(1.15.16)` | `00 00 03 00` | `(uint32)(3.0 × 2¹⁶)` = `0x00030000` |
+| `0.3(1.15.16)` | `cc 4c 00 00` | `(uint32)(0.3 × 65536)` = 19660 = `0x00004CCC` |
+| `0.4` | `66 66 00 00` | uses default precision 1.15.16 → `0x00006666` |
+| `.5(1.15.16)` | `00 80 00 00` | `0.5 × 65536` = `0x00008000` |
+| `"Hello string"` | `48 65 6c 6c 6f 20 73 74 72 69 6e 67 00` | 13 bytes, NUL-terminated |
+| `"Hello string"(256)` | the same 13 bytes followed by 243 NULs | exactly 256 bytes total |
+| `0y 1y 2y 3y` | `00 01 02 03` | four int8s |
+| `4w 5w` | `04 00 05 00` | two int16s |
+| `66666666l` | `2a fb f8 03` | int32 (`66666666 = 0x03F8FB2A`) |
+| `[ "TODO" ]` | raw bytes of the local file `TODO` | |
+| `}` | back-patches the chunk's size field | size = sum of the above |
+
+Total payload size (header excluded): `4 + 4 + 4 + 4 + 13 + 256 + 4 + 4 + 4 + sizeof(TODO)` = `297 + sizeof(TODO)` bytes, written little-endian into the placeholder slot.
+
+## 4. Walk-through of `iffwrite/test.scr`
+
+Source (from `wfsource/source/iffwrite/test.scr`):
+
+```
+{ 'FILE'
+{ 'TEST' "Some text..." }
+}
+```
+
+Produces a nested chunk:
+
+```
+54 45 53 54  18 00 00 00     ; parent 'FILE', size = 24 (inner header + payload + pad)
+'F''I''L''E'                 ;
+                             ;
+  54 45 53 54  0d 00 00 00   ; inner 'TEST', size = 13 (the C string with NUL)
+  53 6f 6d 65 20 74 65 78    ; "Some text..."
+  74 2e 2e 2e 00             ;
+  00 00 00                   ; 3 bytes pad to 4-byte boundary
+```
+
+Note the parent chunk's size in the header *includes* the inner chunk's full 8-byte header and its 4-byte trailing pad — that's exactly what `IffWriterBinary::exitChunk` rolls into the parent (`csParent->AddToSize(child.size + pad + 8)`).
+
+## TL;DR
+
+- **Source format**: a tiny scripting DSL whose only output is a binary IFF tree. Chunks are `{ 'ID' … }`, items are width-tagged numeric / string / file literals, with directives for alignment, timestamps, and back-patched offsets / sizes into other chunks.
+- **Output format**: standard EA-IFF chunk header (`ID(4) | size(4) | payload`) but **little-endian** on x86 (not big-endian like the original spec) and with `align(4)` between sibling chunks. Strings are C-style NUL-terminated. Fixed-point reals are `val << fraction_bits` truncated to int8 / int16 / int32 by their total bit width.
+
+## References
+
+- Tool source: [`wbniv/WorldFoundry/wftools/iffcomp/`](https://github.com/wbniv/WorldFoundry/tree/master/wftools/iffcomp)
+  - `lang.l` — flex lexer
+  - `lang.y` — bison grammar
+  - `grammar.cc` / `grammar.hpp` — parser driver, `Backpatch`, `State`
+  - `test.iff.txt` — sample 1
+- Writer library: [`wbniv/WorldFoundry/wfsource/source/iffwrite/`](https://github.com/wbniv/WorldFoundry/tree/master/wfsource/source/iffwrite)
+  - `iffwrite.hp` — abstract base + `IffWriterBinary` / `IffWriterText` declarations
+  - `binary.cc` — binary writer (chunk header layout, alignment, back-patching)
+  - `_iffwr.cc` — base writer + `enterChunk` / `exitChunk` accounting
+  - `fixed.cc` / `fixed.hp` — fixed-point conversion
+  - `id.hp` — FOURCC byte-swap
+  - `backpatch.hp` — `ChunkSizeBackpatch` (size + position bookkeeping)
+  - `test.scr` — sample 2

@@ -1,5 +1,5 @@
 //==============================================================================
-// langlex.cc: Copyright (c) 1996-1999, World Foundry Group  
+// langlex.cc: Copyright (c) 1996-1999, 2026, World Foundry Group
 // Part of the World Foundry 3D video game engine/production environment
 // for more information about World Foundry, see www.worldfoundry.org
 //==============================================================================
@@ -18,115 +18,131 @@
 // or see www.fsf.org
 //==============================================================================
 
-#include <pigsys/assert.hp>
-#include <stdio.h>
-#include <string>
-#include <fstream>
-using namespace std;
 #include "langlex.hpp"
-
-// Don't like this...
-#define YY_BUF_SIZE 16384
 #include "grammar.hpp"
+#include "fileline.hpp"
 
-strFlexLexer::strFlexLexer( istream* arg_yyin, ostream* arg_yyout ) :
-		yyFlexLexer( arg_yyin, arg_yyout )
+#include <pigsys/assert.hp>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+
+// Flex-runtime state and buffer-stack API, forward-declared so we don't have to
+// pull in the entire scanner .cc. Flex emits these as external-linkage symbols.
+struct yy_buffer_state;
+typedef yy_buffer_state* YY_BUFFER_STATE;
+extern YY_BUFFER_STATE yy_create_buffer( std::FILE*, int );
+extern void yypush_buffer_state( YY_BUFFER_STATE );
+extern void yypop_buffer_state();
+extern std::FILE* yyin;
+
+static constexpr int kYyBufSize = 16384;
+
+
+LangLexer::LangLexer( Grammar& g, const char* szInputFile )
+    : _g( g ), _rootFile( nullptr )
 {
+    _rootFile = std::fopen( szInputFile, "r" );
+    if ( !_rootFile )
+    {
+        std::perror( szInputFile );
+        std::exit( 10 );
+    }
+    yyin = _rootFile;
+
+    FileLineInfo* fli = new FileLineInfo( 1, "", szInputFile );
+    assert( fli );
+    _fileLineInfo.push_back( fli );
 }
 
 
-int 
-yyFlexLexer::yywrap()
+LangLexer::~LangLexer()
 {
-  return 1;
-}
+    for ( FileLineInfo* fli : _fileLineInfo )
+        delete fli;
+    _fileLineInfo.clear();
 
-
-int 
-strFlexLexer::yywrap()
-{
-  return 1;
+    if ( _rootFile )
+    {
+        std::fclose( _rootFile );
+        _rootFile = nullptr;
+    }
 }
 
 
 const char*
-strFlexLexer::filename()
+LangLexer::filename()
 {
-	return include()->szFilename;
+    return include()->szFilename;
 }
 
 
 const char*
-strFlexLexer::currentLine()
+LangLexer::currentLine()
 {
-	return include()->_szCurrentLine;
+    return include()->_szCurrentLine;
 }
 
 
 const char*
-strFlexLexer::currentLine( const char* szCurrentLine )
+LangLexer::currentLine( const char* szCurrentLine )
 {
-	return include()->_szCurrentLine = (char*)szCurrentLine;
+    return include()->_szCurrentLine = const_cast< char* >( szCurrentLine );
 }
 
 
 FileLineInfo*
-strFlexLexer::include()
+LangLexer::include()
 {
-	if ( _fileLineInfo.size() == 0 )
-	{
-		FileLineInfo* fli = new FileLineInfo(
-			1,
-			"",
-			theGrammar->filename()
-						     );
-		assert( fli );
-		_fileLineInfo.push_back( fli );
-	}
-	return *( _fileLineInfo.end() - 1 );
+    if ( _fileLineInfo.empty() )
+    {
+        FileLineInfo* fli = new FileLineInfo( 1, "", _g.filename() );
+        assert( fli );
+        _fileLineInfo.push_back( fli );
+    }
+    return _fileLineInfo.back();
 }
 
 
 void
-strFlexLexer::push_system_include( const char* szIncludeFile )
+LangLexer::push_system_include( const char* szIncludeFile )
 {
-	char szSystemIncludeFile[ PATH_MAX ];
+    const char* szWorldFoundryDir = std::getenv( "WF_DIR" );
+    assert( szWorldFoundryDir );
 
-	char* szWorldFoundryDir = getenv( "WF_DIR" );
-	assert( szWorldFoundryDir );
-	sprintf( szSystemIncludeFile, "%s/%s", szWorldFoundryDir, szIncludeFile );
-
-	push_include( szSystemIncludeFile );
+    std::string full = std::string( szWorldFoundryDir ) + "/" + szIncludeFile;
+    push_include( full.c_str() );
 }
 
 
 void
-strFlexLexer::push_include( const char* szIncludeFile )
+LangLexer::push_include( const char* szIncludeFile )
 {
-//	printf( "Opening file [%s]\n", szIncludeFile );
+    std::FILE* fp = std::fopen( szIncludeFile, "r" );
+    if ( !fp )
+    {
+        _g.Error( "Unable to open include file \"%s\"", szIncludeFile );
+        return;
+    }
 
-	ifstream* newyyin = new ifstream( szIncludeFile );
-	assert( newyyin );
-	if ( !newyyin->good() ) {
-		theGrammar->Error( "Unable to open include file \"%s\"\n", szIncludeFile );
-	}
+    yypush_buffer_state( yy_create_buffer( fp, kYyBufSize ) );
 
-	yypush_buffer_state( yy_create_buffer( newyyin, YY_BUF_SIZE ) );
-	FileLineInfo* fli = new FileLineInfo( 1, currentLine(), szIncludeFile );
-	assert( fli );
-	_fileLineInfo.push_back( fli );
+    FileLineInfo* fli = new FileLineInfo( 1, currentLine(), szIncludeFile );
+    assert( fli );
+    _fileLineInfo.push_back( fli );
 }
 
 
 bool
-strFlexLexer::pop_include()
+LangLexer::pop_include()
 {
-	assert( _fileLineInfo.size() > 0 );
-	if ( _fileLineInfo.size() == 1 )
-		return false;
+    assert( !_fileLineInfo.empty() );
+    if ( _fileLineInfo.size() == 1 )
+        return false;
 
-	_fileLineInfo.pop_back();
-	yypop_buffer_state();
+    delete _fileLineInfo.back();
+    _fileLineInfo.pop_back();
+    yypop_buffer_state();
 
-	return true;
+    return true;
 }
