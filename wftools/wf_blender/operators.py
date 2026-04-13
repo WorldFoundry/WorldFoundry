@@ -6,6 +6,7 @@ World Foundry operators:
   WF_OT_set_enum        — set an enum field by item label (used by panel dropdown)
   WF_OT_validate        — range-check all values via Rust
   WF_OT_export_iff_txt  — gather values and write .iff.txt via Rust
+  WF_OT_import_iff_txt  — read .iff.txt and populate object properties
 
 Storage convention
 ------------------
@@ -19,7 +20,7 @@ Storage convention
 
 import bpy
 from bpy.props import StringProperty
-from bpy_extras.io_utils import ExportHelper
+from bpy_extras.io_utils import ExportHelper, ImportHelper
 import wf_core
 
 # ── constants ─────────────────────────────────────────────────────────────────
@@ -297,9 +298,6 @@ class WF_OT_export_iff_txt(bpy.types.Operator, ExportHelper):
 
 
 # ── WF_OT_import_iff_txt ─────────────────────────────────────────────────────
-
-from bpy_extras.io_utils import ImportHelper
-
 
 class WF_OT_import_iff_txt(bpy.types.Operator, ImportHelper):
     """Import attribute values from a .iff.txt file into this object"""
