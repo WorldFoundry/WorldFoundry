@@ -1,12 +1,12 @@
 # Investigation: World Foundry `iffcomp` File Format
 
 **Date:** 2026-04-10
-**Context:** Reverse-engineering the input and output formats of `iffcomp`, a flex/bison-based IFF chunk authoring tool from the [World Foundry](https://github.com/wbniv/WorldFoundry/tree/master/wftools/iffcomp) 3D engine project (1996–2003). Source: `wftools/iffcomp/` (lexer, grammar, sample) and `wfsource/source/iffwrite/` (the binary writer library).
+**Context:** Reverse-engineering the input and output formats of `iffcomp`, a flex/bison-based source-to-binary compiler from the [World Foundry](https://github.com/wbniv/WorldFoundry/tree/master/wftools/iffcomp) 3D engine project (1996–2003). It transforms a platform-independent textual description into a native-endian binary blob ready for direct load on the target hardware. Source: `wftools/iffcomp/` (lexer, grammar, sample) and `wfsource/source/iffwrite/` (the binary writer library).
 
 There are really **two** formats here:
 
-1. The textual *source* language consumed by `iffcomp` (`.iff.txt`).
-2. The *binary* IFF tree it spits out.
+1. The textual *source* language consumed by `iffcomp` (`.iff.txt`) — platform-independent, human-readable.
+2. The *binary* output — native-endian, ready for direct load on the target platform (x86 or MIPS R3000).
 
 Both are documented below.
 
@@ -116,7 +116,7 @@ Alignment between siblings is forced to 4 (`align(4)`); the in-chunk `align()` w
 
 ### Endianness — native by design
 
-Despite the "IFF" name, this tool does not produce an interchange file: the output is a binary blob consumed directly on the target platform (x86 or MIPS R3000). Numeric values — integers, sizes, fixed-point reals — are therefore written in the platform's **native byte order**, not the big-endian byte order of the original EA-IFF spec.
+The textual `.iff.txt` source *is* an interchange format in the meaningful sense: it is platform-independent and can be compiled for any target. The binary output, however, is not — it is a native blob consumed directly on the target platform (x86 or MIPS R3000). Numeric values — integers, sizes, fixed-point reals — are therefore written in the platform's **native byte order**, not the big-endian byte order of the original EA-IFF spec.
 
 The one exception is the chunk `ID` field: `ID::ID(unsigned long)` byte-swaps so the on-disk bytes are literally the source-order ASCII characters (`'TEST'` → `54 45 53 54`), making ID matching byte-order-agnostic. All other multi-byte fields are raw native writes.
 
