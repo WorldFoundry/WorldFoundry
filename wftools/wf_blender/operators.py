@@ -97,7 +97,7 @@ def _seed_defaults(obj, schema):
             items = field.enum_items()
             idx = field.default_raw
             obj[key] = items[idx] if 0 <= idx < len(items) else (items[0] if items else "")
-        elif field.kind == "Str":
+        elif field.kind in ("Str", "ObjRef"):
             obj[key] = ""
         else:
             obj[key] = field.default_raw

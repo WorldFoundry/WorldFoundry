@@ -40,7 +40,17 @@ pub enum FieldKind {
     GroupEnd,
     /// Free-text string field (String / Filename).
     Str,
-    /// Not shown in the editor UI for milestone 1.
+    /// Reference to another game object (ObjectReference / ClassReference /
+    /// CameraReference / LightReference).
+    ///
+    /// Stored in Blender as the referenced object's name (a string).
+    /// Serialized to binary as a 4-byte LE integer index (0 = unresolved at
+    /// edit time; resolved by the level compiler).
+    ///
+    /// `class_tag` is empty for a general object reference, or contains a
+    /// class name (from the OAD `string` field) to filter the allowed types.
+    ObjRef { class_tag: String },
+    /// Not shown in the editor UI.
     Skip,
 }
 
@@ -48,14 +58,15 @@ impl FieldKind {
     /// Short tag string used in the Python API.
     pub fn tag(&self) -> &'static str {
         match self {
-            FieldKind::Int      => "Int",
-            FieldKind::Float    => "Float",
+            FieldKind::Int         => "Int",
+            FieldKind::Float       => "Float",
             FieldKind::Enum { .. } => "Enum",
-            FieldKind::Section  => "Section",
-            FieldKind::Group    => "Group",
-            FieldKind::GroupEnd => "GroupEnd",
-            FieldKind::Str      => "Str",
-            FieldKind::Skip     => "Skip",
+            FieldKind::Section     => "Section",
+            FieldKind::Group       => "Group",
+            FieldKind::GroupEnd    => "GroupEnd",
+            FieldKind::Str         => "Str",
+            FieldKind::ObjRef { .. } => "ObjRef",
+            FieldKind::Skip        => "Skip",
         }
     }
 }
@@ -121,6 +132,15 @@ impl FieldDescriptor {
             return false;
         }
         true
+    }
+
+    /// Returns `true` if this field contributes bytes to the serialized payload.
+    /// Structural fields (Section, Group, GroupEnd) do not.
+    pub fn has_payload(&self) -> bool {
+        !matches!(
+            self.kind,
+            FieldKind::Section | FieldKind::Group | FieldKind::GroupEnd | FieldKind::Skip
+        )
     }
 }
 
@@ -212,6 +232,11 @@ fn field_layout(bt: ButtonType) -> (u8, f64) {
         ButtonType::Int32                              => (4, 0.0),
         ButtonType::String | ButtonType::Filename      => (0, 0.0), // variable; exporter handles
         ButtonType::PropertySheet | ButtonType::GroupStart => (0, 0.0),
+        // Object/class/camera/light references serialize as a 4-byte LE integer index.
+        ButtonType::ObjectReference
+        | ButtonType::ClassReference
+        | ButtonType::CameraReference
+        | ButtonType::LightReference                   => (4, 0.0),
         _                                              => (0, 0.0),
     }
 }
@@ -244,7 +269,17 @@ fn classify(bt: ButtonType, string_field: &str) -> FieldKind {
         // End of a GroupStart box.
         ButtonType::GroupStop => FieldKind::GroupEnd,
 
-        // Everything else is skipped in milestone 1.
+        // Object / class / camera / light references.
+        // The string field may carry a class-name filter (ClassReference);
+        // for plain ObjectReference it is usually empty.
+        ButtonType::ObjectReference
+        | ButtonType::ClassReference
+        | ButtonType::CameraReference
+        | ButtonType::LightReference => FieldKind::ObjRef {
+            class_tag: string_field.trim().to_owned(),
+        },
+
+        // Everything else is not yet surfaced in the editor.
         _ => FieldKind::Skip,
     }
 }

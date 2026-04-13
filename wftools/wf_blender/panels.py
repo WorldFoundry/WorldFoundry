@@ -145,7 +145,18 @@ class WF_PT_attributes(bpy.types.Panel):
         kind    = field.kind
         show_as = field.show_as
 
-        if kind in ("Int", "Float", "Str"):
+        if kind == "ObjRef":
+            # Searchable object picker.  prop_search with a custom string ID
+            # property lets the user type or select from all scene objects.
+            row = layout.row(align=True)
+            row.prop_search(obj, f'["{prop_key}"]', bpy.data, "objects",
+                            text=field.label)
+            # Warn if the named object doesn't exist in the scene.
+            name = obj.get(prop_key, "")
+            if name and name not in bpy.data.objects:
+                row.label(text="", icon='ERROR')
+
+        elif kind in ("Int", "Float", "Str"):
             layout.prop(obj, f'["{prop_key}"]', text=field.label)
 
         elif kind == "Enum":

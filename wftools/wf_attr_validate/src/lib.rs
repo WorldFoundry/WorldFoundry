@@ -94,7 +94,27 @@ pub fn validate(schema: &Schema, values: &Values) -> Vec<ValidationIssue> {
                 }
             }
 
-            // Str has no range constraints in M1.
+            FieldKind::Str => {
+                // Validate max-length when the schema specifies one (max_raw > 0).
+                let FieldValue::Str(s) = val else { continue };
+                if field.max_raw > 0 && s.len() > field.max_raw as usize {
+                    issues.push(ValidationIssue {
+                        key: field.key.clone(),
+                        message: format!(
+                            "string length {} exceeds maximum {}",
+                            s.len(),
+                            field.max_raw
+                        ),
+                        is_error: true,
+                    });
+                }
+            }
+
+            // ObjRef: existence of the referenced object cannot be checked
+            // in Rust (no Blender scene access); pass through without error.
+            // Blender-side code is responsible for warning about dangling refs.
+            FieldKind::ObjRef { .. } => {}
+
             // Section / Group / GroupEnd / Skip are excluded by visible_fields().
             _ => {}
         }
@@ -160,5 +180,98 @@ mod tests {
         values.insert("Mobility".to_owned(), FieldValue::Enum("Warp10".to_owned()));
         let issues = validate(&schema, &values);
         assert!(issues.iter().any(|i| i.key == "Mobility" && i.is_error));
+    }
+
+    #[test]
+    fn str_over_max_length_is_error() {
+        // Use alias.oad which has a simpler schema; synthetic: any schema with
+        // a Str field and max_raw > 0 would do.  We synthesize one inline.
+        use wf_attr_schema::{FieldDescriptor, FieldKind, Schema};
+        let schema = Schema {
+            name: "Test".to_owned(),
+            fields: vec![
+                FieldDescriptor {
+                    key:         "Name".to_owned(),
+                    label:       "Name".to_owned(),
+                    kind:        FieldKind::Str,
+                    help:        String::new(),
+                    group:       String::new(),
+                    min_raw:     0,
+                    max_raw:     8,   // max 8 bytes
+                    default_raw: 0,
+                    byte_width:  0,
+                    fp_scale:    0.0,
+                    show_as:     0,
+                },
+            ],
+        };
+        let mut values = Values::new();
+        values.insert("Name".to_owned(), FieldValue::Str("TooLongName".to_owned())); // 11 chars > 8
+        let issues = validate(&schema, &values);
+        assert!(issues.iter().any(|i| i.key == "Name" && i.is_error),
+            "expected length error, got: {:?}", issues);
+
+        // Exactly at max: no error
+        let mut values2 = Values::new();
+        values2.insert("Name".to_owned(), FieldValue::Str("Exactly8".to_owned())); // 8 chars
+        assert!(validate(&schema, &values2).is_empty());
+    }
+
+    #[test]
+    fn str_with_no_max_has_no_length_error() {
+        // max_raw == 0 means no max defined — any length is fine.
+        use wf_attr_schema::{FieldDescriptor, FieldKind, Schema};
+        let schema = Schema {
+            name: "Test".to_owned(),
+            fields: vec![
+                FieldDescriptor {
+                    key:         "Notes".to_owned(),
+                    label:       "Notes".to_owned(),
+                    kind:        FieldKind::Str,
+                    help:        String::new(),
+                    group:       String::new(),
+                    min_raw:     0,
+                    max_raw:     0,  // no max defined
+                    default_raw: 0,
+                    byte_width:  0,
+                    fp_scale:    0.0,
+                    show_as:     0,
+                },
+            ],
+        };
+        let mut values = Values::new();
+        values.insert("Notes".to_owned(), FieldValue::Str("A very long note that exceeds any reasonable limit but should still pass".to_owned()));
+        assert!(validate(&schema, &values).is_empty());
+    }
+
+    #[test]
+    fn no_issues_for_defaults_includes_objref() {
+        // alias.oad has a BUTTON_OBJECT_REFERENCE field; verify defaults pass.
+        let path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../wf_oad/tests/fixtures/alias.oad");
+        let data = std::fs::read(&path).expect("alias.oad");
+        let oad = wf_oad::OadFile::read(&mut Cursor::new(&data)).expect("parse");
+        let schema = wf_attr_schema::from_oad(&oad);
+
+        let mut values = Values::new();
+        for field in schema.visible_fields() {
+            let fv = match &field.kind {
+                wf_attr_schema::FieldKind::Int   => FieldValue::Int(field.default_raw as i64),
+                wf_attr_schema::FieldKind::Float => {
+                    let scale = if field.fp_scale > 0.0 { field.fp_scale } else { 1.0 };
+                    FieldValue::Float(field.default_raw as f64 / scale)
+                }
+                wf_attr_schema::FieldKind::Enum { items } => {
+                    let idx = field.default_raw as usize;
+                    FieldValue::Enum(items.get(idx).cloned().unwrap_or_default())
+                }
+                wf_attr_schema::FieldKind::Str => FieldValue::Str(String::new()),
+                wf_attr_schema::FieldKind::ObjRef { .. } => FieldValue::Str(String::new()),
+                _ => continue,
+            };
+            values.insert(field.key.clone(), fv);
+        }
+        let issues = validate(&schema, &values);
+        assert!(issues.is_empty(), "alias defaults should pass: {:?}", issues);
     }
 }

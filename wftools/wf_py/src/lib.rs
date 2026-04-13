@@ -36,7 +36,7 @@ struct PyField {
     key: String,
     #[pyo3(get)]
     label: String,
-    /// `"Int"` | `"Float"` | `"Enum"` | `"Section"` | `"Group"` | `"GroupEnd"` | `"Str"` | `"Skip"`
+    /// `"Int"` | `"Float"` | `"Enum"` | `"Section"` | `"Group"` | `"GroupEnd"` | `"Str"` | `"ObjRef"` | `"Skip"`
     #[pyo3(get)]
     kind: String,
     #[pyo3(get)]
@@ -66,6 +66,11 @@ struct PyField {
     #[pyo3(get)]
     show_as: u8,
     enum_items: Vec<String>,
+    /// For `ObjRef` fields: optional class-name filter from the OAD `string`
+    /// field (e.g. `"Room"`).  Empty string means any object type is accepted.
+    /// Always empty for non-ObjRef fields.
+    #[pyo3(get)]
+    class_tag: String,
 }
 
 #[pymethods]
@@ -80,9 +85,10 @@ impl PyField {
 }
 
 fn field_from_desc(desc: &FieldDescriptor) -> PyField {
-    let (kind_tag, enum_items) = match &desc.kind {
-        FieldKind::Enum { items } => ("Enum".to_owned(), items.clone()),
-        other => (other.tag().to_owned(), Vec::new()),
+    let (kind_tag, enum_items, class_tag) = match &desc.kind {
+        FieldKind::Enum { items }       => ("Enum".to_owned(),   items.clone(), String::new()),
+        FieldKind::ObjRef { class_tag } => ("ObjRef".to_owned(), Vec::new(),    class_tag.clone()),
+        other => (other.tag().to_owned(), Vec::new(), String::new()),
     };
     let scale = if desc.fp_scale > 0.0 { desc.fp_scale } else { 1.0 };
     let (default_display, min_display, max_display) = if desc.fp_scale > 0.0 {
@@ -110,6 +116,7 @@ fn field_from_desc(desc: &FieldDescriptor) -> PyField {
         byte_width:      desc.byte_width,
         show_as:         desc.show_as,
         enum_items,
+        class_tag,
     }
 }
 
@@ -194,7 +201,10 @@ fn dict_to_values(
                 };
                 FieldValue::Enum(label)
             }
-            FieldKind::Str => FieldValue::Str(raw.extract().unwrap_or_default()),
+            FieldKind::Str        => FieldValue::Str(raw.extract().unwrap_or_default()),
+            // ObjRef stores a Blender object name (string); treat as Str for
+            // serialization purposes.
+            FieldKind::ObjRef { .. } => FieldValue::Str(raw.extract().unwrap_or_default()),
             _ => continue,
         };
 

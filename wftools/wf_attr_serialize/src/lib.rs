@@ -109,6 +109,25 @@ pub fn to_iff_txt(schema: &Schema, values: &Values) -> String {
                 }
             }
 
+            FieldKind::ObjRef { .. } => {
+                // Serialize as 4-byte zero (unresolved index at edit time).
+                // The object name is stored in the comment for round-trip fidelity.
+                let name: &str = match val {
+                    Some(FieldValue::Str(s)) => s.as_str(),
+                    _                        => "",
+                };
+                let b: [u8; 4] = 0i32.to_le_bytes();
+                payload.extend_from_slice(&b);
+                // Always emit parens (even when empty) so from_iff_txt can
+                // distinguish an unset ObjRef from a non-ObjRef field.
+                lines.push(format!(
+                    "\t{}\t// {} ({})",
+                    hex_bytes(&b),
+                    field.key,
+                    name,
+                ));
+            }
+
             FieldKind::Skip => {}
         }
     }
@@ -197,11 +216,12 @@ pub fn from_iff_txt(schema: &Schema, text: &str) -> Result<Values, ImportError> 
         let hex_part     = trimmed[..comment_start].trim();
         let comment_part = trimmed[comment_start + 2..].trim();
 
-        // Extract the key from the comment.  Float fields append " (display_value)"
-        // so we strip from the first '(' and trim — this also handles multi-word
-        // keys like "Render Type" or "Mesh Name" correctly.
-        let key = if let Some(paren) = comment_part.find('(') {
-            comment_part[..paren].trim()
+        // Extract the key from the comment.  Float and ObjRef fields append
+        // " (suffix)" so we strip from the first '(' and trim — this also
+        // handles multi-word keys like "Render Type" or "Mesh Name" correctly.
+        let paren_pos = comment_part.find('(');
+        let key = if let Some(p) = paren_pos {
+            comment_part[..p].trim()
         } else {
             comment_part.trim()
         };
@@ -251,6 +271,17 @@ pub fn from_iff_txt(schema: &Schema, text: &str) -> Result<Values, ImportError> 
                     ImportError::new(format!("{}: invalid UTF-8 in string field", field.key))
                 })?;
                 FieldValue::Str(s)
+            }
+            FieldKind::ObjRef { .. } => {
+                // The 4 payload bytes are always zero (unresolved index).
+                // The object name is stored in the paren comment: `// key (name)`.
+                let name = if let Some(p) = paren_pos {
+                    let after = comment_part[p + 1..].trim();
+                    after.trim_end_matches(')').trim().to_owned()
+                } else {
+                    String::new()
+                };
+                FieldValue::Str(name)
             }
             _ => continue,
         };
@@ -378,6 +409,13 @@ pub fn to_iff(schema: &Schema, values: &Values) -> Vec<u8> {
                 builder.write_bytes(&padded);
             }
 
+            FieldKind::ObjRef { .. } => {
+                // Serialize as 4-byte zero (unresolved at edit time).
+                // The object name cannot be encoded in binary; it lives only
+                // in the .iff.txt comment.
+                builder.write_le(0, 4);
+            }
+
             FieldKind::Skip => {}
         }
     }
@@ -466,6 +504,15 @@ pub fn from_iff(schema: &Schema, data: &[u8]) -> Result<Values, ImportError> {
                 let s = String::from_utf8_lossy(&raw[..end]).into_owned();
                 values.insert(field.key.clone(), FieldValue::Str(s));
                 pos += width;
+            }
+
+            FieldKind::ObjRef { .. } => {
+                // Consume 4 bytes (the unresolved index); return empty name
+                // since the index-to-name mapping requires level context.
+                let width = 4;
+                if pos + width > payload.len() { break; }
+                pos += width;
+                values.insert(field.key.clone(), FieldValue::Str(String::new()));
             }
         }
     }
