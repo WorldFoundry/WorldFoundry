@@ -11,7 +11,7 @@
 | prep | ~1 615 | Maybe later | Custom tokenizer + macro expander; interesting but larger scope |
 | chargrab / textile | ~4 000+ | Maybe later | Image packing tools; Windows I/O mixed in; bigger effort |
 | iff2lvl | ~8 731 | No | Massive 3D level converter; hardcoded paths; PSX/Saturn targets |
-| attribedit | ~3 517 | No | GTK+ 2.x GUI; not portable without full UI rewrite |
+| attribedit | ~3 517 | Blender plugin | GTK+ 2.x GUI that edits OAD properties on level objects — the equivalent functionality is what the Blender plugin needs to implement |
 | iffdb | ~536 | Superseded | Alternative iffdump implementation (loads IFF into in-memory tree first); `iffdump-rs` renders it redundant |
 | lvldump | ~1 600 | Defer | Reads compiled `.lvl` game-level binaries; formats in `.oas` files, renderable by existing `prep`; port after oaddump-rs |
 
