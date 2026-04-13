@@ -7,6 +7,8 @@ World Foundry operators:
   WF_OT_validate        — range-check all values via Rust
   WF_OT_export_iff_txt  — gather values and write .iff.txt via Rust
   WF_OT_import_iff_txt  — read .iff.txt and populate object properties
+  WF_OT_export_iff      — gather values and write binary .iff via Rust
+  WF_OT_import_iff      — read binary .iff and populate object properties
 
 Storage convention
 ------------------
@@ -345,6 +347,92 @@ class WF_OT_import_iff_txt(bpy.types.Operator, ImportHelper):
         return {'FINISHED'}
 
 
+# ── WF_OT_export_iff ─────────────────────────────────────────────────────────
+
+class WF_OT_export_iff(bpy.types.Operator, ExportHelper):
+    """Export object attributes as binary .iff"""
+    bl_idname  = "wf.export_iff"
+    bl_label   = "Export .iff"
+    bl_options = {'REGISTER'}
+
+    filename_ext = ".iff"
+    filter_glob: StringProperty(default="*.iff", options={'HIDDEN'})
+
+    def execute(self, context):
+        obj = context.active_object
+        if obj is None:
+            self.report({'ERROR'}, "No active object")
+            return {'CANCELLED'}
+        schema = _get_schema(obj)
+        if schema is None:
+            self.report({'ERROR'}, "No schema attached")
+            return {'CANCELLED'}
+
+        values = _collect_values(obj, schema)
+
+        # Reject on validation errors
+        issues = wf_core.validate(schema, values)
+        errors = [i for i in issues if i.is_error]
+        if errors:
+            for e in errors:
+                self.report({'ERROR'}, f"{e.key}: {e.message}")
+            return {'CANCELLED'}
+
+        data = wf_core.export_iff(schema, values)
+        with open(self.filepath, 'wb') as f:
+            f.write(data)
+        self.report({'INFO'}, f"Exported {len(data)} bytes to {self.filepath}")
+        return {'FINISHED'}
+
+
+# ── WF_OT_import_iff ─────────────────────────────────────────────────────────
+
+class WF_OT_import_iff(bpy.types.Operator, ImportHelper):
+    """Import attribute values from a binary .iff file into this object"""
+    bl_idname  = "wf.import_iff"
+    bl_label   = "Import .iff"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    filename_ext = ".iff"
+    filter_glob: StringProperty(default="*.iff", options={'HIDDEN'})
+
+    def execute(self, context):
+        obj = context.active_object
+        if obj is None:
+            self.report({'ERROR'}, "No active object")
+            return {'CANCELLED'}
+        schema = _get_schema(obj)
+        if schema is None:
+            self.report({'ERROR'}, "No schema attached — attach a schema first")
+            return {'CANCELLED'}
+
+        try:
+            with open(self.filepath, 'rb') as f:
+                data = f.read()
+        except OSError as e:
+            self.report({'ERROR'}, f"Could not read file: {e}")
+            return {'CANCELLED'}
+
+        try:
+            imported = wf_core.import_iff(schema, bytes(data))
+        except Exception as e:
+            self.report({'ERROR'}, f"Parse error: {e}")
+            return {'CANCELLED'}
+
+        # Seed defaults first so every field exists, then overwrite with
+        # imported values.
+        _seed_defaults(obj, schema)
+        count = 0
+        for key, val in imported.items():
+            prop_key = _prop_key(key)
+            if prop_key in obj:
+                obj[prop_key] = val
+                count += 1
+
+        self.report({'INFO'}, f"Imported {count} fields from {self.filepath}")
+        return {'FINISHED'}
+
+
 # ── registration ──────────────────────────────────────────────────────────────
 
 _CLASSES = [
@@ -355,6 +443,8 @@ _CLASSES = [
     WF_OT_validate,
     WF_OT_export_iff_txt,
     WF_OT_import_iff_txt,
+    WF_OT_export_iff,
+    WF_OT_import_iff,
 ]
 
 

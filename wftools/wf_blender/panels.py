@@ -131,8 +131,14 @@ class WF_PT_attributes(bpy.types.Panel):
         layout.separator()
         row = layout.row(align=True)
         row.operator("wf.validate",       text="Validate",        icon='CHECKMARK')
+
+        row = layout.row(align=True)
         row.operator("wf.export_iff_txt", text="Export .iff.txt", icon='EXPORT')
         row.operator("wf.import_iff_txt", text="Import .iff.txt", icon='IMPORT')
+
+        row = layout.row(align=True)
+        row.operator("wf.export_iff",     text="Export .iff",     icon='EXPORT')
+        row.operator("wf.import_iff",     text="Import .iff",     icon='IMPORT')
 
     @staticmethod
     def _draw_field(layout, obj, field, prop_key):

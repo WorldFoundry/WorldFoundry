@@ -272,6 +272,52 @@ fn import_iff_txt(
     Ok(dict.into())
 }
 
+/// Export `values` as a binary `.iff` file (bytes).
+///
+/// Returns a Python `bytes` object containing a complete, file-ready IFF chunk.
+/// The FOURCC is derived from the schema name (first 4 chars, uppercased).
+/// Missing fields use schema defaults.  Same value contract as `validate`.
+///
+/// String fields with no fixed width in the schema (max_raw == 0) are omitted
+/// from the binary payload; they round-trip through the text format instead.
+#[pyfunction]
+fn export_iff(
+    schema: &PySchema,
+    values: &pyo3::Bound<'_, pyo3::types::PyDict>,
+) -> PyResult<pyo3::Py<pyo3::types::PyBytes>> {
+    let values = dict_to_values(&schema.inner, values)?;
+    let bytes = wf_attr_serialize::to_iff(&schema.inner, &values);
+    Ok(pyo3::Python::with_gil(|py| pyo3::types::PyBytes::new_bound(py, &bytes).into()))
+}
+
+/// Import values from a binary `.iff` file.
+///
+/// `data` should be a Python `bytes` object containing a complete IFF chunk.
+/// Returns a plain Python dict mapping field keys to display values
+/// (same shape as the dict accepted by `validate` and `export_iff_txt`).
+/// Fields absent from the binary payload are omitted; callers should seed
+/// missing fields from schema defaults.
+#[pyfunction]
+fn import_iff(
+    py: Python<'_>,
+    schema: &PySchema,
+    data: &[u8],
+) -> PyResult<pyo3::Py<pyo3::types::PyDict>> {
+    let values = wf_attr_serialize::from_iff(&schema.inner, data)
+        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.message))?;
+
+    let dict = pyo3::types::PyDict::new_bound(py);
+    for (key, val) in &values {
+        match val {
+            FieldValue::Int(i)   => dict.set_item(key, i)?,
+            FieldValue::Float(f) => dict.set_item(key, f)?,
+            FieldValue::Enum(s)  => dict.set_item(key, s)?,
+            FieldValue::Str(s)   => dict.set_item(key, s)?,
+        }
+    }
+    Ok(dict.into())
+}
+
 // ── module entry point ────────────────────────────────────────────────────────
 
 /// World Foundry core library — OAD schema loading, validation, and export.
@@ -281,6 +327,8 @@ fn wf_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(validate, m)?)?;
     m.add_function(wrap_pyfunction!(export_iff_txt, m)?)?;
     m.add_function(wrap_pyfunction!(import_iff_txt, m)?)?;
+    m.add_function(wrap_pyfunction!(export_iff, m)?)?;
+    m.add_function(wrap_pyfunction!(import_iff, m)?)?;
     m.add_class::<PySchema>()?;
     m.add_class::<PyField>()?;
     m.add_class::<PyValidationIssue>()?;

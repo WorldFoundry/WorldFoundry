@@ -14,8 +14,13 @@ name = "wf_attr_serialize"
 version = "0.1.0"
 dependencies = [
  "wf_attr_schema",
+ "wf_iff",
  "wf_oad",
 ]
+
+[[package]]
+name = "wf_iff"
+version = "0.1.0"
 
 [[package]]
 name = "wf_oad"

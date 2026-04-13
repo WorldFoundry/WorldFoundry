@@ -184,6 +184,7 @@ name = "wf_attr_serialize"
 version = "0.1.0"
 dependencies = [
  "wf_attr_schema",
+ "wf_iff",
 ]
 
 [[package]]
@@ -192,6 +193,10 @@ version = "0.1.0"
 dependencies = [
  "wf_attr_schema",
 ]
+
+[[package]]
+name = "wf_iff"
+version = "0.1.0"
 
 [[package]]
 name = "wf_oad"
@@ -205,5 +210,6 @@ dependencies = [
  "wf_attr_schema",
  "wf_attr_serialize",
  "wf_attr_validate",
+ "wf_iff",
  "wf_oad",
 ]

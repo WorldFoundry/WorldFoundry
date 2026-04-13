@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 wf_attr_schema = { path = "../wf_attr_schema" }
+wf_iff         = { path = "../wf_iff" }
 
 [dev-dependencies]
 wf_oad = { path = "../wf_oad" }
