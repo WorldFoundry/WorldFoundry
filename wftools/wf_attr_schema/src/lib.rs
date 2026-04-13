@@ -63,6 +63,9 @@ pub enum FieldKind {
     /// `class_tag` is empty for a general object reference, or contains a
     /// class name (from the OAD `string` field) to filter the allowed types.
     ObjRef { class_tag: String },
+    /// Free-text annotation (XData + XDATA_IGNORE). Shown as a text field in
+    /// the editor but produces no bytes in the binary output.
+    Annotation,
     /// Not shown in the editor UI.
     Skip,
 }
@@ -81,6 +84,7 @@ impl FieldKind {
             FieldKind::Bool          => "Bool",
             FieldKind::FileRef { .. } => "FileRef",
             FieldKind::ObjRef { .. } => "ObjRef",
+            FieldKind::Annotation    => "Annotation",
             FieldKind::Skip          => "Skip",
         }
     }
@@ -206,7 +210,7 @@ pub fn from_oad(oad: &OadFile) -> Schema {
         };
         let help  = entry.help_str().to_owned();
 
-        let kind = classify(entry.button_type, entry.string_str(), entry.lpstr_filter_bytes(), entry.show_as);
+        let kind = classify(entry.button_type, entry.string_str(), entry.lpstr_filter_bytes(), entry.show_as, entry.xdata_conversion_action());
 
         // Track the current group from PropertySheet / GroupStart names.
         match entry.button_type {
@@ -297,7 +301,7 @@ fn parse_filter(raw: &[u8]) -> String {
 }
 
 /// Map an OAD `ButtonType` + `string` field content to a [`FieldKind`].
-fn classify(bt: ButtonType, string_field: &str, lpstr_filter: &[u8], show_as: u8) -> FieldKind {
+fn classify(bt: ButtonType, string_field: &str, lpstr_filter: &[u8], show_as: u8, xdata_conversion_action: u8) -> FieldKind {
     match bt {
         // Numeric integer fields — check for pipe-separated enum items first.
         // show_as == 8 (checkbox) with no items → Bool (TYPEENTRYBOOLEAN).
@@ -352,11 +356,12 @@ fn classify(bt: ButtonType, string_field: &str, lpstr_filter: &[u8], show_as: u8
         | ButtonType::ExtractLight
         | ButtonType::Shortcut => FieldKind::Bool,
 
-        // XData: show_as=11 (texteditor) is a free-text Notes/Comments field
-        // (TYPEENTRYXDATA_NOTES via common.inc). Surface as Str so artists can
-        // read and edit it. All other XData variants carry no editable content.
+        // XData with XDATA_IGNORE (conversionAction=0): annotation text fields
+        // such as Notes/Comments. Surface as Annotation so they appear as text
+        // boxes in the editor but produce no bytes in the binary output.
+        // All other XData variants carry game data and remain hidden.
         ButtonType::XData => {
-            if show_as == 11 { FieldKind::Str } else { FieldKind::Skip }
+            if xdata_conversion_action == 0 { FieldKind::Annotation } else { FieldKind::Skip }
         }
 
         // Everything else is not yet surfaced in the editor.
@@ -534,15 +539,17 @@ mod tests {
     }
 
     #[test]
-    fn xdata_show_as_11_maps_to_str() {
-        // TYPEENTRYXDATA_NOTES: BUTTON_XDATA + show_as=11 (texteditor) → Str.
-        let kind = super::classify(wf_oad::ButtonType::XData, "", &[0u8; 512], 11);
-        assert!(matches!(kind, FieldKind::Str), "expected Str, got {kind:?}");
+    fn xdata_ignore_maps_to_annotation() {
+        // TYPEENTRYSTRING_IGNORE / TYPEENTRYXDATA_NOTES: BUTTON_XDATA + conversionAction=0
+        // (XDATA_IGNORE) → Annotation. Shown as a text field, produces no binary bytes.
+        let kind = super::classify(wf_oad::ButtonType::XData, "", &[0u8; 512], 0, 0);
+        assert!(matches!(kind, FieldKind::Annotation), "expected Annotation, got {kind:?}");
     }
 
     #[test]
-    fn xdata_show_as_0_maps_to_skip() {
-        let kind = super::classify(wf_oad::ButtonType::XData, "", &[0u8; 512], 0);
+    fn xdata_nonzero_conversion_maps_to_skip() {
+        // XDATA_COPY (conversionAction=1) and any other non-zero action → Skip.
+        let kind = super::classify(wf_oad::ButtonType::XData, "", &[0u8; 512], 0, 1);
         assert!(matches!(kind, FieldKind::Skip), "expected Skip, got {kind:?}");
     }
 
@@ -555,13 +562,14 @@ mod tests {
             "",          // no pipe items
             &[0u8; 512], // no filter
             8,           // show_as = checkbox
+            0,
         );
         assert!(matches!(kind, FieldKind::Bool), "expected Bool, got {kind:?}");
     }
 
     #[test]
     fn int_show_as_0_maps_to_int() {
-        let kind = super::classify(wf_oad::ButtonType::Int32, "", &[0u8; 512], 0);
+        let kind = super::classify(wf_oad::ButtonType::Int32, "", &[0u8; 512], 0, 0);
         assert!(matches!(kind, FieldKind::Int), "expected Int, got {kind:?}");
     }
 

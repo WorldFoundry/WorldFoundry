@@ -84,6 +84,13 @@ def _seed_defaults(obj, schema):
         if field.kind in ("Group", "GroupEnd", "Skip"):
             continue
 
+        # Annotation fields seed as empty string
+        if field.kind == "Annotation":
+            key = _prop_key(field.key)
+            if key not in obj:
+                obj[key] = ""
+            continue
+
         # Skip hidden fields
         if field.show_as == 6:
             continue

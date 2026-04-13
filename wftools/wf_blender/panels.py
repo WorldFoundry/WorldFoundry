@@ -185,6 +185,9 @@ class WF_PT_attributes(bpy.types.Panel):
             )
             op.field_key = field.key
 
+        elif kind == "Annotation":
+            layout.prop(obj, f'["{prop_key}"]', text=field.label)
+
         elif kind in ("Int", "Float", "Str"):
             layout.prop(obj, f'["{prop_key}"]', text=field.label)
 

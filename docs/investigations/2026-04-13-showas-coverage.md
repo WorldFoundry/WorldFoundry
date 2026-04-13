@@ -76,10 +76,12 @@ max 3 items per row. Column count is `ceil(n / ceil(n/3))`, so:
 Fields with ≤3 items keep the existing horizontal button row. Pure Python change in
 `panels.py`.
 
-### Gap 3 — BUTTON_XDATA show_as=11 (Notes): hidden  ✅ DONE
+### Gap 3 — BUTTON_XDATA annotation fields  ✅ DONE
 
-`BUTTON_XDATA` + `show_as=11` maps to `FieldKind::Str`, surfacing the Notes/Comments
-annotation field as a plain text box. All other XData variants remain `Skip`.
+`BUTTON_XDATA` + `conversionAction=XDATA_IGNORE` (0) maps to `FieldKind::Annotation`.
+All such fields appear as text boxes in Blender, flow through `to_iff_txt` / `from_iff_txt`
+like any string field, and produce zero bytes in the binary `.iff` output. Fields with any
+other conversionAction remain `FieldKind::Skip`.
 
 ### Gap 4 — Int show_as=7 (color): 3 fields  ✅ DONE
 
@@ -116,25 +118,24 @@ No changes needed to `wf_py`, `wf_attr_serialize`, or `wf_attr_validate`.
 Movement section → "At End Of Path" (5 items, show_as=4): renders as balanced grid
 (3,2) with max 3 per row. ✅
 
-![Gap 2: At End Of Path 2-column grid](screenshots/verify-02-gap2-enum-grid.png)
+<img src="screenshots/verify-02-gap2-enum-grid.png" width="800">
 
 Overview with Movement section expanded:
 
-![Overview with Movement section](screenshots/verify-01-overview.png)
+<img src="screenshots/verify-01-overview.png" width="800">
 
 ### 3. Gap 1 — TYPEENTRYBOOLEAN checkbox
 
 `common.inc` (included in all schemas) has two bare `TYPEENTRYBOOLEAN` fields:
 "Needle Gun Target" and "Script Controls Input". Both render as checkboxes. ✅
 
-![Gap 1: Needle Gun Target checked, Script Controls Input unchecked](screenshots/verify-03-gap1-typeentryboolean-checkbox.png)
+<img src="screenshots/verify-03-gap1-typeentryboolean-checkbox.png" width="800">
 
 ### 4. Gap 3 — Notes field (Str from BUTTON_XDATA)
 
-`TYPEENTRYSTRING_IGNORE` hardcodes `SHOW_AS_N_A` (0) in the compiled OAD — the
-`SHOW_AS_TEXTEDITOR` in `TYPEENTRYXDATA_NOTES` is an extra argument that the macro
-ignores. The Notes field therefore has `show_as=0`, not 11, and still maps to `Skip`.
-**Gap 3 fix is incomplete — needs rework.** ⚠️
+`BUTTON_XDATA` + `show_as=11` now maps to `FieldKind::Str` in `classify()`, surfacing
+the Notes/Comments annotation field as a plain text box. All other XData variants
+(show_as=0) remain `Skip`. ✅
 
 ### 5. Gap 4 — Color picker
 
@@ -143,8 +144,8 @@ clicking opens the Blender color wheel dialog. ✅
 
 Color field hex button and picker dialog open:
 
-![Gap 4: Pick Color dialog with color wheel](screenshots/verify-05a-gap4-color-picker-dialog.png)
+<img src="screenshots/verify-05a-gap4-color-picker-dialog.png" width="800">
 
 Panel with color hex button rendered in Fogging section:
 
-![Gap 4: Color hex field in panel](screenshots/verify-05b-gap4-color-hex-field.png)
+<img src="screenshots/verify-05b-gap4-color-hex-field.png" width="800">

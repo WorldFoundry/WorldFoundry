@@ -139,6 +139,21 @@ pub fn to_iff_txt(schema: &Schema, values: &Values) -> String {
                 ));
             }
 
+            FieldKind::Annotation => {
+                // Annotation fields appear in the .iff.txt as a plain string but
+                // produce no bytes in the binary IFF payload.
+                let s: &str = match val {
+                    Some(FieldValue::Str(s)) => s.as_str(),
+                    _                        => "",
+                };
+                let b = s.as_bytes();
+                if b.is_empty() {
+                    lines.push(format!("\t// {} (empty string)", field.key));
+                } else {
+                    lines.push(format!("\t{}\t// {}", hex_bytes(b), field.key));
+                }
+            }
+
             FieldKind::Skip => {}
         }
     }
@@ -281,7 +296,7 @@ pub fn from_iff_txt(schema: &Schema, text: &str) -> Result<Values, ImportError> 
                 let raw = le_bytes_to_i32(&bytes, &field.key)?;
                 FieldValue::Int(if raw != 0 { 1 } else { 0 })
             }
-            FieldKind::Str | FieldKind::FileRef { .. } => {
+            FieldKind::Str | FieldKind::FileRef { .. } | FieldKind::Annotation => {
                 let s = String::from_utf8(bytes.clone()).map_err(|_| {
                     ImportError::new(format!("{}: invalid UTF-8 in string field", field.key))
                 })?;
@@ -439,6 +454,10 @@ pub fn to_iff(schema: &Schema, values: &Values) -> Vec<u8> {
                 builder.write_le(0, 4);
             }
 
+            FieldKind::Annotation => {
+                // Annotation fields are stored in Blender only; no binary output.
+            }
+
             FieldKind::Skip => {}
         }
     }
@@ -479,6 +498,12 @@ pub fn from_iff(schema: &Schema, data: &[u8]) -> Result<Values, ImportError> {
 
         match &field.kind {
             FieldKind::Section | FieldKind::Group | FieldKind::GroupEnd | FieldKind::Skip => {
+                continue;
+            }
+
+            FieldKind::Annotation => {
+                // No bytes in binary; seed empty string so the field exists in values.
+                values.insert(field.key.clone(), FieldValue::Str(String::new()));
                 continue;
             }
 
