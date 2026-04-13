@@ -1,0 +1,12 @@
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "wf_core"
+version = "0.1.0"
+description = "World Foundry core library — OAD schema loading, validation, and export"
+requires-python = ">=3.10"
+
+[tool.maturin]
+module-name = "wf_core"

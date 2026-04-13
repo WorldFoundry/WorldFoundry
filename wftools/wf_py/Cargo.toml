@@ -1,0 +1,13 @@
+[package]
+name = "wf_py"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "wf_core"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.22", features = ["extension-module", "abi3-py310"] }
+wf_attr_schema = { path = "../wf_attr_schema" }
+wf_oad = { path = "../wf_oad" }
