@@ -190,16 +190,16 @@ The file produced by `iffcomp` shares the EA-IFF chunk-header shape but deviates
 
 | # | EA-IFF 85 | WorldFoundry |
 |---|---|---|
-| 1 | All multi-byte values big-endian | All numeric fields in **native byte order** (little-endian on x86, native on MIPS R3000) |
+| 1 | All multi-byte values big-endian | All numeric fields in **native byte order** |
 | 2 | Chunks padded to **2-byte** boundaries | Everything except strings aligned to **4-byte** boundaries: chunks on exit (`exitChunk`) and inline FOURCC literals (`out_id`) both call `align(4)`. Required for direct in-place load on MIPS R3000 (unaligned 32-bit loads are a bus error) and beneficial on x86 (avoids the misaligned-read penalty). Strings are exempt — they are accessed byte-by-byte so alignment is irrelevant. |
 
 ### Extensions
 
 | # | EA-IFF 85 | WorldFoundry |
 |---|---|---|
-| 5 | No typed scalars | Fixed-point reals: `val × 2^fraction`, packed into int8/int16/int32 by total bit width |
-| 6 | No string convention | C-style **NUL-terminated** strings; escape sequences (`\n \t \\ \" \NNN`) translated at write time. Adjacent string literals (`"hello" "world"`) are concatenated into one C string via `out_string_continue` (seeks back over the previous NUL and appends). |
-| 7 | No back-patching | `.offsetof('A'::'B')` / `.sizeof('A'::'B')` inject 32-bit absolute file offsets/sizes, resolved via `Backpatch` queue |
+| 1 | No typed scalars | Fixed-point reals: `val × 2^fraction`, packed into int8/int16/int32 by total bit width |
+| 2 | No string convention | C-style **NUL-terminated** strings; escape sequences (`\n \t \\ \" \NNN`) translated at write time. Adjacent string literals (`"hello" "world"`) are concatenated into one C string via `out_string_continue` (seeks back over the previous NUL and appends). |
+| 3 | No back-patching | `.offsetof('A'::'B')` / `.sizeof('A'::'B')` inject 32-bit absolute file offsets/sizes, resolved via `Backpatch` queue |
 
 ### Note on IDs
 
@@ -208,7 +208,7 @@ Chunk `ID` bytes are the one field that matches standard IFF byte order. `ID::ID
 ## TL;DR
 
 - **Source format**: a tiny scripting DSL whose only output is a binary IFF tree. Chunks are `{ 'ID' … }`, items are width-tagged numeric / string / file literals, with directives for alignment, timestamps, and back-patched offsets / sizes into other chunks.
-- **Output format**: standard EA-IFF chunk header (`ID(4) | size(4) | payload`) with all numeric fields in **native byte order** (little-endian on x86, native on MIPS R3000) — intentional, as the output is a platform blob, not an interchange file. `align(4)` pads to 4-byte boundaries between siblings. Strings are C-style NUL-terminated. Fixed-point reals are `val << fraction_bits` truncated to int8 / int16 / int32 by their total bit width.
+- **Output format**: standard EA-IFF chunk header (`ID(4) | size(4) | payload`) with all numeric fields in **native byte order** — intentional, as the output is a platform blob, not an interchange file. `align(4)` pads to 4-byte boundaries between siblings. Strings are C-style NUL-terminated. Fixed-point reals are `val << fraction_bits` truncated to int8 / int16 / int32 by their total bit width.
 
 ## References
 
