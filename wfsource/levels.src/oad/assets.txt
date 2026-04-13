@@ -1,0 +1,22 @@
+// This file is generated from assets.inc and source\oas\asset.s.
+// To modify this file, change one of those files.
+
+
+
+
+.NUL         // NULL extension; never used
+.TGA         // image
+.BMP         // image
+.IFF         // model data
+._ 
+.RUV         // texture metamap coordinates
+.__ 
+.CYC 
+.CHR 
+.MAP 
+//.AVI         // movie
+//.WID         // font width table
+//.CTX         // contextual animation data
+//.VH            //
+//.VB            //
+//.SEQ         // psx MIDI sequence file

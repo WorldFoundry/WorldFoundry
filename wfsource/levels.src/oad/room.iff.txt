@@ -1,0 +1,404 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+        
+        
+        
+        
+        
+        
+        
+        
+        
+	
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+	
+	
+	
+
+
+
+
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+               
+        
+        
+        
+        
+        
+        
+        
+	
+	
+	
+
+
+
+
+
+
+
+
+//==============================================================================
+// created from iff.s DO NOT MODIFY
+//==============================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                      
+                      
+
+
+
+                      
+                      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//============================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{ 'TYPE'
+	{ 'NAME' "Room" }
+
+	{ 'STRU'	{ 'NAME' "common" } { 'FLAG' "COMMONBLOCK" }	// COMMONBLOCK 
+
+
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+	{ 'STRU'	// PROPERTY SHEET START
+			{ 'NAME' "Common" }
+		{ 'OPEN' 0y }
+			{ 'F32'
+  				{ 'NAME' "hp" }
+  				{ 'DSNM' "hp" }
+  				{ 'RANG' 0.00000 32767.0 }
+  				{ 'DATA' 32767.0 }
+  				{ 'DISP' 1l }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+			{ 'I32'
+  				{ 'NAME' "Number Of Local Mailboxes" }
+  				{ 'DSNM' "Local Mailboxes" }
+  				{ 'RANG' 0l 40l }
+  				{ 'DATA' 0l }
+  				{ 'DISP' 2l }
+  				{ 'ENVL' "" }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+					{ 'STR'		// Object Reference
+  				{ 'NAME' "Poof" }
+  				{ 'DSNM' "Poof" }
+  				{ 'HINT' "Object Reference" }
+  				{ 'DATA' "" }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+				{ 'I32'	// boolean
+  				{ 'NAME' "Is Needle Gun Target" }
+  				{ 'DSNM' "Needle Gun Target" }
+  				{ 'RANG' 0l 1l }
+  				{ 'DATA' 0l }
+  				{ 'DISP' 		8l }
+  				{ 'ENVL' "False|True" }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+			{ 'I32'
+  				{ 'NAME' "Write To Mailbox On Death" }
+  				{ 'DSNM' "Death Mailbox" }
+  				{ 'RANG' 0l 3999l }
+  				{ 'DATA' 0l }
+  				{ 'DISP' 1l }
+  				{ 'ENVL' "" }
+  				{ 'HELP' "Mailbox to write to when object is destroyed" }
+  				{ 'ENBL' "1" }
+  			}
+		{ 'STR'
+  				{ 'NAME' "Script" }
+  				{ 'DSNM' "Script" }
+  				{ 'HINT' "Conversion: Copy"                           }
+  				{ 'DATA' "Cave Logic Studios AI [Script]||what is this?..\\scripts\\default.s"}
+  				{ 'BOOL' { 'NAME' "Required" } { 'DATA' 	0l } }
+  				{ 'DISP' 	11l }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+				{ 'I32'	// boolean
+  				{ 'NAME' "Script Controls Input" }
+  				{ 'DSNM' "Script Controls Input" }
+  				{ 'RANG' 0l 1l }
+  				{ 'DATA' 0l }
+  				{ 'DISP' 		8l }
+  				{ 'ENVL' "False|True" }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+		{ 'STR'
+  				{ 'NAME' "Cave Logic Studios Notes|" }
+  				{ 'DSNM' "Notes" }
+  				{ 'HINT' "Conversion: Ignore" }
+  				{ 'DATA' "Cave Logic Studios Notes|" }
+  				{ 'DISP' 	11l }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+
+			{ 'F32'
+  				{ 'NAME' "slopeA" }
+  				{ 'DSNM' "slopeA" }
+  				{ 'RANG' -32768.0 32767.0 }
+  				{ 'DATA' 0.00000 }
+  				{ 'DISP' 6l }
+  				{ 'HELP' "Sloped surface plane coefficient A" }
+  				{ 'ENBL' "1" }
+  			}
+			{ 'F32'
+  				{ 'NAME' "slopeB" }
+  				{ 'DSNM' "slopeB" }
+  				{ 'RANG' -32768.0 32767.0 }
+  				{ 'DATA' 0.00000 }
+  				{ 'DISP' 6l }
+  				{ 'HELP' "Sloped surface plane coefficient B" }
+  				{ 'ENBL' "1" }
+  			}
+			{ 'F32'
+  				{ 'NAME' "slopeC" }
+  				{ 'DSNM' "slopeC" }
+  				{ 'RANG' -32768.0 32767.0 }
+  				{ 'DATA' 0.00000 }
+  				{ 'DISP' 6l }
+  				{ 'HELP' "Sloped surface plane coefficient C" }
+  				{ 'ENBL' "1" }
+  			}
+			{ 'F32'
+  				{ 'NAME' "slopeD" }
+  				{ 'DSNM' "slopeD" }
+  				{ 'RANG' -32768.0 32767.0 }
+  				{ 'DATA' 0.00000 }
+  				{ 'DISP' 6l }
+  				{ 'HELP' "Sloped surface plane coefficient D" }
+  				{ 'ENBL' "1" }
+  			}
+
+		}	// PROPERTY SHEET END
+		}	// ENDCOMMON
+
+
+			{ 'HINT' "Extract Room" }
+
+	{ 'STRU'	// PROPERTY SHEET START
+			{ 'NAME' "Room" }
+		{ 'OPEN' 1y }
+			{ 'STRU'	// GROUP START
+				{ 'NAME' "Adjacent Rooms" } 
+
+			{ 'STR'		// Object Reference
+  			{ 'NAME' "Adjacent Room 1" }
+  			{ 'DSNM' "Room" }
+  			{ 'HINT' "Object Reference" }
+  			{ 'DATA' "" }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "1" }
+  		}
+			{ 'STR'		// Object Reference
+  			{ 'NAME' "Adjacent Room 2" }
+  			{ 'DSNM' "Room" }
+  			{ 'HINT' "Object Reference" }
+  			{ 'DATA' "" }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "1" }
+  		}
+	} 	// GROUP STOP 
+		{ 'I32'
+  			{ 'NAME' "Room Loaded Mailbox" }
+  			{ 'DSNM' "Room Loaded Mailbox" }
+  			{ 'RANG' 0l 3999l }
+  			{ 'DATA' 0l }
+  			{ 'DISP' 1l }
+  			{ 'ENVL' "" }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "1" }
+  		}
+		}	// PROPERTY SHEET END
+}
+
+
+
+//============================================================================
+
+
+

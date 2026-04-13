@@ -1,0 +1,19 @@
+;//============================================================================
+;// Object Index to Name list, created by LevelCon V0.200, DO NOT MODIFY
+;// Object Index    Name
+;//============================================================================
+( define NULL_Object 0 )
+( define       room1 1 )
+( define    actbox01 2 )
+( define    Camera01 3 )
+( define   Camshot01 4 )
+( define    levelobj 5 )
+( define    Director 6 )
+( define      Omni01 7 )
+( define    Direct01 8 )
+( define    Direct02 9 )
+( define    Direct03 10 )
+( define    Target01 11 )
+( define   WhiteStar 12 )
+( define       Matte 13 )
+;//============================================================================

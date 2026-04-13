@@ -1,0 +1,1256 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+        
+        
+        
+        
+        
+        
+        
+        
+        
+	
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+	
+	
+	
+
+
+
+
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+               
+        
+        
+        
+        
+        
+        
+        
+	
+	
+	
+
+
+
+
+
+
+
+
+//==============================================================================
+// created from iff.s DO NOT MODIFY
+//==============================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                      
+                      
+
+
+
+                      
+                      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//============================================================================
+
+
+
+
+
+
+
+
+
+{ 'TYPE'
+	{ 'NAME' "Missile" }
+
+    
+
+	{ 'STRU'	{ 'NAME' "movebloc" } { 'FLAG' "COMMONBLOCK" }	// COMMONBLOCK 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                                       
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                 
+
+	{ 'STRU'	// PROPERTY SHEET START
+			{ 'NAME' "Movement" }
+		{ 'OPEN' 0y }
+
+			{ 'I32'
+  				{ 'NAME' "MovementClass" }
+  				{ 'DSNM' "Movement Class" }
+  				{ 'RANG' 0l 100l }
+  				{ 'DATA' 8l }
+  				{ 'DISP' 1l }
+  				{ 'ENVL' "" }
+  				{ 'HELP' "" }
+  				{ 'ENBL' 1 }
+  			}
+        
+			{ 'I32'
+  				{ 'NAME' "Mobility" }
+  				{ 'DSNM' "Mobility" }
+  				{ 'RANG' 0l 4l }
+  				{ 'DATA' 1l }
+  				{ 'DISP' 4l }
+  				{ 'ENVL' "Anchored|Physics|Path|Camera|Follow" }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+			{ 'F32'
+  				{ 'NAME' "Mass" }
+  				{ 'DSNM' "Mass" }
+  				{ 'RANG' 0.00000 100.000 }
+  				{ 'DATA' 75.0000 }
+  				{ 'DISP' 1l }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+			{ 'I32'	// boolean
+  				{ 'NAME' "Moves Between Rooms" }
+  				{ 'DSNM' "Moves Between Rooms" }
+  				{ 'RANG' 0l 1l }
+  				{ 'DATA' 1l }
+  				{ 'DISP' 		8l }
+  				{ 'ENVL' "False|True" }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "Mobility!=0" }
+  			}
+			{ 'I32'
+  				{ 'NAME' "Movement Mailbox" }
+  				{ 'DSNM' "Movement Mailbox" }
+  				{ 'RANG' 0l 3999l }
+  				{ 'DATA' 1l }
+  				{ 'DISP' 1l }
+  				{ 'ENVL' "" }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "Mobility!=0" }
+  			}
+			{ 'F32'
+  				{ 'NAME' "Step Size" }
+  				{ 'DSNM' "Step Size" }
+  				{ 'RANG' 0.00000 100.000 }
+  				{ 'DATA' 0.550000 }
+  				{ 'DISP' 1l }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+			{ 'F32'
+  				{ 'NAME' "Vertical Elasticity" }
+  				{ 'DSNM' "Vertical Elasticity" }
+  				{ 'RANG' 0.00000 1.00000 }
+  				{ 'DATA' 0.500000 }
+  				{ 'DISP' 1l }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+			{ 'F32'
+  				{ 'NAME' "Horizontal Elasticity" }
+  				{ 'DSNM' "Horizontal Elasticity" }
+  				{ 'RANG' 0.00000 1.00000 }
+  				{ 'DATA' 0.500000 }
+  				{ 'DISP' 1l }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+			{ 'F32'
+  				{ 'NAME' "Surface Friction" }
+  				{ 'DSNM' "Surface Friction" }
+  				{ 'RANG' 0.00000 1.00000 }
+  				{ 'DATA' 0.950000 }
+  				{ 'DISP' 1l }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+
+			{ 'STRU'	// GROUP START
+				{ 'NAME' "Path" } 
+
+		{ 'I32'
+  			{ 'NAME' "At End Of Path" }
+  			{ 'DSNM' "At End" }
+  			{ 'RANG' 0l 5l }
+  			{ 'DATA' 0l }
+  			{ 'DISP' 4l }
+  			{ 'ENVL' "Ping-Pong|Stop|Jumpback|Delete|Derail|WarpBack" }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "Mobility==2" }
+  		}
+				{ 'STR'		// Object Reference
+  			{ 'NAME' "Object To Follow" }
+  			{ 'DSNM' "Object To Follow" }
+  			{ 'HINT' "Object Reference" }
+  			{ 'DATA' "" }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "Mobility==2" }
+  		}
+				{ 'STR'		// Object Reference
+  			{ 'NAME' "Follow Offset" }
+  			{ 'DSNM' "Follow Offset" }
+  			{ 'HINT' "Object Reference" }
+  			{ 'DATA' "" }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "Mobility==2" }
+  		}
+	} 	// GROUP STOP 
+
+		{ 'STRU'	// GROUP START
+			{ 'NAME' "On Ground" } 
+
+		{ 'F32'
+  			{ 'NAME' "Running Acceleration" }
+  			{ 'DSNM' "Acceleration" }
+  			{ 'RANG' -1000.00 1000.00 }
+  			{ 'DATA' 1.00000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "Mobility==1" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "Running Deceleration" }
+  			{ 'DSNM' "Deceleration" }
+  			{ 'RANG' -1.00000 1.00000 }
+  			{ 'DATA' 0.900000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "Mobility==1" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "Max Ground Speed" }
+  			{ 'DSNM' "Max Speed" }
+  			{ 'RANG' 0.00000 100.000 }
+  			{ 'DATA' 10.0000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "Mobility==1" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "Turn Rate" }
+  			{ 'DSNM' "Turn Rate" }
+  			{ 'RANG' 0.00000 100.000 }
+  			{ 'DATA' 5.00000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "Mobility==1" }
+  		}
+	} 	// GROUP STOP 
+
+		{ 'STRU'	// GROUP START
+			{ 'NAME' "Crawling" } 
+
+		{ 'F32'
+  			{ 'NAME' "Crawling Acceleration" }
+  			{ 'DSNM' "Acceleration" }
+  			{ 'RANG' -1000.00 1000.00 }
+  			{ 'DATA' 0.500000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "Mobility==1" }
+  		}
+	} 	// GROUP STOP 
+
+		{ 'STRU'	// GROUP START
+			{ 'NAME' "Jumping" } 
+
+		{ 'F32'
+  			{ 'NAME' "Jumping Acceleration" }
+  			{ 'DSNM' "Acceleration" }
+  			{ 'RANG' -1000.00 1000.00 }
+  			{ 'DATA' 18.0000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "Mobility==1" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "Jumping Momentum Transfer" }
+  			{ 'DSNM' "Momentum Xfer" }
+  			{ 'RANG' -1.00000 1.00000 }
+  			{ 'DATA' 0.500000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "Mobility==1" }
+  		}
+	} 	// GROUP STOP 
+
+		{ 'STRU'	// GROUP START
+			{ 'NAME' "In Air" } 
+
+		{ 'F32'
+  			{ 'NAME' "Air Acceleration" }
+  			{ 'DSNM' "Acceleration" }
+  			{ 'RANG' -1000.00 1000.00 }
+  			{ 'DATA' 1.00000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "Mobility==1" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "Horiz Air Drag" }
+  			{ 'DSNM' "Horiz Drag" }
+  			{ 'RANG' -1000.00 1000.00 }
+  			{ 'DATA' 0.250000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "Mobility==1" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "Vert Air Drag" }
+  			{ 'DSNM' "Vert Drag" }
+  			{ 'RANG' -1000.00 1000.00 }
+  			{ 'DATA' 0.250000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "Mobility==1" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "Max Air Speed" }
+  			{ 'DSNM' "Max Speed" }
+  			{ 'RANG' 0.00000 100.000 }
+  			{ 'DATA' 10.0000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "Mobility==1" }
+  		}
+	} 	// GROUP STOP 
+
+		{ 'STRU'	// GROUP START
+			{ 'NAME' "Falling" } 
+
+		{ 'F32'
+  			{ 'NAME' "Falling Acceleration" }
+  			{ 'DSNM' "Acceleration" }
+  			{ 'RANG' -1000.00 1000.00 }
+  			{ 'DATA' 9.81000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "Mobility==1" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "Fall Anim Threshold" }
+  			{ 'DSNM' "Anim Threshold" }
+  			{ 'RANG' 0.00000 100.000 }
+  			{ 'DATA' 2.00000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "Mobility==1" }
+  		}
+	} 	// GROUP STOP 
+
+		{ 'F32'
+  			{ 'NAME' "Stun Threshold" }
+  			{ 'DSNM' "Stun Threshold" }
+  			{ 'RANG' 0.00000 100.000 }
+  			{ 'DATA' 2.50000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "Mobility==1" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "Stun Duration" }
+  			{ 'DSNM' "Stun Duration" }
+  			{ 'RANG' 0.00000 100.000 }
+  			{ 'DATA' 1.00000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "Mobility==1" }
+  		}
+
+	}	// PROPERTY SHEET END
+	}	// ENDCOMMON
+
+
+	{ 'STRU'	{ 'NAME' "toolset" } { 'FLAG' "COMMONBLOCK" }	// COMMONBLOCK 
+
+	{ 'STRU'	// PROPERTY SHEET START
+			{ 'NAME' "Toolset" }
+		{ 'OPEN' 0y }
+				{ 'STR'		// Object Reference
+  				{ 'NAME' "Tool A" }
+  				{ 'DSNM' "Tool" }
+  				{ 'HINT' "Object Reference" }
+  				{ 'DATA' "" }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+				{ 'STR'		// Object Reference
+  				{ 'NAME' "Tool B" }
+  				{ 'DSNM' "Tool" }
+  				{ 'HINT' "Object Reference" }
+  				{ 'DATA' "" }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+				{ 'STR'		// Object Reference
+  				{ 'NAME' "Tool C" }
+  				{ 'DSNM' "Tool" }
+  				{ 'HINT' "Object Reference" }
+  				{ 'DATA' "" }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+				{ 'STR'		// Object Reference
+  				{ 'NAME' "Tool D" }
+  				{ 'DSNM' "Tool" }
+  				{ 'HINT' "Object Reference" }
+  				{ 'DATA' "" }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+				{ 'STR'		// Object Reference
+  				{ 'NAME' "Tool E" }
+  				{ 'DSNM' "Tool" }
+  				{ 'HINT' "Object Reference" }
+  				{ 'DATA' "" }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+				{ 'STR'		// Object Reference
+  				{ 'NAME' "Tool F" }
+  				{ 'DSNM' "Tool" }
+  				{ 'HINT' "Object Reference" }
+  				{ 'DATA' "" }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+		}	// PROPERTY SHEET END
+		}	// ENDCOMMON
+
+
+
+		{ 'STRU'	{ 'NAME' "common" } { 'FLAG' "COMMONBLOCK" }	// COMMONBLOCK 
+
+
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	{ 'STRU'	// PROPERTY SHEET START
+			{ 'NAME' "Common" }
+		{ 'OPEN' 0y }
+			{ 'F32'
+  				{ 'NAME' "hp" }
+  				{ 'DSNM' "hp" }
+  				{ 'RANG' 0.00000 32767.0 }
+  				{ 'DATA' 32767.0 }
+  				{ 'DISP' 1l }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+			{ 'I32'
+  				{ 'NAME' "Number Of Local Mailboxes" }
+  				{ 'DSNM' "Local Mailboxes" }
+  				{ 'RANG' 0l 40l }
+  				{ 'DATA' 0l }
+  				{ 'DISP' 2l }
+  				{ 'ENVL' "" }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+					{ 'STR'		// Object Reference
+  				{ 'NAME' "Poof" }
+  				{ 'DSNM' "Poof" }
+  				{ 'HINT' "Object Reference" }
+  				{ 'DATA' "" }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+				{ 'I32'	// boolean
+  				{ 'NAME' "Is Needle Gun Target" }
+  				{ 'DSNM' "Needle Gun Target" }
+  				{ 'RANG' 0l 1l }
+  				{ 'DATA' 0l }
+  				{ 'DISP' 		8l }
+  				{ 'ENVL' "False|True" }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+			{ 'I32'
+  				{ 'NAME' "Write To Mailbox On Death" }
+  				{ 'DSNM' "Death Mailbox" }
+  				{ 'RANG' 0l 3999l }
+  				{ 'DATA' 0l }
+  				{ 'DISP' 1l }
+  				{ 'ENVL' "" }
+  				{ 'HELP' "Mailbox to write to when object is destroyed" }
+  				{ 'ENBL' "1" }
+  			}
+		{ 'STR'
+  				{ 'NAME' "Script" }
+  				{ 'DSNM' "Script" }
+  				{ 'HINT' "Conversion: Copy"                           }
+  				{ 'DATA' "Cave Logic Studios AI [Script]||what is this?..\\scripts\\default.s"}
+  				{ 'BOOL' { 'NAME' "Required" } { 'DATA' 	0l } }
+  				{ 'DISP' 	11l }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+				{ 'I32'	// boolean
+  				{ 'NAME' "Script Controls Input" }
+  				{ 'DSNM' "Script Controls Input" }
+  				{ 'RANG' 0l 1l }
+  				{ 'DATA' 0l }
+  				{ 'DISP' 		8l }
+  				{ 'ENVL' "False|True" }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+		{ 'STR'
+  				{ 'NAME' "Cave Logic Studios Notes|" }
+  				{ 'DSNM' "Notes" }
+  				{ 'HINT' "Conversion: Ignore" }
+  				{ 'DATA' "Cave Logic Studios Notes|" }
+  				{ 'DISP' 	11l }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+
+			{ 'F32'
+  				{ 'NAME' "slopeA" }
+  				{ 'DSNM' "slopeA" }
+  				{ 'RANG' -32768.0 32767.0 }
+  				{ 'DATA' 0.00000 }
+  				{ 'DISP' 6l }
+  				{ 'HELP' "Sloped surface plane coefficient A" }
+  				{ 'ENBL' "1" }
+  			}
+			{ 'F32'
+  				{ 'NAME' "slopeB" }
+  				{ 'DSNM' "slopeB" }
+  				{ 'RANG' -32768.0 32767.0 }
+  				{ 'DATA' 0.00000 }
+  				{ 'DISP' 6l }
+  				{ 'HELP' "Sloped surface plane coefficient B" }
+  				{ 'ENBL' "1" }
+  			}
+			{ 'F32'
+  				{ 'NAME' "slopeC" }
+  				{ 'DSNM' "slopeC" }
+  				{ 'RANG' -32768.0 32767.0 }
+  				{ 'DATA' 0.00000 }
+  				{ 'DISP' 6l }
+  				{ 'HELP' "Sloped surface plane coefficient C" }
+  				{ 'ENBL' "1" }
+  			}
+			{ 'F32'
+  				{ 'NAME' "slopeD" }
+  				{ 'DSNM' "slopeD" }
+  				{ 'RANG' -32768.0 32767.0 }
+  				{ 'DATA' 0.00000 }
+  				{ 'DISP' 6l }
+  				{ 'HELP' "Sloped surface plane coefficient D" }
+  				{ 'ENBL' "1" }
+  			}
+
+		}	// PROPERTY SHEET END
+		}	// ENDCOMMON
+
+
+
+
+
+	{ 'STRU'	// PROPERTY SHEET START
+			{ 'NAME' "Mesh" }
+		{ 'OPEN' 0y }
+				{ 'STR'  // filename 
+  				{ 'NAME' "Mesh Name" }
+  				{ 'DSNM' "Mesh Name" }
+  				{ 'DATA' "" }
+  				{ 'HINT' "FILESPEC:" "World Foundry IFF (*.iff)\0*.iff\0" 		"Windows Bitmap Files (*.bmp)\0*.bmp\0Targa Bitmap Files (*.tga)\0*.tga\0SGI Bitmap Files (*.rgb,*.rgba,*.bw)\0*.rgb;*.rgba;*.bw\0" }
+  				{ 'DISP' 	12l }
+  				{ 'HELP' ".iff mesh; 8/16/24-bit TGA; 4/8/24-bit BMP; 24-bit SGI" }
+  				{ 'ENBL' "ModelType==1 || ModelType==2" }
+  			}
+		{ 'STRU'	{ 'NAME' "mesh" } { 'FLAG' "COMMONBLOCK" }	// COMMONBLOCK 
+
+  // 0
+
+			{ 'I32'
+  				{ 'NAME' "Model Type" }
+  				{ 'DSNM' "Model Type" }
+  				{ 'RANG' 0l 6l }
+  				{ 'DATA' 0l }
+  				{ 'DISP' 4l }
+  				{ 'ENVL' "Box|Mesh|Scarecrow|None|Light|Matte|Emitter" }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+
+
+			{ 'I32'
+  				{ 'NAME' "Animation Mailbox" }
+  				{ 'DSNM' "Animation Mailbox" }
+  				{ 'RANG' 0l 4999l }
+  				{ 'DATA' 1l }
+  				{ 'DISP' 1l }
+  				{ 'ENVL' "" }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+			{ 'I32'
+  				{ 'NAME' "Visibility Mailbox" }
+  				{ 'DSNM' "Visibility Mailbox" }
+  				{ 'RANG' 0l 4999l }
+  				{ 'DATA' 1l }
+  				{ 'DISP' 1l }
+  				{ 'ENVL' "" }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+                                                                  
+                                                                  
+                                                                                
+			{ 'I32'
+  				{ 'NAME' "Matte Type" }
+  				{ 'DSNM' "Matte Type" }
+  				{ 'RANG' 0l 2l }
+  				{ 'DATA' 1l }
+  				{ 'DISP' 5l }
+  				{ 'ENVL' "None|Color|Image" }
+  				{ 'HELP' "What kind of matte to use" }
+  				{ 'ENBL' "ModelType == 5" }
+  			}
+
+			{ 'STRU'	// GROUP START
+				{ 'NAME' "Matte Color" } 
+
+	{ 'I32'
+  			{ 'NAME' "Background Color" }
+  			{ 'DSNM' "Background" }
+  			{ 'RANG' 0l  16777215l }
+  			{ 'HINT' "Color" }
+  			{ 'DATA' 0l }
+  			{ 'DISP' 7l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "ModelType == 5 && MatteType==1" }
+  		}
+	{ 'I32'
+  			{ 'NAME' "Debug Background Color" }
+  			{ 'DSNM' "Debug Background" }
+  			{ 'RANG' 0l  16777215l }
+  			{ 'HINT' "Color" }
+  			{ 'DATA' 7829367l }
+  			{ 'DISP' 7l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "ModelType == 5 && MatteType==1" }
+  		}
+	} 	// GROUP STOP 
+
+		{ 'STRU'	// GROUP START
+			{ 'NAME' "Matte Image Specification" } 
+
+		{ 'F32'
+  			{ 'NAME' "Distance" }
+  			{ 'DSNM' "Distance" }
+  			{ 'RANG' 0.00000 8000.00 }
+  			{ 'DATA' 8000.00 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "ModelType == 5 && MatteType==2" }
+  		}
+				{ 'STR'  // filename 
+  			{ 'NAME' "Tiles" }
+  			{ 'DSNM' "Tiles" }
+  			{ 'DATA' "" }
+  			{ 'HINT' "FILESPEC:" 		"Windows Bitmap Files (*.bmp)\0*.bmp\0Targa Bitmap Files (*.tga)\0*.tga\0SGI Bitmap Files (*.rgb,*.rgba,*.bw)\0*.rgb;*.rgba;*.bw\0" }
+  			{ 'DISP' 	12l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "ModelType == 5 && MatteType==2" }
+  		}
+				{ 'STR'  // filename 
+  			{ 'NAME' "Map" }
+  			{ 'DSNM' "Map" }
+  			{ 'DATA' "" }
+  			{ 'HINT' "FILESPEC:" 		"Scrolling Map Files (*.map)\0*.bmp\0" }
+  			{ 'DISP' 	12l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "ModelType == 5 && MatteType==2" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "X Rotation Scale" }
+  			{ 'DSNM' "X Rotation Scale" }
+  			{ 'RANG' -320.000 320.000 }
+  			{ 'DATA' 1.00000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "ModelType == 5 && MatteType==2" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "Y Rotation Scale" }
+  			{ 'DSNM' "Y Rotation Scale" }
+  			{ 'RANG' -240.000 240.000 }
+  			{ 'DATA' 1.00000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "ModelType == 5 && MatteType==2" }
+  		}
+	} 	// GROUP STOP 
+
+		{ 'STRU'	// GROUP START
+			{ 'NAME' "Emitter" } 
+
+		{ 'I32'
+  			{ 'NAME' "generationType" }
+  			{ 'DSNM' "Type" }
+  			{ 'RANG' 0l 1l }
+  			{ 'DATA' 0l }
+  			{ 'DISP' 4l }
+  			{ 'ENVL' "Pulse|Continuous" }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "ModelType == 6" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "period" }
+  			{ 'DSNM' "Period" }
+  			{ 'RANG' 0.0100000 5000.00 }
+  			{ 'DATA' 0.150000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "ModelType == 6" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "timeDelay" }
+  			{ 'DSNM' "Delay" }
+  			{ 'RANG' 0.00000 5000.00 }
+  			{ 'DATA' 0.00000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "ModelType == 6" }
+  		}
+
+		{ 'F32'
+  			{ 'NAME' "yArc" }
+  			{ 'DSNM' "YArc" }
+  			{ 'RANG' 0.0100000 1.00000 }
+  			{ 'DATA' 1.00000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "ModelType == 6" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "zArc" }
+  			{ 'DSNM' "ZArc" }
+  			{ 'RANG' 0.0100000 1.00000 }
+  			{ 'DATA' 1.00000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "ModelType == 6" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "initialSphereRadius" }
+  			{ 'DSNM' "Initial Radius" }
+  			{ 'RANG' 0.0100000 50.0000 }
+  			{ 'DATA' 0.100000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "ModelType == 6" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "sphereExpansionRate" }
+  			{ 'DSNM' "Expansion Rate" }
+  			{ 'RANG' 0.0100000 50.0000 }
+  			{ 'DATA' 0.100000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "ModelType == 6" }
+  		}
+		{ 'I32'
+  			{ 'NAME' "nParticles" }
+  			{ 'DSNM' "# Particles" }
+  			{ 'RANG' 0l 500l }
+  			{ 'DATA' 1l }
+  			{ 'DISP' 1l }
+  			{ 'ENVL' "" }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "ModelType == 6" }
+  		}
+	} 	// GROUP STOP 
+
+		{ 'STRU'	// GROUP START
+			{ 'NAME' "Particles" } 
+
+		{ 'F32'
+  			{ 'NAME' "initialVelocity" }
+  			{ 'DSNM' "Initial Velocity" }
+  			{ 'RANG' 0.0100000 10.0000 }
+  			{ 'DATA' 0.300000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "ModelType == 6" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "initialAngleA" }
+  			{ 'DSNM' "initial A" }
+  			{ 'RANG' 0.00000 1.00000 }
+  			{ 'DATA' 0.00000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "ModelType == 6" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "initialAngleB" }
+  			{ 'DSNM' "initial B" }
+  			{ 'RANG' 0.00000 1.00000 }
+  			{ 'DATA' 0.00000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "ModelType == 6" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "initialAngleC" }
+  			{ 'DSNM' "initial C" }
+  			{ 'RANG' 0.00000 1.00000 }
+  			{ 'DATA' 0.00000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "ModelType == 6" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "deltaAngleA" }
+  			{ 'DSNM' "delta A" }
+  			{ 'RANG' 0.00000 1.00000 }
+  			{ 'DATA' 0.00000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "ModelType == 6" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "deltaAngleB" }
+  			{ 'DSNM' "delta B" }
+  			{ 'RANG' 0.00000 1.00000 }
+  			{ 'DATA' 0.00000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "ModelType == 6" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "deltaAngleC" }
+  			{ 'DSNM' "delta C" }
+  			{ 'RANG' 0.00000 1.00000 }
+  			{ 'DATA' 0.00000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "ModelType == 6" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "lifeTime" }
+  			{ 'DSNM' "C" }
+  			{ 'RANG' 0.0100000 10.0000 }
+  			{ 'DATA' 2.00000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "ModelType == 6" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "initialAlpha" }
+  			{ 'DSNM' "Inital Alpha" }
+  			{ 'RANG' 0.00000 1.00000 }
+  			{ 'DATA' 1.00000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "ModelType == 6" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "alphaDecrement" }
+  			{ 'DSNM' "Alpha Decrement" }
+  			{ 'RANG' 0.00000 1.00000 }
+  			{ 'DATA' 0.0500000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "ModelType == 6" }
+  		}
+	} 	// GROUP STOP 
+
+		{ 'STRU'	// GROUP START
+			{ 'NAME' "Force 1" } 
+
+		{ 'I32'
+  			{ 'NAME' "Type" }
+  			{ 'DSNM' "Type" }
+  			{ 'RANG' 0l 3l }
+  			{ 'DATA' 0l }
+  			{ 'DISP' 4l }
+  			{ 'ENVL' "None|Constant|Random|Radial" }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "1" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "magnitude" }
+  			{ 'DSNM' "Magnitude" }
+  			{ 'RANG' 0.0100000 10.0000 }
+  			{ 'DATA' 0.300000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "1" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "vectorX" }
+  			{ 'DSNM' "VectorX" }
+  			{ 'RANG' 0.00000 10.0000 }
+  			{ 'DATA' 0.00000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "1" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "vectorY" }
+  			{ 'DSNM' "VectorY" }
+  			{ 'RANG' 0.00000 10.0000 }
+  			{ 'DATA' 0.00000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "1" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "vectorZ" }
+  			{ 'DSNM' "VectorZ" }
+  			{ 'RANG' 0.00000 10.0000 }
+  			{ 'DATA' 0.00000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "1" }
+  		}
+	} 	// GROUP STOP 
+		{ 'STRU'	// GROUP START
+			{ 'NAME' "Force 2" } 
+
+		{ 'I32'
+  			{ 'NAME' "forceType" }
+  			{ 'DSNM' "Type" }
+  			{ 'RANG' 0l 3l }
+  			{ 'DATA' 0l }
+  			{ 'DISP' 4l }
+  			{ 'ENVL' "None|Constant|Random|Radial" }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "1" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "magnitude2" }
+  			{ 'DSNM' "Magnitude" }
+  			{ 'RANG' 0.0100000 10.0000 }
+  			{ 'DATA' 0.300000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "1" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "vectorX2" }
+  			{ 'DSNM' "VectorX" }
+  			{ 'RANG' 0.00000 10.0000 }
+  			{ 'DATA' 0.00000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "1" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "vectorY2" }
+  			{ 'DSNM' "VectorY" }
+  			{ 'RANG' 0.00000 10.0000 }
+  			{ 'DATA' 0.00000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "1" }
+  		}
+		{ 'F32'
+  			{ 'NAME' "vectorZ2" }
+  			{ 'DSNM' "VectorZ" }
+  			{ 'RANG' 0.00000 10.0000 }
+  			{ 'DATA' 0.00000 }
+  			{ 'DISP' 1l }
+  			{ 'HELP' "" }
+  			{ 'ENBL' "1" }
+  		}
+	} 	// GROUP STOP 
+
+	}	// ENDCOMMON
+		}	// PROPERTY SHEET END
+
+
+
+	{ 'STRU'	{ 'NAME' "shadow" } { 'FLAG' "COMMONBLOCK" }	// COMMONBLOCK 
+	{ 'STRU'	// PROPERTY SHEET START
+			{ 'NAME' "Shadow" }
+		{ 'OPEN' 0y }
+				{ 'STR'		// Object Reference
+  				{ 'NAME' "Shadow Object Template" }
+  				{ 'DSNM' "Object" }
+  				{ 'HINT' "Object Reference" }
+  				{ 'DATA' "" }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+			{ 'I32'	// boolean
+  				{ 'NAME' "Check Below Only Once" }
+  				{ 'DSNM' "Check Below Only Once" }
+  				{ 'RANG' 0l 1l }
+  				{ 'DATA' 1l }
+  				{ 'DISP' 		8l }
+  				{ 'ENVL' "False|True" }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "ShadowObjectTemplate" }
+  			}
+
+		}	// PROPERTY SHEET END
+		}	// ENDCOMMON
+
+
+        
+
+
+
+	{ 'STRU'	// PROPERTY SHEET START
+			{ 'NAME' "Flags" }
+		{ 'OPEN' 0y }
+			{ 'I32'	// boolean
+  				{ 'NAME' "Template Object" }
+  				{ 'DSNM' "Template Object" }
+  				{ 'RANG' 0l 1l }
+  				{ 'DATA' 1l }
+  				{ 'DISP' 		8l }
+  				{ 'ENVL' "False|True" }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+		}	// PROPERTY SHEET END
+
+
+
+
+
+	{ 'STRU'	// PROPERTY SHEET START
+			{ 'NAME' "Missile" }
+		{ 'OPEN' 1y }
+			{ 'I32'	// boolean
+  				{ 'NAME' "Explode On Impact" }
+  				{ 'DSNM' "Explode On Impact" }
+  				{ 'RANG' 0l 1l }
+  				{ 'DATA' 1l }
+  				{ 'DISP' 		8l }
+  				{ 'ENVL' "False|True" }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+			{ 'F32'
+  				{ 'NAME' "Arming Delay" }
+  				{ 'DSNM' "Arming Delay" }
+  				{ 'RANG' 0.00000 100.000 }
+  				{ 'DATA' 0.200000 }
+  				{ 'DISP' 1l }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+			{ 'F32'
+  				{ 'NAME' "Explosion Delay" }
+  				{ 'DSNM' "Explosion Delay" }
+  				{ 'RANG' 0.00000 3600.00 }
+  				{ 'DATA' 2.00000 }
+  				{ 'DISP' 1l }
+  				{ 'HELP' "" }
+  				{ 'ENBL' "1" }
+  			}
+		}	// PROPERTY SHEET END
+
+}
+
+
+
+//============================================================================
+
+
+
