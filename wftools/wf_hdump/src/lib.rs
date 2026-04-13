@@ -5,9 +5,9 @@
 //! Each line:  `OOOO: HHHHHHHH HHHHHHHH HHHHHHHH HHHHHHHH    AAAA....`
 //!
 //! - Offset is 4 hex digits.
-//! - Hex bytes are grouped in fours with a space between groups.
-//! - ASCII column maps non-printable bytes (and 0x80–0xFF) to `.`.
-//! - Short final lines are padded so the ASCII column is aligned.
+//! - Hex bytes are grouped in fours with a space after each group (including the last).
+//! - Four spaces separate the hex section from the ASCII column.
+//! - Short final lines are NOT padded — the ASCII column shifts left (matches C++ original).
 
 use std::io::{self, Write};
 
@@ -29,7 +29,6 @@ fn to_printable(b: u8) -> u8 {
 fn hdump_line(
     data: &[u8],
     offset: usize,
-    chars_per_line: usize,
     indent: usize,
     out: &mut impl Write,
 ) -> io::Result<()> {
@@ -38,20 +37,17 @@ fn hdump_line(
         out.write_all(b"\t")?;
     }
     // offset
-    write!(out, "{:04x}: ", offset)?;
-    // hex bytes — groups of 4
-    for i in 0..chars_per_line {
-        if i < data.len() {
-            write!(out, "{:02X}", data[i])?;
-        } else {
-            write!(out, "  ")?; // padding for short final line
-        }
+    write!(out, "{:04X}: ", offset)?;
+    // hex bytes — groups of 4, space after each group (including the last)
+    // No padding for short lines; the ASCII column shifts left (matches C++ HDumpLine).
+    for (i, &b) in data.iter().enumerate() {
+        write!(out, "{:02X}", b)?;
         if (i + 1) % 4 == 0 {
             write!(out, " ")?;
         }
     }
-    // separator
-    write!(out, "   ")?;
+    // 4-space separator between hex section and ASCII column
+    write!(out, "    ")?;
     // ASCII column
     for &b in data {
         out.write_all(&[to_printable(b)])?;
@@ -73,7 +69,7 @@ pub fn hdump(
     assert!(chars_per_line > 0, "chars_per_line must be > 0");
     let mut offset = 0usize;
     for chunk in data.chunks(chars_per_line) {
-        hdump_line(chunk, offset, chars_per_line, indent, out)?;
+        hdump_line(chunk, offset, indent, out)?;
         offset += chunk.len();
     }
     Ok(())

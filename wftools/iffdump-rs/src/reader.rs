@@ -23,10 +23,17 @@ pub struct Opts {
     pub chars_per_line: usize,
 }
 
-/// Convert a big-endian u32 FOURCC to a 4-char display string.
+/// Convert a big-endian u32 FOURCC to a display string.
+///
+/// Trailing non-printable bytes (e.g. null padding) are stripped; any
+/// non-printable byte in the middle is replaced with `.`. This matches
+/// the original C++ ChunkID display behaviour.
 pub fn id_name(id: u32) -> String {
     let bytes = id.to_be_bytes();
-    bytes
+    let len = bytes.iter().rposition(|&b| b.is_ascii_graphic() || b == b' ')
+        .map(|i| i + 1)
+        .unwrap_or(0);
+    bytes[..len]
         .iter()
         .map(|&b| if b.is_ascii_graphic() || b == b' ' { b as char } else { '.' })
         .collect()
@@ -108,14 +115,17 @@ pub fn dump_chunks(
 
         // Opening line: `{ 'FOUR'\t\t// Size = N`
         let tabs = "\t".repeat(indent);
-        writeln!(out, "{tabs}{{ '{}'  \t// Size = {size}", id_name(id))
+        writeln!(out, "{tabs}{{ '{}'\t\t// Size = {size}", id_name(id))
             .map_err(|e| IffDumpError::Io { path: "<output>".into(), source: e })?;
 
         if wrappers.contains(&id) {
             // Wrapper: recurse into payload
             dump_chunks(buf, payload_start, payload_start + size, depth + 1, wrappers, opts, out)?;
         } else {
-            // Leaf: hex dump
+            // Leaf: emit `// unknown chunk` then hex dump (matches original iffdump behaviour)
+            let inner_tabs = "\t".repeat(indent + 1);
+            writeln!(out, "{inner_tabs}// unknown chunk")
+                .map_err(|e| IffDumpError::Io { path: "<output>".into(), source: e })?;
             if opts.dump_binary && !payload.is_empty() {
                 if opts.use_hdump {
                     format_hdump(payload, indent + 1, opts.chars_per_line, out)

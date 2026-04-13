@@ -483,4 +483,54 @@ mod tests {
         assert_eq!(oad.entries.len(), 1);
         assert_eq!(oad.entries[0].name_str(), "LEVELCONFLAG_NOINSTANCES");
     }
+
+    /// Parse all original .oad files from the 2016 game data as fixtures.
+    /// Verifies header name and entry count for each.
+    #[test]
+    fn parse_all_original_fixtures() {
+        let cases: &[(&str, &str, usize)] = &[
+            ("actbox.oad",    "Activation Box",                    107),
+            ("actboxor.oad",  "Activation Box Object Reference",    97),
+            ("alias.oad",     "Alias",                               3),
+            ("camera.oad",    "Camera",                             97),
+            ("camshot.oad",   "Camera Shot",                       118),
+            ("destroy.oad",   "Destroyer",                          96),
+            ("director.oad",  "Director",                           89),
+            ("disabled.oad",  "Disabled",                            1),
+            ("enemy.oad",     "Enemy",                              99),
+            ("explode.oad",   "Explosion",                          91),
+            ("generato.oad",  "Generator",                         102),
+            ("gold.oad",      "Gold",                              102),
+            ("levelobj.oad",  "Level Object",                      104),
+            ("light.oad",     "Light",                              97),
+            ("matte.oad",     "Matte",                             101),
+            ("missile.oad",   "Missile",                            92),
+            ("platform.oad",  "Platform",                           89),
+            ("player.oad",    "Player",                             93),
+            ("room.oad",      "Room",                               31),
+            ("shadow.oad",    "Shadow",                             89),
+            ("shield.oad",    "Shield",                             94),
+            ("spike.oad",     "Spike",                             106),
+            ("statplat.oad",  "Stationary Platform",                89),
+            ("target.oad",    "Target Position",                    88),
+            ("test.oad",      "Test",                              106),
+            ("tool.oad",      "Tool",                              103),
+            ("warp.oad",      "Warp",                               96),
+        ];
+
+        let fixture_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("tests/fixtures");
+
+        for (filename, expected_name, expected_entries) in cases {
+            let data = std::fs::read(fixture_dir.join(filename))
+                .unwrap_or_else(|e| panic!("failed to read {filename}: {e}"));
+            let mut cur = Cursor::new(&data);
+            let oad = OadFile::read(&mut cur)
+                .unwrap_or_else(|e| panic!("failed to parse {filename}: {e}"));
+            assert_eq!(oad.header.display_name(), *expected_name,
+                "name mismatch in {filename}");
+            assert_eq!(oad.entries.len(), *expected_entries,
+                "entry count mismatch in {filename}");
+        }
+    }
 }

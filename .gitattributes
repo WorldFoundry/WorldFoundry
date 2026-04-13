@@ -1,0 +1,5 @@
+# Binary formats — no line ending conversion, no diff
+*.oad    binary
+*.iff    binary
+*.wf     binary
+*.dmp    binary
