@@ -470,4 +470,17 @@ mod tests {
         let mut cur = Cursor::new(&bytes);
         assert!(matches!(OadFile::read(&mut cur), Err(OadError::BadMagic(_))));
     }
+
+    /// Parse a real .oad binary produced by oas2oad (prep → g++ → objcopy).
+    /// This test catches byte-order bugs in CHUNK_ID that synthetic round-trip
+    /// tests miss (both sides would use the same wrong constant).
+    #[test]
+    fn parse_real_oad_fixture() {
+        let bytes = include_bytes!("../tests/fixtures/disabled.oad");
+        let mut cur = Cursor::new(bytes.as_ref());
+        let oad = OadFile::read(&mut cur).expect("failed to parse disabled.oad fixture");
+        assert_eq!(oad.header.display_name(), "Disabled");
+        assert_eq!(oad.entries.len(), 1);
+        assert_eq!(oad.entries[0].name_str(), "LEVELCONFLAG_NOINSTANCES");
+    }
 }
