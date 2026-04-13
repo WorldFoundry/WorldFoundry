@@ -205,6 +205,8 @@ The file produced by `iffcomp` shares the EA-IFF chunk-header shape but deviates
 
 Chunk `ID` bytes are the one field that matches standard IFF byte order. `ID::ID(unsigned long)` byte-swaps the packed value so the on-disk bytes are the literal source-order ASCII characters — the same bytes a big-endian IFF reader would expect. This makes chunk-type matching portable even though everything else is native-endian.
 
+The 4-byte chunk ID convention itself traces back to the Macintosh resource fork, where 4-character `ResType` codes (`'TEXT'`, `'PICT'`, `'snd '`) identified resource types. EA borrowed the convention for IFF in 1985, from where it propagated into AIFF, RIFF, QuickTime, MP4, and many other formats. WF's FOURCCs are third-generation Mac DNA.
+
 ## TL;DR
 
 - **Source format**: a tiny scripting DSL whose only output is a binary IFF tree. Chunks are `{ 'ID' … }`, items are width-tagged numeric / string / file literals, with directives for alignment, timestamps, and back-patched offsets / sizes into other chunks.
