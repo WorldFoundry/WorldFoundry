@@ -81,6 +81,8 @@ From `Grammar::construct`:
 
 Written by `IffWriterBinary` (`wfsource/source/iffwrite/binary.cc`). Standard EA-IFF in shape, with a couple of World Foundry quirks.
 
+The chunk payloads are typically one of two things: the in-memory layout of C/C++ structs that define object attributes (loaded directly into engine data structures at runtime), or verbatim binary data such as TGA, BMP, and WAV files embedded whole. Native byte order follows naturally from the first case — the structs are read straight off disk into memory with no conversion.
+
 ### Chunk layout
 
 ```
@@ -90,7 +92,7 @@ Written by `IffWriterBinary` (`wfsource/source/iffwrite/binary.cc`). Standard EA
 ```
 
 - `ID`: 4 raw ASCII bytes, source order (already byte-swapped in `ID::ID(unsigned long)`).
-- `size`: 32-bit signed int — payload size **excluding** the 8-byte header. Written as `int32` via raw `_out->write` → **native byte order** (little-endian on x86 — *not* the big-endian of standard IFF).
+- `size`: **uint32** — payload size **excluding** the 8-byte header. Written via raw `_out->write` → **native byte order** (little-endian on x86 — *not* the big-endian of standard IFF).
 - payload: nested chunks and/or raw items.
 - After the payload, `align(4)` zero-pads to a 4-byte boundary.
 
@@ -112,9 +114,13 @@ Written by `IffWriterBinary` (`wfsource/source/iffwrite/binary.cc`). Standard EA
 
 Alignment between siblings is forced to 4 (`align(4)`); the in-chunk `align()` writes zeros, while `alignFunction()` (the user-callable `.align(N)`) writes `fillChar()` instead.
 
-### Endianness gotcha
+### Endianness — native by design
 
-The `ID` class explicitly byte-swaps in its `unsigned long` constructor so the on-disk bytes match source order — but `out_int32` / `out_int16` write native bytes. So a file from this tool reads cleanly with byte-order-agnostic ID matching but everything else is little-endian. A standard IFF reader written for big-endian data will read the IDs correctly and then mis-decode every size field.
+Despite the "IFF" name, this tool does not produce an interchange file: the output is a binary blob consumed directly on the target platform (x86 or MIPS R3000). Numeric values — integers, sizes, fixed-point reals — are therefore written in the platform's **native byte order**, not the big-endian byte order of the original EA-IFF spec.
+
+The one exception is the chunk `ID` field: `ID::ID(unsigned long)` byte-swaps so the on-disk bytes are literally the source-order ASCII characters (`'TEST'` → `54 45 53 54`), making ID matching byte-order-agnostic. All other multi-byte fields are raw native writes.
+
+A standard IFF reader expecting big-endian data will parse IDs correctly but mis-decode every size and numeric field — expected, since that reader is not the intended consumer.
 
 ## 3. Walk-through of `test.iff.txt`
 
@@ -176,10 +182,37 @@ Produces a nested chunk:
 
 Note the parent chunk's size in the header *includes* the inner chunk's full 8-byte header and its 4-byte trailing pad — that's exactly what `IffWriterBinary::exitChunk` rolls into the parent (`csParent->AddToSize(child.size + pad + 8)`).
 
+## 5. WF vs EA-IFF 85 deviations
+
+The file produced by `iffcomp` shares the EA-IFF chunk-header shape but deviates in several ways. Because the output is a platform blob (not an interchange file), the deviations are intentional.
+
+### Structural / breaking
+
+| # | EA-IFF 85 | WorldFoundry |
+|---|---|---|
+| 1 | All multi-byte values big-endian | All numeric fields in **native byte order** (little-endian on x86, native on MIPS R3000) |
+| 2 | Chunks padded to **2-byte** boundaries | Chunks padded to **4-byte** boundaries (`align(4)` hard-coded in `exitChunk`) |
+| 3 | Parent `ckSize` = payload bytes only | Parent `ckSize` includes the child's 8-byte header + child's trailing pad (`AddToSize(child.size + pad + 8)`) |
+| 4 | Top-level must be a FORM, LIST, or CAT | No container-type constraint; `file := chunk+` allows any top-level chunk sequence |
+| 5 | No inline-FOURCC alignment | `out_id` calls `align(4)` before writing an inline FOURCC literal, silently shifting subsequent payload offsets |
+
+### Extensions
+
+| # | EA-IFF 85 | WorldFoundry |
+|---|---|---|
+| 6 | No typed scalars | Fixed-point reals: `val × 2^fraction`, packed into int8/int16/int32 by total bit width |
+| 7 | No string convention | C-style **NUL-terminated** strings; escape sequences (`\n \t \\ \" \NNN`) translated at write time |
+| 8 | No back-patching | `.offsetof('A'::'B')` / `.sizeof('A'::'B')` inject 32-bit absolute file offsets/sizes, resolved via `Backpatch` queue |
+| 9 | No string continuation | `out_string_continue` seeks back over the previous NUL and appends — concatenates adjacent string literals into one C string |
+
+### Note on IDs
+
+Chunk `ID` bytes are the one field that matches standard IFF byte order. `ID::ID(unsigned long)` byte-swaps the packed value so the on-disk bytes are the literal source-order ASCII characters — the same bytes a big-endian IFF reader would expect. This makes chunk-type matching portable even though everything else is native-endian.
+
 ## TL;DR
 
 - **Source format**: a tiny scripting DSL whose only output is a binary IFF tree. Chunks are `{ 'ID' … }`, items are width-tagged numeric / string / file literals, with directives for alignment, timestamps, and back-patched offsets / sizes into other chunks.
-- **Output format**: standard EA-IFF chunk header (`ID(4) | size(4) | payload`) but **little-endian** on x86 (not big-endian like the original spec) and with `align(4)` between sibling chunks. Strings are C-style NUL-terminated. Fixed-point reals are `val << fraction_bits` truncated to int8 / int16 / int32 by their total bit width.
+- **Output format**: standard EA-IFF chunk header (`ID(4) | size(4) | payload`) with all numeric fields in **native byte order** (little-endian on x86, native on MIPS R3000) — intentional, as the output is a platform blob, not an interchange file. `align(4)` pads to 4-byte boundaries between siblings. Strings are C-style NUL-terminated. Fixed-point reals are `val << fraction_bits` truncated to int8 / int16 / int32 by their total bit width.
 
 ## References
 
@@ -196,3 +229,4 @@ Note the parent chunk's size in the header *includes* the inner chunk's full 8-b
   - `id.hp` — FOURCC byte-swap
   - `backpatch.hp` — `ChunkSizeBackpatch` (size + position bookkeeping)
   - `test.scr` — sample 2
+- EA-IFF 85 spec: ["EA IFF 85" Standard for Interchange Format Files](https://wiki.amigaos.net/wiki/EA_IFF_85_Standard_for_Interchange_Format_Files) — original spec on the AmigaOS wiki

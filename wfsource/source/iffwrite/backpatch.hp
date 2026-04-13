@@ -35,7 +35,7 @@
 class ChunkSizeBackpatch
 {
 public:
-	ChunkSizeBackpatch(ID newID, int newPos, long newSize, const  char* name)	
+	ChunkSizeBackpatch(ID newID, int newPos, uint32_t newSize, const  char* name)
 	{ 
 		id = newID; 
 		size = newSize; 
@@ -46,7 +46,7 @@ public:
 	ChunkSizeBackpatch()	{ size = 0; pos = 0; szID[0] =0; }
 	~ChunkSizeBackpatch()	{}
 
-    int GetSize() const
+    uint32_t GetSize() const
     {
          return size;
     }
@@ -67,17 +67,17 @@ public:
         return szID;
     }
 
-    void AddToSize(int offset) 
+    void AddToSize(uint32_t offset)
     {
-        assert(offset > 0);
+        assert(offset != 0);
 		DBSTREAM1(ciff << "Backpatch::AddToSize: offset = " << offset << ", old size = " << size << ", new size = " << size+offset << std::endl; )
         size += offset;
     }
 
-    void SubtractFromSize(int offset) 
+    void SubtractFromSize(uint32_t offset)
     {
         assert(size >= offset);
-        assert(offset > 0);
+        assert(offset != 0);
 		DBSTREAM1(ciff << "Backpatch::SubtractFromSize: offset = " << offset << ", old size = " << size << ", new size = " << size-offset << std::endl; )
         size -= offset;
     }
@@ -91,7 +91,7 @@ public:
     }
 #endif
 private:
-	long size;
+	uint32_t size;
 	int pos;
 	ID id;
 
