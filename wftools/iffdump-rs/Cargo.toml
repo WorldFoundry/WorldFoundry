@@ -1,0 +1,24 @@
+[package]
+name = "iffdump"
+version = "0.1.0"
+edition = "2021"
+description = "World Foundry IFF file dumper (Rust port of wftools/iffdump)"
+
+[[bin]]
+name = "iffdump"
+path = "src/main.rs"
+
+[lib]
+name = "iffdump"
+path = "src/lib.rs"
+
+[dependencies]
+wf_hdump = { path = "../wf_hdump" }
+
+[dev-dependencies]
+tempfile = "3"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+strip = true
